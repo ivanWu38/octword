@@ -10,7 +10,7 @@ struct GameView: View {
     @State private var showConfetti = false
     @State private var shouldDismissAfterResult = false
     @State private var showResultSheet = false
-    @State private var isShowingTopHalf = true
+    @State private var topVisibleRow: Int = 0
     @State private var notepadOffset: CGSize = .zero
     @State private var notepadDragStart: CGSize = .zero
     @FocusState private var isNotepadFocused: Bool
@@ -314,15 +314,19 @@ struct GameView: View {
                 .padding(.horizontal, 8)
             )
         } else if boardCount == 8 {
-            // 8個棋盤：2x4 可滾動，右側有上下箭頭按鈕
+            // 8個棋盤：2欄垂直捲動。一次完整顯示一排(2盤)+ 露出下一排一截，格子放大。
+            // 右側上下箭頭一次推進一排。
             let arrowWidth: CGFloat = 32
             let boardAreaWidth = max(0, availableWidth - arrowWidth)
             let boardWidth = max(0, (boardAreaWidth - spacing) / 2)
-            let rowHeight = max(0, (availableHeight - spacing) / 2)
 
-            let tileHeight = (rowHeight - CGFloat(maxGuesses - 1) * tileSpacing) / CGFloat(maxGuesses)
+            // 寬度決定格子上限(2欄)；高度取 viewport 的 ~82%，留一截露出下一排。
             let tileWidth = (boardWidth - 4 * tileSpacing) / 5
-            let tileSize = max(0, min(tileWidth, tileHeight))
+            let tileHeightCap = (availableHeight * 0.82 - CGFloat(maxGuesses - 1) * tileSpacing) / CGFloat(maxGuesses)
+            let tileSize = max(0, min(tileWidth, tileHeightCap))
+            let rowHeight = CGFloat(maxGuesses) * tileSize + CGFloat(maxGuesses - 1) * tileSpacing
+
+            let lastRow = 3
 
             return AnyView(
                 ScrollViewReader { proxy in
@@ -369,40 +373,41 @@ struct GameView: View {
                         }
                         .coordinateSpace(name: "boardScroll")
                         .onPreferenceChange(RowVisibilityPreferenceKey.self) { rows in
-                            let indices = Self.computeVisibleBoardIndices(rows: rows, viewportHeight: availableHeight)
-                            if viewModel.visibleBoardIndices != indices {
-                                viewModel.visibleBoardIndices = indices
-                                isShowingTopHalf = indices.first == 0
+                            let row = Self.computeTopRow(rows: rows, viewportHeight: availableHeight)
+                            if topVisibleRow != row {
+                                topVisibleRow = row
                             }
                         }
 
-                        // Arrow buttons on the right
+                        // Arrow buttons on the right — step one board-row at a time
                         VStack(spacing: 16) {
                             Spacer()
 
                             Button {
                                 HapticManager.shared.keyTap()
                                 withAnimation(.easeInOut(duration: 0.3)) {
-                                    proxy.scrollTo("row0", anchor: .top)
+                                    proxy.scrollTo("row\(max(0, topVisibleRow - 1))", anchor: .top)
                                 }
                             } label: {
                                 Image(systemName: "chevron.up")
                                     .font(.system(size: 14, weight: .bold))
-                                    .foregroundColor(isShowingTopHalf ? .quordlePrimary : .quordleSecondaryText.opacity(0.5))
+                                    .foregroundColor(topVisibleRow > 0 ? .quordlePrimary : .quordleSecondaryText.opacity(0.4))
                                     .frame(width: arrowWidth, height: 44)
                             }
+                            .disabled(topVisibleRow == 0)
 
                             Button {
                                 HapticManager.shared.keyTap()
                                 withAnimation(.easeInOut(duration: 0.3)) {
-                                    proxy.scrollTo("row2", anchor: .top)
+                                    proxy.scrollTo("row\(min(lastRow, topVisibleRow + 1))", anchor: .top)
                                 }
                             } label: {
                                 Image(systemName: "chevron.down")
                                     .font(.system(size: 14, weight: .bold))
-                                    .foregroundColor(!isShowingTopHalf ? .quordlePrimary : .quordleSecondaryText.opacity(0.5))
+                                    .foregroundColor(topVisibleRow < lastRow ? .quordlePrimary : .quordleSecondaryText.opacity(0.4))
                                     .frame(width: arrowWidth, height: 44)
                             }
+                            .disabled(topVisibleRow == lastRow)
 
                             Spacer()
                         }
@@ -555,26 +560,18 @@ struct GameView: View {
 
     // MARK: - Visible Board Computation
 
-    private static func computeVisibleBoardIndices(rows: [RowVisibility], viewportHeight: CGFloat) -> [Int] {
-        let visibleRows = rows
-            .filter { $0.maxY > 0 && $0.minY < viewportHeight }
-            .sorted { $0.rowIndex < $1.rowIndex }
-
-        let selectedRows = Array(visibleRows.prefix(2))
-
-        var indices: [Int] = []
-        for row in selectedRows {
-            indices.append(row.rowIndex * 2)
-            indices.append(row.rowIndex * 2 + 1)
+    /// The board-row currently occupying the most visible area (used to drive the arrows).
+    private static func computeTopRow(rows: [RowVisibility], viewportHeight: CGFloat) -> Int {
+        var bestRow = 0
+        var bestArea: CGFloat = -1
+        for row in rows {
+            let visible = min(row.maxY, viewportHeight) - max(row.minY, 0)
+            if visible > bestArea {
+                bestArea = visible
+                bestRow = row.rowIndex
+            }
         }
-
-        // Fallback: ensure we always have 4 indices
-        while indices.count < 4 {
-            let next = indices.count
-            if !indices.contains(next) { indices.append(next) }
-        }
-
-        return Array(indices.prefix(4))
+        return bestRow
     }
 
     // MARK: - Invalid Word Banner

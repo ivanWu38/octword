@@ -12,7 +12,6 @@ class GameViewModel: ObservableObject {
     @Published var elapsedTimeString = "0:00"
     @Published var invalidWordMessage = ""
     @Published var shakingBoardIndex: Int? = nil
-    @Published var visibleBoardIndices: [Int] = [0, 1, 2, 3]
     @Published var isNotepadOpen = false
     @Published var notepadText = ""
     @Published var newlyUnlockedTheme: BoardTheme? = nil
@@ -59,15 +58,13 @@ class GameViewModel: ObservableObject {
     }
 
     var perBoardLetterStates: [Character: KeyColorStates] {
-        if boardCount <= 4 {
-            return gameState.getPerBoardLetterStates()
-        }
-        return gameState.getVisibleBoardLetterStates(visibleIndices: visibleBoardIndices)
+        // Always show every board's state on the keyboard, regardless of scroll position.
+        gameState.getPerBoardLetterStates()
     }
 
-    /// The board count the keyboard should use (always max 4 for quadrant rendering)
+    /// The board count the keyboard splits each key into (2 halves, 4 quadrants, or 8 cells).
     var keyboardBoardCount: Int {
-        min(boardCount, 4)
+        boardCount
     }
 
     var boardCount: Int {

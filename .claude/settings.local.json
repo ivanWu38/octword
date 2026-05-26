@@ -43,7 +43,13 @@
       "WebFetch(domain:yukaichou.com)",
       "WebFetch(domain:www.today.com)",
       "WebFetch(domain:duolingo.deconstructoroffun.com)",
-      "WebFetch(domain:en.wikipedia.org)"
+      "WebFetch(domain:en.wikipedia.org)",
+      "WebFetch(domain:thesilican.com)",
+      "WebFetch(domain:jonesnxt.github.io)",
+      "WebFetch(domain:www.sedecordle.com)",
+      "WebFetch(domain:www.britannica.com)",
+      "WebFetch(domain:octordle.com)",
+      "WebFetch(domain:nerdschalk.com)"
     ]
   }
 }

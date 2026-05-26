@@ -87,24 +87,6 @@ struct GameState: Codable, Equatable {
         return result.mapValues { KeyColorStates(states: $0) }
     }
 
-    /// Get per-board letter states for a subset of visible boards (for 8-board keyboard rendering)
-    func getVisibleBoardLetterStates(visibleIndices: [Int]) -> [Character: KeyColorStates] {
-        var result: [Character: [LetterState]] = [:]
-
-        for (quadrantIndex, boardIndex) in visibleIndices.enumerated() {
-            guard boardIndex < boards.count else { continue }
-            let board = boards[boardIndex]
-            for (char, state) in board.letterStates {
-                if result[char] == nil {
-                    result[char] = Array(repeating: .empty, count: visibleIndices.count)
-                }
-                result[char]![quadrantIndex] = state
-            }
-        }
-
-        return result.mapValues { KeyColorStates(states: $0) }
-    }
-
     /// Check if all boards are solved
     var allBoardsSolved: Bool {
         boards.allSatisfy { $0.isSolved }

@@ -173,6 +173,23 @@ struct KeyButton: View {
                         Path(CGRect(x: midX, y: 0, width: size.width - midX, height: size.height)),
                         with: .color(colorStates.color(for: 1, theme: theme))
                     )
+                } else if boardCount == 8 {
+                    // 8 cells: 2 columns × 4 rows, mapped to the on-screen board layout.
+                    // Left column = boards 0,2,4,6 (screen-left); right column = 1,3,5,7.
+                    let midX = size.width / 2
+                    let rowH = size.height / 4
+                    for r in 0..<4 {
+                        let y = CGFloat(r) * rowH
+                        let h = (r == 3) ? (size.height - y) : rowH
+                        context.fill(
+                            Path(CGRect(x: 0, y: y, width: midX, height: h)),
+                            with: .color(colorStates.color(for: r * 2, theme: theme))
+                        )
+                        context.fill(
+                            Path(CGRect(x: midX, y: y, width: size.width - midX, height: h)),
+                            with: .color(colorStates.color(for: r * 2 + 1, theme: theme))
+                        )
+                    }
                 } else {
                     // 4 quadrants: TL=0, TR=1, BL=2, BR=3
                     let midX = size.width / 2
