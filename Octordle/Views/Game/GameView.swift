@@ -1,0 +1,619 @@
+import SwiftUI
+
+/// Main game view with Octordle board layout
+struct GameView: View {
+    @StateObject private var viewModel: GameViewModel
+    @EnvironmentObject var themeService: ThemeService
+    @EnvironmentObject var subscriptionService: SubscriptionService
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var showConfetti = false
+    @State private var shouldDismissAfterResult = false
+    @State private var showResultSheet = false
+    @State private var isShowingTopHalf = true
+    @State private var notepadOffset: CGSize = .zero
+    @State private var notepadDragStart: CGSize = .zero
+    @FocusState private var isNotepadFocused: Bool
+    @State private var showNotepadIntro = false
+    @State private var showThemeUnlock = false
+    @State private var showStreakOverlay = false
+    @State private var streakSnapPrev: Int = 0
+    @State private var streakSnapNew: Int = 0
+    @Environment(\.scenePhase) private var scenePhase
+    @ObservedObject private var reviewManager = ReviewManager.shared
+
+    init(mode: GameMode, difficulty: Difficulty) {
+        _viewModel = StateObject(wrappedValue: GameViewModel(mode: mode, difficulty: difficulty))
+    }
+
+    init(resuming state: GameState) {
+        _viewModel = StateObject(wrappedValue: GameViewModel(resuming: state))
+    }
+
+    var body: some View {
+        GeometryReader { geometry in
+            let maxContentWidth: CGFloat = 600
+            let contentWidth = min(geometry.size.width, maxContentWidth)
+            let keyboardHeight: CGFloat = 180
+            let topBarHeight: CGFloat = 50
+            let adHeight: CGFloat = subscriptionService.isPremium ? 0 : 60
+            let availableHeight = max(0, geometry.size.height - keyboardHeight - topBarHeight - adHeight - 16)
+            let availableWidth = max(0, contentWidth - 16)
+
+            VStack(spacing: 0) {
+                // Top bar
+                topBar
+                    .frame(height: topBarHeight)
+
+                // 2x2 Board Grid
+                boardGrid(availableWidth: availableWidth, availableHeight: availableHeight)
+                    .frame(height: availableHeight)
+
+                Spacer(minLength: 4)
+
+                // Keyboard — hidden when notepad is open (system keyboard takes over)
+                if !viewModel.isNotepadOpen {
+                    KeyboardView(
+                        perBoardStates: viewModel.perBoardLetterStates,
+                        boardCount: viewModel.keyboardBoardCount,
+                        availableWidth: contentWidth,
+                        onKeyTap: viewModel.addLetter,
+                        onDelete: viewModel.removeLetter,
+                        onSubmit: viewModel.submitGuess
+                    )
+                    .frame(height: keyboardHeight)
+                }
+
+                // Ad banner (non-premium)
+                if !subscriptionService.isPremium {
+                    BannerAdView()
+                        .frame(height: adHeight)
+                }
+            }
+            .frame(maxWidth: maxContentWidth)
+            .frame(maxWidth: .infinity)
+            .overlay(alignment: .center) {
+                if viewModel.showInvalidWordAlert {
+                    invalidWordBanner
+                }
+            }
+            .overlay {
+                if viewModel.isNotepadOpen {
+                    notepadView(availableHeight: availableHeight)
+                        .offset(y: -(availableHeight * 0.12))
+                }
+            }
+            .background(Color.quordleBackground.ignoresSafeArea())
+        }
+        .ignoresSafeArea(.keyboard)
+        .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .tabBar) // 隐藏底部 Tab Bar
+        .sheet(isPresented: $showResultSheet, onDismiss: {
+            // Mark daily as completed now (deferred from endGame to prevent premature view switch)
+            viewModel.markDailyCompletedIfNeeded()
+
+            // If a theme was unlocked, show it now (after result sheet is gone)
+            if viewModel.newlyUnlockedTheme != nil {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    showThemeUnlock = true
+                }
+                return
+            }
+
+            proceedAfterResult()
+        }) {
+            GameResultView(gameState: viewModel.gameState)
+        }
+        .overlay {
+            if showConfetti {
+                ConfettiView()
+            }
+        }
+        .overlay {
+            if showStreakOverlay {
+                StreakAnimationOverlay(
+                    previousStreak: streakSnapPrev,
+                    newStreak: streakSnapNew,
+                    onDismiss: {
+                        showStreakOverlay = false
+                        // Brief beat before the result sheet slides up
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            showResultSheet = true
+                        }
+                    }
+                )
+            }
+        }
+        .overlay {
+            if showNotepadIntro {
+                NotepadIntroView {
+                    showNotepadIntro = false
+                }
+            }
+        }
+        .overlay {
+            if showThemeUnlock, let theme = viewModel.newlyUnlockedTheme {
+                ThemeUnlockView(theme: theme) {
+                    viewModel.newlyUnlockedTheme = nil
+                    showThemeUnlock = false
+                    proceedAfterResult()
+                }
+            }
+        }
+        .sheet(isPresented: $shouldDismissAfterResult, onDismiss: {
+            // After review prompt is dismissed, pop GameView
+            dismiss()
+        }) {
+            ReviewPromptView(
+                onAccept: {
+                    reviewManager.userAccepted()
+                    shouldDismissAfterResult = false
+                },
+                onDecline: {
+                    reviewManager.userDeclined()
+                    shouldDismissAfterResult = false
+                }
+            )
+        }
+        .onChange(of: viewModel.showGameCompleteSheet) { newValue in
+            guard newValue else { return }
+
+            // Decide if the streak overlay should play (daily, first play of today only).
+            // Capture streak values BEFORE markTodayCompleted is called (which happens
+            // when the result sheet is dismissed) so previous→new is correct.
+            let shouldShowStreak = viewModel.gameState.mode == .daily
+                && !DailyPuzzleService.shared.isTodayCompleted
+            if shouldShowStreak {
+                streakSnapPrev = DailyPuzzleService.shared.currentStreak
+                streakSnapNew = streakSnapPrev + 1
+            }
+
+            if viewModel.gameState.isWon {
+                // Won: play confetti first, then streak overlay (or skip to result)
+                showConfetti = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + Constants.Animation.confettiDuration) {
+                    if shouldShowStreak {
+                        showStreakOverlay = true
+                    } else {
+                        showResultSheet = true
+                    }
+                }
+            } else {
+                // Lost: skip confetti, go straight to streak overlay (or result)
+                if shouldShowStreak {
+                    showStreakOverlay = true
+                } else {
+                    showResultSheet = true
+                }
+            }
+        }
+        .onAppear {
+            NotificationCenter.default.post(name: .hideTabBar, object: nil)
+
+            // Show notepad intro once
+            if !UserDefaults.standard.bool(forKey: Constants.UserDefaultsKeys.hasSeenNotepadIntro) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                    showNotepadIntro = true
+                    UserDefaults.standard.set(true, forKey: Constants.UserDefaultsKeys.hasSeenNotepadIntro)
+                }
+            }
+        }
+        .onDisappear {
+            if !viewModel.isGameOver && viewModel.guessCount > 0 {
+                AnalyticsService.logGameAbandon(gameState: viewModel.gameState)
+            }
+            viewModel.pauseGame()
+            NotificationCenter.default.post(name: .showTabBar, object: nil)
+        }
+        .onChange(of: scenePhase) { phase in
+            if phase == .active {
+                viewModel.resumeGame()
+            } else {
+                viewModel.pauseGame()
+            }
+        }
+    }
+
+    // MARK: - Top Bar
+
+    private var topBar: some View {
+        ZStack {
+            // Title and Timer (centered)
+            HStack(spacing: 8) {
+                Text(viewModel.gameState.mode == .daily ? "Daily" : viewModel.gameState.difficulty.displayName)
+                    .font(.headline)
+                    .foregroundColor(.quordlePrimaryText)
+
+                Text(viewModel.elapsedTimeString)
+                    .font(.subheadline)
+                    .foregroundColor(.quordleSecondaryText)
+                    .monospacedDigit()
+            }
+
+            // Back button (left) and Remaining guesses (right)
+            HStack {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.title3.weight(.semibold))
+                        .foregroundColor(.quordlePrimaryText)
+                }
+                .buttonStyle(ScaleButtonStyle())
+
+                Spacer()
+
+                HStack(spacing: 12) {
+                    // Notepad toggle
+                    Button {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            viewModel.isNotepadOpen.toggle()
+                        }
+                        if !viewModel.isNotepadOpen {
+                            isNotepadFocused = false
+                        }
+                        HapticManager.shared.buttonTap()
+                    } label: {
+                        Image(systemName: viewModel.isNotepadOpen ? "pencil.circle.fill" : "pencil.circle")
+                            .font(.system(size: 22))
+                            .foregroundColor(viewModel.isNotepadOpen ? .quordlePrimary : .quordleSecondaryText)
+                    }
+
+                    // Remaining guesses
+                    HStack(spacing: 4) {
+                        Text("\(viewModel.remainingGuesses)")
+                            .font(.title2.bold())
+                            .foregroundColor(viewModel.remainingGuesses <= 2 ? .red : .quordlePrimaryText)
+
+                        Text("left")
+                            .font(.caption)
+                            .foregroundColor(.quordleSecondaryText)
+                    }
+                }
+            }
+        }
+        .padding(.horizontal)
+    }
+
+    // MARK: - Board Grid
+
+    private func boardGrid(availableWidth: CGFloat, availableHeight: CGFloat) -> some View {
+        let spacing: CGFloat = 6
+        let boardCount = viewModel.gameState.difficulty.boardCount
+        let maxGuesses = viewModel.gameState.difficulty.maxGuesses
+        let tileSpacing: CGFloat = 2
+
+        // 根據棋盤數量計算佈局
+        if boardCount == 2 {
+            // 2個棋盤：水平並排
+            let boardWidth = max(0, (availableWidth - spacing) / 2)
+            let boardHeight = availableHeight
+
+            let tileHeight = (boardHeight - CGFloat(maxGuesses - 1) * tileSpacing) / CGFloat(maxGuesses)
+            let tileWidth = (boardWidth - 4 * tileSpacing) / 5
+            let tileSize = max(0, min(tileWidth, tileHeight))
+
+            return AnyView(
+                HStack(spacing: spacing) {
+                    BoardView(
+                        board: viewModel.boards[0],
+                        currentInput: viewModel.currentGuess,
+                        boardIndex: 0,
+                        tileSize: tileSize
+                    )
+                    .frame(width: boardWidth, height: boardHeight)
+
+                    BoardView(
+                        board: viewModel.boards[1],
+                        currentInput: viewModel.currentGuess,
+                        boardIndex: 1,
+                        tileSize: tileSize
+                    )
+                    .frame(width: boardWidth, height: boardHeight)
+                }
+                .padding(.horizontal, 8)
+            )
+        } else if boardCount == 8 {
+            // 8個棋盤：2x4 可滾動，右側有上下箭頭按鈕
+            let arrowWidth: CGFloat = 32
+            let boardAreaWidth = max(0, availableWidth - arrowWidth)
+            let boardWidth = max(0, (boardAreaWidth - spacing) / 2)
+            let rowHeight = max(0, (availableHeight - spacing) / 2)
+
+            let tileHeight = (rowHeight - CGFloat(maxGuesses - 1) * tileSpacing) / CGFloat(maxGuesses)
+            let tileWidth = (boardWidth - 4 * tileSpacing) / 5
+            let tileSize = max(0, min(tileWidth, tileHeight))
+
+            return AnyView(
+                ScrollViewReader { proxy in
+                    HStack(spacing: 0) {
+                        ScrollView(.vertical, showsIndicators: false) {
+                            VStack(spacing: spacing) {
+                                ForEach(0..<4, id: \.self) { rowIndex in
+                                    let leftIndex = rowIndex * 2
+                                    let rightIndex = rowIndex * 2 + 1
+
+                                    HStack(spacing: spacing) {
+                                        BoardView(
+                                            board: viewModel.boards[leftIndex],
+                                            currentInput: viewModel.currentGuess,
+                                            boardIndex: leftIndex,
+                                            tileSize: tileSize
+                                        )
+                                        .frame(width: boardWidth, height: rowHeight)
+
+                                        BoardView(
+                                            board: viewModel.boards[rightIndex],
+                                            currentInput: viewModel.currentGuess,
+                                            boardIndex: rightIndex,
+                                            tileSize: tileSize
+                                        )
+                                        .frame(width: boardWidth, height: rowHeight)
+                                    }
+                                    .id("row\(rowIndex)")
+                                    .background(
+                                        GeometryReader { rowGeo in
+                                            Color.clear.preference(
+                                                key: RowVisibilityPreferenceKey.self,
+                                                value: [RowVisibility(
+                                                    rowIndex: rowIndex,
+                                                    minY: rowGeo.frame(in: .named("boardScroll")).minY,
+                                                    maxY: rowGeo.frame(in: .named("boardScroll")).maxY
+                                                )]
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+                            .padding(.leading, 8)
+                        }
+                        .coordinateSpace(name: "boardScroll")
+                        .onPreferenceChange(RowVisibilityPreferenceKey.self) { rows in
+                            let indices = Self.computeVisibleBoardIndices(rows: rows, viewportHeight: availableHeight)
+                            if viewModel.visibleBoardIndices != indices {
+                                viewModel.visibleBoardIndices = indices
+                                isShowingTopHalf = indices.first == 0
+                            }
+                        }
+
+                        // Arrow buttons on the right
+                        VStack(spacing: 16) {
+                            Spacer()
+
+                            Button {
+                                HapticManager.shared.keyTap()
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    proxy.scrollTo("row0", anchor: .top)
+                                }
+                            } label: {
+                                Image(systemName: "chevron.up")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundColor(isShowingTopHalf ? .quordlePrimary : .quordleSecondaryText.opacity(0.5))
+                                    .frame(width: arrowWidth, height: 44)
+                            }
+
+                            Button {
+                                HapticManager.shared.keyTap()
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    proxy.scrollTo("row2", anchor: .top)
+                                }
+                            } label: {
+                                Image(systemName: "chevron.down")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundColor(!isShowingTopHalf ? .quordlePrimary : .quordleSecondaryText.opacity(0.5))
+                                    .frame(width: arrowWidth, height: 44)
+                            }
+
+                            Spacer()
+                        }
+                        .frame(width: arrowWidth)
+                    }
+                }
+            )
+        } else {
+            // 4個棋盤：2x2 網格
+            let boardWidth = max(0, (availableWidth - spacing) / 2)
+            let boardHeight = max(0, (availableHeight - spacing) / 2)
+
+            let tileHeight = (boardHeight - CGFloat(maxGuesses - 1) * tileSpacing) / CGFloat(maxGuesses)
+            let tileWidth = (boardWidth - 4 * tileSpacing) / 5
+            let tileSize = max(0, min(tileWidth, tileHeight))
+
+            return AnyView(
+                VStack(spacing: spacing) {
+                    HStack(spacing: spacing) {
+                        BoardView(
+                            board: viewModel.boards[0],
+                            currentInput: viewModel.currentGuess,
+                            boardIndex: 0,
+                            tileSize: tileSize
+                        )
+                        .frame(width: boardWidth, height: boardHeight)
+
+                        BoardView(
+                            board: viewModel.boards[1],
+                            currentInput: viewModel.currentGuess,
+                            boardIndex: 1,
+                            tileSize: tileSize
+                        )
+                        .frame(width: boardWidth, height: boardHeight)
+                    }
+
+                    HStack(spacing: spacing) {
+                        BoardView(
+                            board: viewModel.boards[2],
+                            currentInput: viewModel.currentGuess,
+                            boardIndex: 2,
+                            tileSize: tileSize
+                        )
+                        .frame(width: boardWidth, height: boardHeight)
+
+                        BoardView(
+                            board: viewModel.boards[3],
+                            currentInput: viewModel.currentGuess,
+                            boardIndex: 3,
+                            tileSize: tileSize
+                        )
+                        .frame(width: boardWidth, height: boardHeight)
+                    }
+                }
+                .padding(.horizontal, 8)
+            )
+        }
+    }
+
+    // MARK: - Post-Result Flow
+
+    private func proceedAfterResult() {
+        if reviewManager.showReviewPrompt {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                shouldDismissAfterResult = true
+            }
+        } else {
+            // Small delay to let markDailyCompleted propagate before navigation pops
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                dismiss()
+            }
+        }
+    }
+
+    // MARK: - Notepad View
+
+    private func notepadView(availableHeight: CGFloat) -> some View {
+        let notepadHeight = availableHeight * 0.42
+
+        return VStack(spacing: 0) {
+            // Drag handle
+            RoundedRectangle(cornerRadius: 2)
+                .fill(Color.quordleSecondaryText.opacity(0.3))
+                .frame(width: 36, height: 4)
+                .padding(.top, 8)
+                .padding(.bottom, 4)
+
+            // TextEditor
+            TextEditor(text: $viewModel.notepadText)
+                .font(.system(size: 18, weight: .medium, design: .monospaced))
+                .foregroundColor(.quordlePrimaryText)
+                .scrollContentBackground(.hidden)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .focused($isNotepadFocused)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+
+            // Quick toolbar
+            Divider()
+                .background(Color.quordleCardBorder)
+
+            Button {
+                viewModel.notepadText += "_"
+            } label: {
+                Text("_")
+                    .font(.system(size: 16, weight: .bold, design: .monospaced))
+                    .foregroundColor(.quordlePrimaryText)
+                    .frame(width: 44, height: 30)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.quordleSecondaryText.opacity(0.12))
+                    )
+            }
+            .padding(.vertical, 6)
+        }
+        .frame(height: notepadHeight)
+        .frame(maxWidth: 300)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.quordleCardBackground.opacity(0.7))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.quordlePrimary.opacity(0.3), lineWidth: 1)
+                )
+                .shadow(color: .black.opacity(0.15), radius: 12, y: 4)
+        )
+        .offset(notepadOffset)
+        .gesture(
+            DragGesture()
+                .onChanged { value in
+                    notepadOffset = CGSize(
+                        width: notepadDragStart.width + value.translation.width,
+                        height: notepadDragStart.height + value.translation.height
+                    )
+                }
+                .onEnded { _ in
+                    notepadDragStart = notepadOffset
+                }
+        )
+        .transition(.scale(scale: 0.8).combined(with: .opacity))
+        .onAppear {
+            isNotepadFocused = true
+        }
+    }
+
+    // MARK: - Visible Board Computation
+
+    private static func computeVisibleBoardIndices(rows: [RowVisibility], viewportHeight: CGFloat) -> [Int] {
+        let visibleRows = rows
+            .filter { $0.maxY > 0 && $0.minY < viewportHeight }
+            .sorted { $0.rowIndex < $1.rowIndex }
+
+        let selectedRows = Array(visibleRows.prefix(2))
+
+        var indices: [Int] = []
+        for row in selectedRows {
+            indices.append(row.rowIndex * 2)
+            indices.append(row.rowIndex * 2 + 1)
+        }
+
+        // Fallback: ensure we always have 4 indices
+        while indices.count < 4 {
+            let next = indices.count
+            if !indices.contains(next) { indices.append(next) }
+        }
+
+        return Array(indices.prefix(4))
+    }
+
+    // MARK: - Invalid Word Banner
+
+    private var invalidWordBanner: some View {
+        Text(viewModel.invalidWordMessage)
+            .font(.subheadline.bold())
+            .foregroundColor(.white)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 10)
+            .background(
+                Capsule()
+                    .fill(Color(red: 0.2, green: 0.2, blue: 0.25).opacity(0.95))
+            )
+            .shadow(color: .black.opacity(0.3), radius: 10, y: 4)
+            .transition(.offset(y: -12).combined(with: .opacity))
+            .animation(.spring(response: 0.3, dampingFraction: 0.75), value: viewModel.showInvalidWordAlert)
+    }
+}
+
+// MARK: - Scroll Visibility Tracking
+
+private struct RowVisibility: Equatable {
+    let rowIndex: Int
+    let minY: CGFloat
+    let maxY: CGFloat
+}
+
+private struct RowVisibilityPreferenceKey: PreferenceKey {
+    static var defaultValue: [RowVisibility] = []
+    static func reduce(value: inout [RowVisibility], nextValue: () -> [RowVisibility]) {
+        value.append(contentsOf: nextValue())
+    }
+}
+
+#Preview {
+    NavigationStack {
+        GameView(mode: .daily, difficulty: .classic)
+            .environmentObject(ThemeService.shared)
+            .environmentObject(SubscriptionService.shared)
+    }
+}

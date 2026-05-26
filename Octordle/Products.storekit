@@ -1,0 +1,169 @@
+{
+  "identifier" : "8A3E2F9B-QUOR-DLE1-PREM-000000000001",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_applicationInternalID" : "123456789",
+    "_developerTeamID" : "YOUR_TEAM_ID",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 756470400,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21620001",
+      "localizations" : [
+
+      ],
+      "name" : "Premium",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "0.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6745000001",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Remove ads and unlock all themes",
+              "displayName" : "Monthly Premium",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "移除廣告並解鎖所有主題",
+              "displayName" : "月費會員",
+              "locale" : "zh_TW"
+            }
+          ],
+          "productID" : "com.octordle.premium.monthly.v1",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Monthly Premium",
+          "subscriptionGroupID" : "21620001",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "1.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "6745000002",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Remove ads and unlock all themes - Save 20%",
+              "displayName" : "Quarterly Premium",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "移除廣告並解鎖所有主題 - 省 20%",
+              "displayName" : "季費會員",
+              "locale" : "zh_TW"
+            }
+          ],
+          "productID" : "com.octordle.premium.quarterly.v1",
+          "recurringSubscriptionPeriod" : "P3M",
+          "referenceName" : "Quarterly Premium",
+          "subscriptionGroupID" : "21620001",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "4.99",
+          "familyShareable" : false,
+          "groupNumber" : 3,
+          "internalID" : "6745000003",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Remove ads and unlock all themes - Best value!",
+              "displayName" : "Yearly Premium",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "移除廣告並解鎖所有主題 - 最划算！",
+              "displayName" : "年費會員",
+              "locale" : "zh_TW"
+            }
+          ],
+          "productID" : "com.octordle.premium.yearly.v1",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Yearly Premium",
+          "subscriptionGroupID" : "21620001",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

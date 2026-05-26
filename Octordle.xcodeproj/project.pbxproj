@@ -1,0 +1,742 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		093C5950EF85CD30B52459D4 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAD06AA7C774DF2460256AAE /* MainTabView.swift */; };
+		09F1BC555C73F5151874869F /* AchievementDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05BBC82B8C4FB9BA01BC701 /* AchievementDetailView.swift */; };
+		0AE2D33AF1C28112A6FB1583 /* Clarity in Frameworks */ = {isa = PBXBuildFile; productRef = F68371F901CEFBCABB337A87 /* Clarity */; };
+		0CFFD1F8ED1365805C62D645 /* ShareCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C880C14E1BB16E660D4179 /* ShareCardView.swift */; };
+		0DB729463A8D75C3A52C7C23 /* TileData.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD03D1A5F84FA4ADB2D7519D /* TileData.swift */; };
+		0F38436B7500A1F1ABA00EB5 /* AdMobManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5859D80C1518D574771FFA15 /* AdMobManager.swift */; };
+		143282164B6EB58523FEF13A /* NotepadIntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B64ABA569D2976B678F378A0 /* NotepadIntroView.swift */; };
+		1761F9557C0CD6E8369A4C26 /* GameCenterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEA79B19A73188901DFC34D /* GameCenterService.swift */; };
+		2145A4B12A1049A4AD45AC3A /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4A60CA8B3CB8DB61CE0A0BB /* GameState.swift */; };
+		24EBCBAAF662DAB9E214DB98 /* ConfettiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0E38A023CE77EBB840871AA /* ConfettiView.swift */; };
+		2829B123C073594445ADEA86 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 1649596E0A1DA5D82C06A668 /* FirebaseAnalytics */; };
+		2A7AFDE879953D93BEE60AEB /* GameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBF7EEDFBDC1C048A3F148AC /* GameViewModel.swift */; };
+		2ABD17E0CF82D70781FE35A6 /* ATTService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363FDCB38563C10DAC8237FE /* ATTService.swift */; };
+		2D160C3CD14DBD389F080A2E /* ThemePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7494CB1E6520EB08318CD858 /* ThemePickerView.swift */; };
+		2FC34ECBF119DADC8517B3B5 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F69156BE12974880E1864B65 /* GoogleService-Info.plist */; };
+		349945BD2E68FFA385CB45FA /* ReviewPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D398237506DEEC299AAB8A8 /* ReviewPromptView.swift */; };
+		34D6C3627608F428B09B626B /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 808AC576ECEE505FD854A287 /* OnboardingView.swift */; };
+		3A023A458617E44FEF8714DA /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 206F5E6C5D97CEC3B91FD6FA /* AnalyticsService.swift */; };
+		3D0A4493DF10A88F1AA5B520 /* BoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1389772DBA2F259294F7545E /* BoardView.swift */; };
+		4155059632E8F6764DFA6579 /* DailyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBD9DBC316D6A873CF0406D3 /* DailyView.swift */; };
+		428CD7301C3D5FBF9822C50E /* Difficulty.swift in Sources */ = {isa = PBXBuildFile; fileRef = 589AA71BC7A1950FEB332012 /* Difficulty.swift */; };
+		5D62CDEADDC596B6BD310551 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 362E9DEF721E073A739B429F /* Assets.xcassets */; };
+		5E9FA2AB6E8B564D909DB467 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DE89D9329F1D517A5695783 /* HapticManager.swift */; };
+		61A89E3712A80D82A907B443 /* TileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1BA9531D869AB674B443789 /* TileView.swift */; };
+		69EF8364106AC15C0FF94E53 /* ReviewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0E6FC45B2F7C4B2ED18872E /* ReviewManager.swift */; };
+		6CC86E16282A57724482975F /* Achievement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F096B96DB20B71D8AB235AF /* Achievement.swift */; };
+		745C4305F54141B2B3893578 /* LetterState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F621B0C6D606968E2D84D93 /* LetterState.swift */; };
+		7AC945C1F8E2B5CD858F5074 /* ATTPrePromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F47EC0C50C5D02F82C24A238 /* ATTPrePromptView.swift */; };
+		7B5D5C46A0B63445D70AD1C7 /* StreakAnimationOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753F8CD4AA215BE10EA11FC0 /* StreakAnimationOverlay.swift */; };
+		7B600A03670D8500CCBFC770 /* DailyPuzzleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44BF11CAF0377D44FA7305B7 /* DailyPuzzleService.swift */; };
+		7CF484A59F988231E0DD61DD /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 4DC5D52B1BC7DC7DFCDEEF44 /* GoogleMobileAds */; };
+		7EBA9FB6ABEF36810F99200A /* LeaderboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97A68D50F0912568B4068E3E /* LeaderboardView.swift */; };
+		818A76DB74BDD9DBFC3F2966 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F3C069A4006688A7AFD7E10 /* Extensions.swift */; };
+		8967473597D7DEE4D1E78B6A /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 33A299EA3419C145E7D27FAC /* Products.storekit */; };
+		9D385F6D76920542753D14E6 /* ConsentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 892507B5910BC1C321C06702 /* ConsentManager.swift */; };
+		A079179E9277EDCD3135F35C /* ThemeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 451F268654B082E140E4CFA4 /* ThemeService.swift */; };
+		A4BBFF8A554E00ACDA0096C3 /* GameResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B9F6FC36FA732848A27E4F /* GameResultView.swift */; };
+		A72593ADF1BD482984BEFB84 /* ThemeUnlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F2A61B566865E6F22D78D9 /* ThemeUnlockView.swift */; };
+		AF5384DD9A16B622A683422E /* SubscriptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E03879B1F2CCE9CBFBB2DD /* SubscriptionView.swift */; };
+		B9552898B33495A91B8A0B3B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1174C51E0EB64BE618381FBF /* PrivacyInfo.xcprivacy */; };
+		BA63B5474961D1AD2830E86B /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7F2D0447A48C336889865 /* StatsView.swift */; };
+		BC295A9922053DE9A0DB9FE9 /* WordService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39B2AEB4E13B4B31445DFC74 /* WordService.swift */; };
+		C17217387E271511DD866B26 /* OctordleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42A61E61D07C282FB5E8CAB1 /* OctordleApp.swift */; };
+		C3ABB314C4D3E4F115A8BE44 /* KeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07535EE500F74799CB1606FC /* KeyboardView.swift */; };
+		C4EBF9BAA8682DB05FD84B38 /* BoardData.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBD21DF948838FD8715DB29E /* BoardData.swift */; };
+		C6CD8FF1C384136F67B2DFB0 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D0FBAA63E58663BABF08E2 /* Constants.swift */; };
+		D6A36CB71BAF539DCFEA3A2D /* StatsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F54408581B1D6647B968487 /* StatsService.swift */; };
+		DC02685A940104AF800530B2 /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A1EB872191EE691958B55D /* SubscriptionService.swift */; };
+		DFCE39F19A46979F081FA28F /* BannerAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A7CDCC246F11FAC64B9FEA /* BannerAdView.swift */; };
+		E5DE67041A6BD70FB0ED56AE /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77E7AB328A1FF98F036378C5 /* GameView.swift */; };
+		F0B491EAD12767B4B7F20D7E /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = AE2FA0C2398C6DA04E729C06 /* GoogleUserMessagingPlatform */; };
+		F1E79B15C9C1FCFB3B887B83 /* GameResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82E486539944EF3E129083A3 /* GameResult.swift */; };
+		F7A30C9CB7B3B0EBCD6AB0D6 /* words.json in Resources */ = {isa = PBXBuildFile; fileRef = 55FC38C16F7E6EBCE666E10B /* words.json */; };
+		F993BEBC5F090AB38C07377F /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526CCEC7E276CD9610A211BB /* SettingsView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		04F2A61B566865E6F22D78D9 /* ThemeUnlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeUnlockView.swift; sourceTree = "<group>"; };
+		07535EE500F74799CB1606FC /* KeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardView.swift; sourceTree = "<group>"; };
+		1174C51E0EB64BE618381FBF /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		1389772DBA2F259294F7545E /* BoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardView.swift; sourceTree = "<group>"; };
+		17D0FBAA63E58663BABF08E2 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		206F5E6C5D97CEC3B91FD6FA /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
+		2D398237506DEEC299AAB8A8 /* ReviewPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewPromptView.swift; sourceTree = "<group>"; };
+		2F621B0C6D606968E2D84D93 /* LetterState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterState.swift; sourceTree = "<group>"; };
+		33A299EA3419C145E7D27FAC /* Products.storekit */ = {isa = PBXFileReference; path = Products.storekit; sourceTree = "<group>"; };
+		34A1EB872191EE691958B55D /* SubscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionService.swift; sourceTree = "<group>"; };
+		362E9DEF721E073A739B429F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		363FDCB38563C10DAC8237FE /* ATTService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ATTService.swift; sourceTree = "<group>"; };
+		39B2AEB4E13B4B31445DFC74 /* WordService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordService.swift; sourceTree = "<group>"; };
+		3A54A6A6A43A96EE308ED9D0 /* Octordle.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Octordle.entitlements; sourceTree = "<group>"; };
+		42A61E61D07C282FB5E8CAB1 /* OctordleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OctordleApp.swift; sourceTree = "<group>"; };
+		44BF11CAF0377D44FA7305B7 /* DailyPuzzleService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyPuzzleService.swift; sourceTree = "<group>"; };
+		451F268654B082E140E4CFA4 /* ThemeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeService.swift; sourceTree = "<group>"; };
+		49A33338BEC33844368E9695 /* Octordle.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Octordle.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F3C069A4006688A7AFD7E10 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		50E03879B1F2CCE9CBFBB2DD /* SubscriptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionView.swift; sourceTree = "<group>"; };
+		510411AA9DF51A36684E6718 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		526CCEC7E276CD9610A211BB /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		55FC38C16F7E6EBCE666E10B /* words.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = words.json; sourceTree = "<group>"; };
+		5859D80C1518D574771FFA15 /* AdMobManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdMobManager.swift; sourceTree = "<group>"; };
+		589AA71BC7A1950FEB332012 /* Difficulty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Difficulty.swift; sourceTree = "<group>"; };
+		59C880C14E1BB16E660D4179 /* ShareCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCardView.swift; sourceTree = "<group>"; };
+		5AEA79B19A73188901DFC34D /* GameCenterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCenterService.swift; sourceTree = "<group>"; };
+		7494CB1E6520EB08318CD858 /* ThemePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePickerView.swift; sourceTree = "<group>"; };
+		753F8CD4AA215BE10EA11FC0 /* StreakAnimationOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakAnimationOverlay.swift; sourceTree = "<group>"; };
+		77E7AB328A1FF98F036378C5 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
+		7DE89D9329F1D517A5695783 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		7F54408581B1D6647B968487 /* StatsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsService.swift; sourceTree = "<group>"; };
+		808AC576ECEE505FD854A287 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		80B9F6FC36FA732848A27E4F /* GameResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameResultView.swift; sourceTree = "<group>"; };
+		82E486539944EF3E129083A3 /* GameResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameResult.swift; sourceTree = "<group>"; };
+		892507B5910BC1C321C06702 /* ConsentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentManager.swift; sourceTree = "<group>"; };
+		8F096B96DB20B71D8AB235AF /* Achievement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Achievement.swift; sourceTree = "<group>"; };
+		97A68D50F0912568B4068E3E /* LeaderboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardView.swift; sourceTree = "<group>"; };
+		B0E38A023CE77EBB840871AA /* ConfettiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiView.swift; sourceTree = "<group>"; };
+		B64ABA569D2976B678F378A0 /* NotepadIntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotepadIntroView.swift; sourceTree = "<group>"; };
+		C0E6FC45B2F7C4B2ED18872E /* ReviewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewManager.swift; sourceTree = "<group>"; };
+		C8A7CDCC246F11FAC64B9FEA /* BannerAdView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerAdView.swift; sourceTree = "<group>"; };
+		CBF7EEDFBDC1C048A3F148AC /* GameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewModel.swift; sourceTree = "<group>"; };
+		CD03D1A5F84FA4ADB2D7519D /* TileData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileData.swift; sourceTree = "<group>"; };
+		CED7F2D0447A48C336889865 /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
+		D05BBC82B8C4FB9BA01BC701 /* AchievementDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementDetailView.swift; sourceTree = "<group>"; };
+		DAD06AA7C774DF2460256AAE /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		DBD9DBC316D6A873CF0406D3 /* DailyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyView.swift; sourceTree = "<group>"; };
+		EBD21DF948838FD8715DB29E /* BoardData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardData.swift; sourceTree = "<group>"; };
+		F1BA9531D869AB674B443789 /* TileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileView.swift; sourceTree = "<group>"; };
+		F47EC0C50C5D02F82C24A238 /* ATTPrePromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ATTPrePromptView.swift; sourceTree = "<group>"; };
+		F4A60CA8B3CB8DB61CE0A0BB /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
+		F69156BE12974880E1864B65 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		27BA8A3E020E147CF93B2DBD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7CF484A59F988231E0DD61DD /* GoogleMobileAds in Frameworks */,
+				2829B123C073594445ADEA86 /* FirebaseAnalytics in Frameworks */,
+				0AE2D33AF1C28112A6FB1583 /* Clarity in Frameworks */,
+				F0B491EAD12767B4B7F20D7E /* GoogleUserMessagingPlatform in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0139B8F31B9A4132A2A4F8E9 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				362E9DEF721E073A739B429F /* Assets.xcassets */,
+				55FC38C16F7E6EBCE666E10B /* words.json */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		1CFE90C4D6D2D23FB991767E /* Octordle */ = {
+			isa = PBXGroup;
+			children = (
+				F69156BE12974880E1864B65 /* GoogleService-Info.plist */,
+				510411AA9DF51A36684E6718 /* Info.plist */,
+				3A54A6A6A43A96EE308ED9D0 /* Octordle.entitlements */,
+				1174C51E0EB64BE618381FBF /* PrivacyInfo.xcprivacy */,
+				33A299EA3419C145E7D27FAC /* Products.storekit */,
+				976B9B251ADDD0455F7D3848 /* Ads */,
+				862C834780F31F2902008C6C /* App */,
+				7A3A4C209326E3B1D9F8B04C /* Models */,
+				0139B8F31B9A4132A2A4F8E9 /* Resources */,
+				BADEC819BC74C42C53F20D91 /* Services */,
+				AD04A5678A0DA9C187044F2C /* Utils */,
+				28D7462102A71908524D7622 /* ViewModels */,
+				FE54110C7FB1CA3F566D8EF7 /* Views */,
+			);
+			path = Octordle;
+			sourceTree = "<group>";
+		};
+		28D7462102A71908524D7622 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				CBF7EEDFBDC1C048A3F148AC /* GameViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		2D3A5C3EC364BF48F5A9D390 /* Stats */ = {
+			isa = PBXGroup;
+			children = (
+				CED7F2D0447A48C336889865 /* StatsView.swift */,
+			);
+			path = Stats;
+			sourceTree = "<group>";
+		};
+		305DFB60EB437C050829B5BB /* Daily */ = {
+			isa = PBXGroup;
+			children = (
+				DBD9DBC316D6A873CF0406D3 /* DailyView.swift */,
+			);
+			path = Daily;
+			sourceTree = "<group>";
+		};
+		3B15BC82E0861A4293C234C7 /* Game */ = {
+			isa = PBXGroup;
+			children = (
+				1389772DBA2F259294F7545E /* BoardView.swift */,
+				80B9F6FC36FA732848A27E4F /* GameResultView.swift */,
+				77E7AB328A1FF98F036378C5 /* GameView.swift */,
+				07535EE500F74799CB1606FC /* KeyboardView.swift */,
+				59C880C14E1BB16E660D4179 /* ShareCardView.swift */,
+				753F8CD4AA215BE10EA11FC0 /* StreakAnimationOverlay.swift */,
+				F1BA9531D869AB674B443789 /* TileView.swift */,
+			);
+			path = Game;
+			sourceTree = "<group>";
+		};
+		44160BEE0BD281DAE49C366D /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				526CCEC7E276CD9610A211BB /* SettingsView.swift */,
+				7494CB1E6520EB08318CD858 /* ThemePickerView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		50AFAE072C3A56EDD5F4EE0B /* Leaderboard */ = {
+			isa = PBXGroup;
+			children = (
+				97A68D50F0912568B4068E3E /* LeaderboardView.swift */,
+			);
+			path = Leaderboard;
+			sourceTree = "<group>";
+		};
+		7A3A4C209326E3B1D9F8B04C /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				8F096B96DB20B71D8AB235AF /* Achievement.swift */,
+				EBD21DF948838FD8715DB29E /* BoardData.swift */,
+				589AA71BC7A1950FEB332012 /* Difficulty.swift */,
+				82E486539944EF3E129083A3 /* GameResult.swift */,
+				F4A60CA8B3CB8DB61CE0A0BB /* GameState.swift */,
+				2F621B0C6D606968E2D84D93 /* LetterState.swift */,
+				CD03D1A5F84FA4ADB2D7519D /* TileData.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		82EA444A752E8EA4E3F7A193 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				D05BBC82B8C4FB9BA01BC701 /* AchievementDetailView.swift */,
+				F47EC0C50C5D02F82C24A238 /* ATTPrePromptView.swift */,
+				B0E38A023CE77EBB840871AA /* ConfettiView.swift */,
+				DAD06AA7C774DF2460256AAE /* MainTabView.swift */,
+				B64ABA569D2976B678F378A0 /* NotepadIntroView.swift */,
+				2D398237506DEEC299AAB8A8 /* ReviewPromptView.swift */,
+				04F2A61B566865E6F22D78D9 /* ThemeUnlockView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		848C12F6314047F912BA421D /* Subscription */ = {
+			isa = PBXGroup;
+			children = (
+				50E03879B1F2CCE9CBFBB2DD /* SubscriptionView.swift */,
+			);
+			path = Subscription;
+			sourceTree = "<group>";
+		};
+		862C834780F31F2902008C6C /* App */ = {
+			isa = PBXGroup;
+			children = (
+				42A61E61D07C282FB5E8CAB1 /* OctordleApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		86B54EB0B6FD03E5E28C416F /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				808AC576ECEE505FD854A287 /* OnboardingView.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		976B9B251ADDD0455F7D3848 /* Ads */ = {
+			isa = PBXGroup;
+			children = (
+				5859D80C1518D574771FFA15 /* AdMobManager.swift */,
+				C8A7CDCC246F11FAC64B9FEA /* BannerAdView.swift */,
+			);
+			path = Ads;
+			sourceTree = "<group>";
+		};
+		AAAE87AF608084FAC326607A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				49A33338BEC33844368E9695 /* Octordle.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AD04A5678A0DA9C187044F2C /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				17D0FBAA63E58663BABF08E2 /* Constants.swift */,
+				4F3C069A4006688A7AFD7E10 /* Extensions.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		BADEC819BC74C42C53F20D91 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				206F5E6C5D97CEC3B91FD6FA /* AnalyticsService.swift */,
+				363FDCB38563C10DAC8237FE /* ATTService.swift */,
+				892507B5910BC1C321C06702 /* ConsentManager.swift */,
+				44BF11CAF0377D44FA7305B7 /* DailyPuzzleService.swift */,
+				5AEA79B19A73188901DFC34D /* GameCenterService.swift */,
+				7DE89D9329F1D517A5695783 /* HapticManager.swift */,
+				C0E6FC45B2F7C4B2ED18872E /* ReviewManager.swift */,
+				7F54408581B1D6647B968487 /* StatsService.swift */,
+				34A1EB872191EE691958B55D /* SubscriptionService.swift */,
+				451F268654B082E140E4CFA4 /* ThemeService.swift */,
+				39B2AEB4E13B4B31445DFC74 /* WordService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		BD7639EB9BD21EF8810F8C3D = {
+			isa = PBXGroup;
+			children = (
+				1CFE90C4D6D2D23FB991767E /* Octordle */,
+				AAAE87AF608084FAC326607A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FE54110C7FB1CA3F566D8EF7 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				82EA444A752E8EA4E3F7A193 /* Components */,
+				305DFB60EB437C050829B5BB /* Daily */,
+				3B15BC82E0861A4293C234C7 /* Game */,
+				50AFAE072C3A56EDD5F4EE0B /* Leaderboard */,
+				86B54EB0B6FD03E5E28C416F /* Onboarding */,
+				44160BEE0BD281DAE49C366D /* Settings */,
+				2D3A5C3EC364BF48F5A9D390 /* Stats */,
+				848C12F6314047F912BA421D /* Subscription */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5B8859C65E781126FAE4B137 /* Octordle */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6C02C8D4FF2184CFA93C1527 /* Build configuration list for PBXNativeTarget "Octordle" */;
+			buildPhases = (
+				75CCEDEF17C70156193A668D /* Sources */,
+				188D94F333098312A031A181 /* Resources */,
+				27BA8A3E020E147CF93B2DBD /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Octordle;
+			packageProductDependencies = (
+				4DC5D52B1BC7DC7DFCDEEF44 /* GoogleMobileAds */,
+				1649596E0A1DA5D82C06A668 /* FirebaseAnalytics */,
+				F68371F901CEFBCABB337A87 /* Clarity */,
+				AE2FA0C2398C6DA04E729C06 /* GoogleUserMessagingPlatform */,
+			);
+			productName = Octordle;
+			productReference = 49A33338BEC33844368E9695 /* Octordle.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		5E482E09AAD5BB287372C4ED /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					5B8859C65E781126FAE4B137 = {
+						DevelopmentTeam = Q98K2GW9ZQ;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = FC7F44A0B6B88EA6C3306618 /* Build configuration list for PBXProject "Octordle" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = BD7639EB9BD21EF8810F8C3D;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				E06249E299F600713603C9F8 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+				3E83E768314AB52A63267A0A /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */,
+				F62D540899EEB19AA8907C55 /* XCRemoteSwiftPackageReference "clarity-apps" */,
+				9D735E17083BE13D3E306922 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5B8859C65E781126FAE4B137 /* Octordle */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		188D94F333098312A031A181 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5D62CDEADDC596B6BD310551 /* Assets.xcassets in Resources */,
+				2FC34ECBF119DADC8517B3B5 /* GoogleService-Info.plist in Resources */,
+				B9552898B33495A91B8A0B3B /* PrivacyInfo.xcprivacy in Resources */,
+				8967473597D7DEE4D1E78B6A /* Products.storekit in Resources */,
+				F7A30C9CB7B3B0EBCD6AB0D6 /* words.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		75CCEDEF17C70156193A668D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7AC945C1F8E2B5CD858F5074 /* ATTPrePromptView.swift in Sources */,
+				2ABD17E0CF82D70781FE35A6 /* ATTService.swift in Sources */,
+				6CC86E16282A57724482975F /* Achievement.swift in Sources */,
+				09F1BC555C73F5151874869F /* AchievementDetailView.swift in Sources */,
+				0F38436B7500A1F1ABA00EB5 /* AdMobManager.swift in Sources */,
+				3A023A458617E44FEF8714DA /* AnalyticsService.swift in Sources */,
+				DFCE39F19A46979F081FA28F /* BannerAdView.swift in Sources */,
+				C4EBF9BAA8682DB05FD84B38 /* BoardData.swift in Sources */,
+				3D0A4493DF10A88F1AA5B520 /* BoardView.swift in Sources */,
+				24EBCBAAF662DAB9E214DB98 /* ConfettiView.swift in Sources */,
+				9D385F6D76920542753D14E6 /* ConsentManager.swift in Sources */,
+				C6CD8FF1C384136F67B2DFB0 /* Constants.swift in Sources */,
+				7B600A03670D8500CCBFC770 /* DailyPuzzleService.swift in Sources */,
+				4155059632E8F6764DFA6579 /* DailyView.swift in Sources */,
+				428CD7301C3D5FBF9822C50E /* Difficulty.swift in Sources */,
+				818A76DB74BDD9DBFC3F2966 /* Extensions.swift in Sources */,
+				1761F9557C0CD6E8369A4C26 /* GameCenterService.swift in Sources */,
+				F1E79B15C9C1FCFB3B887B83 /* GameResult.swift in Sources */,
+				A4BBFF8A554E00ACDA0096C3 /* GameResultView.swift in Sources */,
+				2145A4B12A1049A4AD45AC3A /* GameState.swift in Sources */,
+				E5DE67041A6BD70FB0ED56AE /* GameView.swift in Sources */,
+				2A7AFDE879953D93BEE60AEB /* GameViewModel.swift in Sources */,
+				5E9FA2AB6E8B564D909DB467 /* HapticManager.swift in Sources */,
+				C3ABB314C4D3E4F115A8BE44 /* KeyboardView.swift in Sources */,
+				7EBA9FB6ABEF36810F99200A /* LeaderboardView.swift in Sources */,
+				745C4305F54141B2B3893578 /* LetterState.swift in Sources */,
+				093C5950EF85CD30B52459D4 /* MainTabView.swift in Sources */,
+				143282164B6EB58523FEF13A /* NotepadIntroView.swift in Sources */,
+				C17217387E271511DD866B26 /* OctordleApp.swift in Sources */,
+				34D6C3627608F428B09B626B /* OnboardingView.swift in Sources */,
+				69EF8364106AC15C0FF94E53 /* ReviewManager.swift in Sources */,
+				349945BD2E68FFA385CB45FA /* ReviewPromptView.swift in Sources */,
+				F993BEBC5F090AB38C07377F /* SettingsView.swift in Sources */,
+				0CFFD1F8ED1365805C62D645 /* ShareCardView.swift in Sources */,
+				D6A36CB71BAF539DCFEA3A2D /* StatsService.swift in Sources */,
+				BA63B5474961D1AD2830E86B /* StatsView.swift in Sources */,
+				7B5D5C46A0B63445D70AD1C7 /* StreakAnimationOverlay.swift in Sources */,
+				DC02685A940104AF800530B2 /* SubscriptionService.swift in Sources */,
+				AF5384DD9A16B622A683422E /* SubscriptionView.swift in Sources */,
+				2D160C3CD14DBD389F080A2E /* ThemePickerView.swift in Sources */,
+				A079179E9277EDCD3135F35C /* ThemeService.swift in Sources */,
+				A72593ADF1BD482984BEFB84 /* ThemeUnlockView.swift in Sources */,
+				0DB729463A8D75C3A52C7C23 /* TileData.swift in Sources */,
+				61A89E3712A80D82A907B443 /* TileView.swift in Sources */,
+				BC295A9922053DE9A0DB9FE9 /* WordService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		06BC73E909EB74742E4201CC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Octordle/Octordle.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = Octordle/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Octordle;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.word-games";
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Allowing tracking helps us keep Octordle free. It simply makes ads more relevant to you — it won't increase the number of ads you see.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ikuhei.octordle;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		826D14E3F5ABF38D6D7B3189 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = Q98K2GW9ZQ;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Octordle/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.06;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		D7BEB4937A383E15D0E1FAE1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Octordle/Octordle.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = Octordle/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Octordle;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.word-games";
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Allowing tracking helps us keep Octordle free. It simply makes ads more relevant to you — it won't increase the number of ads you see.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ikuhei.octordle;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F85A6C0390F5CB60C3B10A34 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = Q98K2GW9ZQ;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Octordle/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.06;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		6C02C8D4FF2184CFA93C1527 /* Build configuration list for PBXNativeTarget "Octordle" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				06BC73E909EB74742E4201CC /* Debug */,
+				D7BEB4937A383E15D0E1FAE1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		FC7F44A0B6B88EA6C3306618 /* Build configuration list for PBXProject "Octordle" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				826D14E3F5ABF38D6D7B3189 /* Debug */,
+				F85A6C0390F5CB60C3B10A34 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		3E83E768314AB52A63267A0A /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-user-messaging-platform";
+			requirement = {
+				kind = exactVersion;
+				version = 2.7.0;
+			};
+		};
+		9D735E17083BE13D3E306922 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
+		E06249E299F600713603C9F8 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads";
+			requirement = {
+				kind = exactVersion;
+				version = 11.2.0;
+			};
+		};
+		F62D540899EEB19AA8907C55 /* XCRemoteSwiftPackageReference "clarity-apps" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/microsoft/clarity-apps";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		1649596E0A1DA5D82C06A668 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D735E17083BE13D3E306922 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		4DC5D52B1BC7DC7DFCDEEF44 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E06249E299F600713603C9F8 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+		AE2FA0C2398C6DA04E729C06 /* GoogleUserMessagingPlatform */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3E83E768314AB52A63267A0A /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */;
+			productName = GoogleUserMessagingPlatform;
+		};
+		F68371F901CEFBCABB337A87 /* Clarity */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F62D540899EEB19AA8907C55 /* XCRemoteSwiftPackageReference "clarity-apps" */;
+			productName = Clarity;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 5E482E09AAD5BB287372C4ED /* Project object */;
+}

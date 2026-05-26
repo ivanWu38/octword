@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Octordle Share Card Mockup</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #1a1a2e;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 40px 20px;
+    color: #fff;
+  }
+
+  .page-title {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 32px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .cards-container {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .card-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .card-label {
+    font-size: 12px;
+    color: #666;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ============ SHARE CARD ============ */
+  .share-card {
+    width: 340px;
+    background: linear-gradient(145deg, #1e1e3a, #16162e);
+    border-radius: 24px;
+    padding: 28px 24px 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  .share-card::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(110, 87, 224, 0.15), transparent 70%);
+    pointer-events: none;
+  }
+
+  .share-card::after {
+    content: '';
+    position: absolute;
+    bottom: -40px;
+    left: -40px;
+    width: 160px;
+    height: 160px;
+    background: radial-gradient(circle, rgba(72, 191, 145, 0.1), transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Header */
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .app-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .app-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #6e57e0, #9b6bef);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 16px;
+    color: #fff;
+    letter-spacing: -1px;
+  }
+
+  .app-name-block {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .app-name {
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.3px;
+  }
+
+  .app-name span {
+    color: #9b6bef;
+  }
+
+  .daily-label {
+    font-size: 11px;
+    color: #888;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  .puzzle-number {
+    font-size: 13px;
+    color: #666;
+    font-weight: 600;
+    padding: 4px 10px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+
+  /* Result Section */
+  .result-section {
+    text-align: center;
+    margin-bottom: 22px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .result-big {
+    font-size: 40px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 2px;
+  }
+
+  .result-big.win { color: #48bf91; }
+  .result-big.lose { color: #e85d75; }
+
+  .result-sub {
+    font-size: 13px;
+    color: #888;
+    font-weight: 500;
+  }
+
+  /* Stars */
+  .stars-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .star {
+    font-size: 22px;
+    opacity: 0.25;
+  }
+
+  .star.filled {
+    opacity: 1;
+    filter: drop-shadow(0 0 6px rgba(255, 200, 50, 0.4));
+  }
+
+  /* Board Grid 2x2 */
+  .boards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .board-cell {
+    background: rgba(255,255,255,0.04);
+    border-radius: 14px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .board-status {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 2px;
+    letter-spacing: 0.5px;
+  }
+
+  .board-status.solved { color: #48bf91; }
+  .board-status.failed { color: #e85d75; }
+
+  .board-guess-number {
+    font-size: 22px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .board-guess-label {
+    font-size: 10px;
+    color: #666;
+    font-weight: 500;
+  }
+
+  /* Mini tile grid */
+  .mini-tiles {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 4px;
+  }
+
+  .mini-row {
+    display: flex;
+    gap: 2px;
+    justify-content: center;
+  }
+
+  .mini-tile {
+    width: 8px;
+    height: 8px;
+    border-radius: 1.5px;
+  }
+
+  .mini-tile.correct { background: #48bf91; }
+  .mini-tile.present { background: #d4a843; }
+  .mini-tile.absent  { background: #3a3a52; }
+
+  /* Stats Row */
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: #666;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Footer */
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+    z-index: 1;
+  }
+
+  .cta-text {
+    font-size: 12px;
+    color: #9b6bef;
+    font-weight: 600;
+  }
+
+  .date-text {
+    font-size: 11px;
+    color: #555;
+    font-weight: 500;
+  }
+
+  /* ============ CARD VARIANT: WIN ============ */
+  .share-card.win-card::before {
+    background: radial-gradient(circle, rgba(72, 191, 145, 0.15), transparent 70%);
+  }
+
+  /* ============ CARD VARIANT: LOSE ============ */
+  .share-card.lose-card .board-cell {
+    background: rgba(255,255,255,0.03);
+  }
+
+  /* ============ ANNOTATIONS ============ */
+  .annotation {
+    margin-top: 20px;
+    padding: 16px 20px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    border-left: 3px solid #6e57e0;
+    max-width: 340px;
+  }
+
+  .annotation p {
+    font-size: 12px;
+    color: #888;
+    line-height: 1.6;
+  }
+
+  .annotation strong {
+    color: #bbb;
+  }
+
+  .section-divider {
+    width: 100%;
+    max-width: 800px;
+    height: 1px;
+    background: #2a2a3e;
+    margin: 48px 0;
+  }
+
+  .notes-section {
+    max-width: 600px;
+    margin-top: 40px;
+    text-align: left;
+  }
+
+  .notes-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ccc;
+    margin-bottom: 16px;
+  }
+
+  .notes-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .notes-list li {
+    font-size: 13px;
+    color: #888;
+    line-height: 1.6;
+    padding-left: 16px;
+    position: relative;
+  }
+
+  .notes-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: #6e57e0;
+  }
+</style>
+</head>
+<body>
+
+<p class="page-title">Octordle Share Card Mockup</p>
+
+<div class="cards-container">
+
+  <!-- ===== WIN CARD ===== -->
+  <div class="card-wrapper">
+    <p class="card-label">Win</p>
+    <div class="share-card win-card">
+      <!-- Header -->
+      <div class="card-header">
+        <div class="app-brand">
+          <div class="app-icon">Q~</div>
+          <div class="app-name-block">
+            <div class="app-name">Octordle<span>~</span></div>
+            <div class="daily-label">Daily Classic</div>
+          </div>
+        </div>
+        <div class="puzzle-number">#428</div>
+      </div>
+
+      <!-- Result -->
+      <div class="result-section">
+        <div class="result-big win">4 / 4</div>
+        <div class="result-sub">Solved all boards in 7 guesses</div>
+      </div>
+
+      <!-- Stars -->
+      <div class="stars-row">
+        <span class="star filled">★</span>
+        <span class="star filled">★</span>
+        <span class="star filled">★</span>
+      </div>
+
+      <!-- Board Grid -->
+      <div class="boards-grid">
+        <!-- Board 1: Solved at guess 3 -->
+        <div class="board-cell">
+          <div class="board-status solved">SOLVED</div>
+          <div class="board-guess-number">3</div>
+          <div class="board-guess-label">guesses</div>
+          <div class="mini-tiles">
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile present"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile correct"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile present"></div><div class="mini-tile correct"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div>
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div><div class="mini-tile correct"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Board 2: Solved at guess 5 -->
+        <div class="board-cell">
+          <div class="board-status solved">SOLVED</div>
+          <div class="board-guess-number">5</div>
+          <div class="board-guess-label">guesses</div>
+          <div class="mini-tiles">
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile present"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile present"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div><div class="mini-tile present"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile correct"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile present"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile correct"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div>
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div><div class="mini-tile correct"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Board 3: Solved at guess 6 -->
+        <div class="board-cell">
+          <div class="board-status solved">SOLVED</div>
+          <div class="board-guess-number">6</div>
+          <div class="board-guess-label">guesses</div>
+          <div class="mini-tiles">
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile present"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile present"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile present"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile correct"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile correct"></div>
+              <div class="mini-tile correct"></div><div class="mini-tile absent"></div><div class="mini-tile present"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div>
+              <div class="mini-tile correct"></div><div class="mini-tile absent"></div><div class="mini-tile correct"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div>
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div><div class="mini-tile correct"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Board 4: Solved at guess 7 -->
+        <div class="board-cell">
+          <div class="board-status solved">SOLVED</div>
+          <div class="board-guess-number">7</div>
+          <div class="board-guess-label">guesses</div>
+          <div class="mini-tiles">
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div><div class="mini-tile present"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile present"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile present"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile correct"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile correct"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile correct"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile correct"></div><div class="mini-tile present"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div>
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div>
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div><div class="mini-tile correct"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-item">
+          <div class="stat-value">3:42</div>
+          <div class="stat-label">Time</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">4 / 4</div>
+          <div class="stat-label">Boards</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">🔥 12</div>
+          <div class="stat-label">Streak</div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="card-footer">
+        <div class="cta-text">Can you beat this? → Octordle</div>
+        <div class="date-text">Feb 25, 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== LOSE CARD ===== -->
+  <div class="card-wrapper">
+    <p class="card-label">Lose (your screenshot)</p>
+    <div class="share-card lose-card">
+      <!-- Header -->
+      <div class="card-header">
+        <div class="app-brand">
+          <div class="app-icon">Q~</div>
+          <div class="app-name-block">
+            <div class="app-name">Octordle<span>~</span></div>
+            <div class="daily-label">Daily Classic</div>
+          </div>
+        </div>
+        <div class="puzzle-number">#428</div>
+      </div>
+
+      <!-- Result -->
+      <div class="result-section">
+        <div class="result-big lose">3 / 4</div>
+        <div class="result-sub">Solved 3 boards in 9 guesses</div>
+      </div>
+
+      <!-- Stars -->
+      <div class="stars-row">
+        <span class="star filled">★</span>
+        <span class="star">★</span>
+        <span class="star">★</span>
+      </div>
+
+      <!-- Board Grid -->
+      <div class="boards-grid">
+        <!-- Board 1: Solved at guess 9 -->
+        <div class="board-cell">
+          <div class="board-status solved">SOLVED</div>
+          <div class="board-guess-number">9</div>
+          <div class="board-guess-label">guesses</div>
+          <div class="mini-tiles">
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div><div class="mini-tile present"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile present"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile present"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile correct"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile present"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile correct"></div>
+              <div class="mini-tile present"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile present"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile correct"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile correct"></div><div class="mini-tile absent"></div><div class="mini-tile correct"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div>
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div><div class="mini-tile correct"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Board 2: Solved at guess 7 -->
+        <div class="board-cell">
+          <div class="board-status solved">SOLVED</div>
+          <div class="board-guess-number">7</div>
+          <div class="board-guess-label">guesses</div>
+          <div class="mini-tiles">
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile correct"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile present"></div><div class="mini-tile absent"></div><div class="mini-tile present"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile correct"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile present"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile correct"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile present"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile correct"></div><div class="mini-tile absent"></div><div class="mini-tile correct"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div>
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div><div class="mini-tile correct"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Board 3: FAILED -->
+        <div class="board-cell">
+          <div class="board-status failed">FAILED</div>
+          <div class="board-guess-number" style="color: #e85d75;">✕</div>
+          <div class="board-guess-label">9 / 9</div>
+          <div class="mini-tiles">
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile present"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile present"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div><div class="mini-tile present"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile present"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div><div class="mini-tile present"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile present"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Board 4: Solved at guess 8 -->
+        <div class="board-cell">
+          <div class="board-status solved">SOLVED</div>
+          <div class="board-guess-number">8</div>
+          <div class="board-guess-label">guesses</div>
+          <div class="mini-tiles">
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile correct"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile present"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile correct"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile present"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div><div class="mini-tile correct"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile correct"></div>
+              <div class="mini-tile present"></div><div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile absent"></div><div class="mini-tile absent"></div>
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div><div class="mini-tile absent"></div>
+            </div>
+            <div class="mini-row">
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div>
+              <div class="mini-tile correct"></div><div class="mini-tile correct"></div><div class="mini-tile correct"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-item">
+          <div class="stat-value">6:46</div>
+          <div class="stat-label">Time</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">3 / 4</div>
+          <div class="stat-label">Boards</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">💔 0</div>
+          <div class="stat-label">Streak</div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="card-footer">
+        <div class="cta-text">Can you beat this? → Octordle</div>
+        <div class="date-text">Feb 25, 2026</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<div class="notes-section">
+  <div class="notes-title">Mockup 設計說明</div>
+  <ul class="notes-list">
+    <li>左邊是贏的情境（4/4 boards，三顆星），右邊是你截圖的那局（3/4，輸了）</li>
+    <li>mini tile grid 用小色塊呈現每步猜測的結果，不需要懂規則也能看出「綠色越來越多 = 越來越接近答案」</li>
+    <li>星星評級直接用你 model 裡的 starRating（0-3 星）</li>
+    <li>Streak 連勝紀錄增加社交炫耀的動力</li>
+    <li>底部 CTA 文字引導收到的人去下載 app</li>
+    <li>配色用深色調，在 LINE / iMessage / IG 等聊天 app 中都很好看</li>
+    <li>技術實作：SwiftUI View → ImageRenderer 轉 UIImage → share sheet 分享圖片</li>
+  </ul>
+</div>
+
+</body>
+</html>
