@@ -396,6 +396,18 @@ struct GameView: View {
                             }
                             .disabled(topVisibleRow == 0)
 
+                            // Position indicator: 4 segments, current board-row lit
+                            VStack(spacing: 4) {
+                                ForEach(0..<4, id: \.self) { i in
+                                    RoundedRectangle(cornerRadius: 2)
+                                        .fill(i == topVisibleRow
+                                              ? Color.quordlePrimary
+                                              : Color.quordleSecondaryText.opacity(0.25))
+                                        .frame(width: 4, height: 14)
+                                        .animation(.easeInOut(duration: 0.2), value: topVisibleRow)
+                                }
+                            }
+
                             Button {
                                 HapticManager.shared.keyTap()
                                 withAnimation(.easeInOut(duration: 0.3)) {
