@@ -74,23 +74,6 @@ class StatsService: ObservableObject {
         updateAchievements(for: result)
     }
 
-    /// Record that the player has posted a score to the Game Center leaderboard.
-    /// Unlocks `.explorer` if they've also won a daily puzzle.
-    func markLeaderboardSubmitted() {
-        guard !achievementProgress.hasSubmittedLeaderboardScore else { return }
-        achievementProgress.hasSubmittedLeaderboardScore = true
-
-        if !achievementProgress.unlockedAchievements.contains(.explorer),
-           gameResults.contains(where: { $0.isWon && $0.mode == .daily }) {
-            achievementProgress.unlockedAchievements.insert(.explorer)
-            AnalyticsService.logAchievementUnlocked(achievement: .explorer)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                HapticManager.shared.achievementUnlocked()
-            }
-        }
-        saveAchievements()
-    }
-
     // MARK: - Daily State Management
 
     func saveDailyState(_ state: GameState) {
@@ -136,9 +119,9 @@ class StatsService: ObservableObject {
            state.dailyDate == GameState.todayString() {
             return state
         }
-        // Fallback: reconstruct from GameResult summary (UTC day, matching the puzzle reset)
-        let today = Calendar.utc.startOfDay(for: Date())
-        if let result = gameResults.first(where: { $0.mode == .daily && Calendar.utc.isDate($0.date, inSameDayAs: today) }) {
+        // Fallback: reconstruct from GameResult summary
+        let today = Calendar.current.startOfDay(for: Date())
+        if let result = gameResults.first(where: { $0.mode == .daily && Calendar.current.isDate($0.date, inSameDayAs: today) }) {
             return GameState(from: result)
         }
         return nil
@@ -245,12 +228,6 @@ class StatsService: ObservableObject {
             case .ultimate:
                 achievementProgress.ultimateWins += 1
             }
-
-            // Check explorer (won a daily puzzle AND posted a leaderboard score)
-            if gameResults.contains(where: { $0.isWon && $0.mode == .daily }) &&
-               achievementProgress.hasSubmittedLeaderboardScore {
-                achievementProgress.unlockedAchievements.insert(.explorer)
-            }
         }
 
         // Check Octordle master
@@ -261,9 +238,12 @@ class StatsService: ObservableObject {
             }
         }
 
-        // Check daily dedicated
+        // Check daily milestones (explorer = 10, dailyDedicated = 30)
         if result.mode == .daily {
             achievementProgress.dailyPuzzlesCompleted += 1
+            if achievementProgress.dailyPuzzlesCompleted >= 10 {
+                achievementProgress.unlockedAchievements.insert(.explorer)
+            }
             if achievementProgress.dailyPuzzlesCompleted >= 30 {
                 achievementProgress.unlockedAchievements.insert(.dailyDedicated)
             }
@@ -473,10 +453,7 @@ class StatsService: ObservableObject {
         case .dailyDedicated:
             current = min(achievementProgress.dailyPuzzlesCompleted, required)
         case .explorer:
-            var count = 0
-            if gameResults.contains(where: { $0.isWon && $0.mode == .daily }) { count += 1 }
-            if achievementProgress.hasSubmittedLeaderboardScore { count += 1 }
-            current = count
+            current = min(achievementProgress.dailyPuzzlesCompleted, required)
         case .sharpMind:
             current = min(achievementProgress.perfectGamesCount, required)
         }

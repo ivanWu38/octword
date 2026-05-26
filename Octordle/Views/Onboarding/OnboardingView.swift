@@ -331,7 +331,7 @@ private struct GetStartedPage: View {
                     .foregroundColor(.quordlePrimaryText)
                     .multilineTextAlignment(.center)
 
-                Text("You're all set! Solve today's puzzle and climb the daily leaderboard. Good luck!")
+                Text("You're all set! Solve today's puzzle and track your progress. Good luck!")
                     .font(.body)
                     .foregroundColor(.quordleSecondaryText)
                     .multilineTextAlignment(.center)
@@ -345,15 +345,6 @@ private struct GetStartedPage: View {
                         .font(.title2)
                         .foregroundColor(.quordleGold)
                     Text("Today")
-                        .font(.caption)
-                        .foregroundColor(.quordleSecondaryText)
-                }
-
-                VStack(spacing: 8) {
-                    Image(systemName: "trophy.fill")
-                        .font(.title2)
-                        .foregroundColor(.quordlePrimary)
-                    Text("Leaderboard")
                         .font(.caption)
                         .foregroundColor(.quordleSecondaryText)
                 }

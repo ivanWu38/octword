@@ -17,22 +17,6 @@ enum Constants {
         static let defaultDifficulty = Difficulty.ultimate
     }
 
-    /// Game Center
-    enum GameCenter {
-        /// Recurring (daily) leaderboard for the daily Octordle puzzle.
-        /// Configure this ID in App Store Connect as a recurring leaderboard,
-        /// sort order "Low to High" (lower score = better), integer format.
-        static let dailyLeaderboardID = "com.ikuhei.octordle.daily"
-
-        /// Number of boards used when encoding/decoding the composite score.
-        static let boardCount = 8
-
-        /// Multiplier separating the "unsolved boards" (high-order) component
-        /// from the "guess count" (low-order) component of the score.
-        /// Must exceed the max possible guess component (8 boards × 14 = 112).
-        static let unsolvedWeight = 1000
-    }
-
     /// Animation durations
     enum Animation {
         static let tileFlipDuration = 0.3

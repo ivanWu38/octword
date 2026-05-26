@@ -280,9 +280,6 @@ class GameViewModel: ObservableObject {
             // Save completed result for review (only first attempt, not replays)
             if !dailyPuzzleService.isTodayCompleted {
                 statsService.saveCompletedDailyResult(gameState)
-                // Submit to the daily leaderboard — first attempt only, so players
-                // can't replay to improve their posted score.
-                GameCenterService.shared.submitDailyScore(for: gameState)
             }
             statsService.clearDailyState()
         }

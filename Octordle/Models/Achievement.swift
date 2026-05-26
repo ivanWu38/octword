@@ -20,7 +20,7 @@ enum Achievement: String, CaseIterable, Codable, Identifiable {
     // Mode achievements
     case challengeMaster    // 10 Octordle wins
     case dailyDedicated     // 30 daily puzzles
-    case explorer           // Win a daily puzzle and post a leaderboard score
+    case explorer           // Complete 10 daily puzzles
 
     // Special achievements
     case sharpMind          // 5 perfect games
@@ -60,7 +60,7 @@ enum Achievement: String, CaseIterable, Codable, Identifiable {
         case .clutchPlayer: return "Win with only 1 guess remaining"
         case .challengeMaster: return "Win 10 Octordle games"
         case .dailyDedicated: return "Complete 30 daily puzzles"
-        case .explorer: return "Win a daily puzzle and post a score to the leaderboard"
+        case .explorer: return "Complete 10 daily puzzles"
         case .sharpMind: return "Achieve 5 perfect games"
         case .quickDraw: return "Win a game in under 1 minute"
         }
@@ -118,7 +118,7 @@ enum Achievement: String, CaseIterable, Codable, Identifiable {
         case .clutchPlayer: return 1
         case .challengeMaster: return 10
         case .dailyDedicated: return 30
-        case .explorer: return 2
+        case .explorer: return 10
         case .sharpMind: return 5
         case .quickDraw: return 1
         }
@@ -138,7 +138,6 @@ struct AchievementProgress: Codable {
     var classicWins: Int
     var challengeWinsTotal: Int
     var ultimateWins: Int
-    var hasSubmittedLeaderboardScore: Bool
 
     init() {
         self.unlockedAchievements = []
@@ -152,7 +151,6 @@ struct AchievementProgress: Codable {
         self.classicWins = 0
         self.challengeWinsTotal = 0
         self.ultimateWins = 0
-        self.hasSubmittedLeaderboardScore = false
     }
 
     // Safe decoding: missing or new fields won't break old data
@@ -169,6 +167,5 @@ struct AchievementProgress: Codable {
         self.classicWins = (try? container.decode(Int.self, forKey: .classicWins)) ?? 0
         self.challengeWinsTotal = (try? container.decode(Int.self, forKey: .challengeWinsTotal)) ?? 0
         self.ultimateWins = (try? container.decode(Int.self, forKey: .ultimateWins)) ?? 0
-        self.hasSubmittedLeaderboardScore = (try? container.decode(Bool.self, forKey: .hasSubmittedLeaderboardScore)) ?? false
     }
 }

@@ -21,12 +21,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         FirebaseApp.configure()
         Analytics.setAnalyticsCollectionEnabled(false)
 
-        // Authenticate with Game Center as early as possible (Apple's recommendation).
-        // The handler fires asynchronously once the UI is ready.
-        Task { @MainActor in
-            GameCenterService.shared.authenticate()
-        }
-
         // Do NOT initialize AdMob or Clarity here
         // They will be initialized after UMP consent + ATT flow completes
 
@@ -59,7 +53,6 @@ struct OctordleApp: App {
     @StateObject private var subscriptionService = SubscriptionService.shared
     @StateObject private var attService = ATTService.shared
     @StateObject private var consentManager = ConsentManager.shared
-    @StateObject private var gameCenterService = GameCenterService.shared
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @Environment(\.scenePhase) private var scenePhase
 
@@ -80,7 +73,6 @@ struct OctordleApp: App {
             .environmentObject(statsService)
             .environmentObject(subscriptionService)
             .environmentObject(consentManager)
-            .environmentObject(gameCenterService)
             .preferredColorScheme(themeService.colorScheme)
             .onChange(of: scenePhase) { newPhase in
                 if newPhase == .active {

@@ -39,7 +39,11 @@
       "Bash(find *)",
       "Bash(sed -n '320,360p' \"/Users/wuyuping/Desktop/octordle_claude/Octordle/Views/Onboarding/OnboardingView.swift\")",
       "Bash(sed -n '610,617p' \"/Users/wuyuping/Desktop/octordle_claude/Octordle/Views/Game/GameView.swift\")",
-      "Bash(sed -n '270,275p' \"/Users/wuyuping/Desktop/octordle_claude/Octordle/Views/Game/GameResultView.swift\")"
+      "Bash(sed -n '270,275p' \"/Users/wuyuping/Desktop/octordle_claude/Octordle/Views/Game/GameResultView.swift\")",
+      "WebFetch(domain:yukaichou.com)",
+      "WebFetch(domain:www.today.com)",
+      "WebFetch(domain:duolingo.deconstructoroffun.com)",
+      "WebFetch(domain:en.wikipedia.org)"
     ]
   }
 }

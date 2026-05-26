@@ -144,9 +144,11 @@ struct GameState: Codable, Equatable {
         return String(format: "%d:%02d", minutes, remainingSeconds)
     }
 
-    /// Today's date string (UTC — keep in sync with DailyPuzzleService.todayString)
+    /// Today's date string
     static func todayString() -> String {
-        DateFormatter.utcDayKey.string(from: Date())
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: Date())
     }
 
     /// Reconstruct a GameState from a GameResult (for reviewing completed games)
@@ -165,7 +167,11 @@ struct GameState: Codable, Equatable {
         self.isWon = result.isWon
         self.startTime = result.date
         self.endTime = result.date
-        self.dailyDate = DateFormatter.utcDayKey.string(from: result.date)
+        self.dailyDate = {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            return formatter.string(from: result.date)
+        }()
         self.accumulatedTime = TimeInterval(result.elapsedSeconds)
     }
 

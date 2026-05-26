@@ -323,27 +323,3 @@ extension String {
         count == 5 && allSatisfy { $0.isLetter }
     }
 }
-
-// MARK: - Daily Reset (UTC) Helpers
-
-extension Calendar {
-    /// Gregorian calendar fixed to UTC. All daily-puzzle date math uses this so
-    /// the puzzle (and the Game Center leaderboard) rolls over at the same instant
-    /// — 00:00 UTC — for every player worldwide, instead of each device's local midnight.
-    static let utc: Calendar = {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "UTC")!
-        return calendar
-    }()
-}
-
-extension DateFormatter {
-    /// "yyyy-MM-dd" formatter in UTC — the canonical daily-puzzle date key.
-    static let utcDayKey: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        formatter.timeZone = TimeZone(identifier: "UTC")
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        return formatter
-    }()
-}

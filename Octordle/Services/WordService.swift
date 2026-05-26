@@ -120,10 +120,9 @@ class WordService: ObservableObject {
         Array(answerWords.shuffled().prefix(count))
     }
 
-    /// Get words for daily puzzle based on date (UTC, so the puzzle is identical
-    /// worldwide and aligns with DailyPuzzleService.puzzleNumber / the leaderboard reset)
+    /// Get words for daily puzzle based on date
     func getDailyWords(for date: Date = Date(), count: Int = 4) -> [String] {
-        let calendar = Calendar.utc
+        let calendar = Calendar.current
         let components = calendar.dateComponents([.year, .month, .day], from: date)
         let seed = (components.year ?? 2024) * 10000 + (components.month ?? 1) * 100 + (components.day ?? 1)
 
