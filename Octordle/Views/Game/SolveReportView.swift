@@ -58,7 +58,7 @@ struct SolveReportView: View {
     // MARK: - Scores Header
 
     private func scoresHeader(_ report: SolveReport) -> some View {
-        VStack(spacing: 18) {
+        VStack(spacing: 14) {
             if let number = puzzleNumber {
                 Text("PUZZLE #\(number)")
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
@@ -66,12 +66,28 @@ struct SolveReportView: View {
                     .foregroundColor(.quordleSecondaryText)
             }
 
-            HStack(spacing: 12) {
-                scoreTile("EFFICIENCY", value: report.efficiency, accent: .quordleGold,
-                          caption: "how few guesses")
-                scoreTile("SKILL", value: report.skill, accent: .quordleCorrect,
-                          caption: "how smart your words were")
+            Text("SKILL")
+                .font(.system(size: 12, weight: .semibold))
+                .tracking(3)
+                .foregroundColor(.quordleSecondaryText)
+
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text("\(report.skill)")
+                    .font(.system(size: 72, weight: .bold, design: .serif))
+                    .foregroundColor(.quordleCorrect)
+                Text("/ 100")
+                    .font(.system(size: 22, weight: .regular, design: .serif))
+                    .foregroundColor(.quordleSecondaryText)
             }
+
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.quordleCardBorder)
+                    Capsule().fill(Color.quordleCorrect)
+                        .frame(width: geo.size.width * CGFloat(report.skill) / 100.0)
+                }
+            }
+            .frame(width: 220, height: 5)
 
             VStack(spacing: 4) {
                 Text(report.headline)
@@ -82,51 +98,12 @@ struct SolveReportView: View {
                     .foregroundColor(.quordleSecondaryText)
             }
             .multilineTextAlignment(.center)
+            .padding(.top, 2)
         }
         .frame(maxWidth: .infinity)
-        .padding(.top, 16)
-        .padding(.bottom, 22)
+        .padding(.top, 18)
+        .padding(.bottom, 24)
         .padding(.horizontal, 24)
-    }
-
-    private func scoreTile(_ title: String, value: Int, accent: Color, caption: String) -> some View {
-        VStack(spacing: 6) {
-            Text(title)
-                .font(.system(size: 11, weight: .semibold))
-                .tracking(1.5)
-                .foregroundColor(.quordleSecondaryText)
-
-            HStack(alignment: .firstTextBaseline, spacing: 2) {
-                Text("\(value)")
-                    .font(.system(size: 46, weight: .bold, design: .serif))
-                    .foregroundColor(accent)
-                Text("/100")
-                    .font(.system(size: 14, weight: .regular, design: .serif))
-                    .foregroundColor(.quordleSecondaryText)
-            }
-
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(Color.quordleCardBorder)
-                    Capsule().fill(accent).frame(width: geo.size.width * CGFloat(value) / 100.0)
-                }
-            }
-            .frame(height: 4)
-
-            Text(caption)
-                .font(.system(size: 10))
-                .foregroundColor(.quordleSecondaryText)
-                .multilineTextAlignment(.center)
-                .frame(height: 26)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 14)
-        .padding(.horizontal, 10)
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color.quordleCardBackground)
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.quordleCardBorder, lineWidth: 1))
-        )
     }
 
     // MARK: - Smartest Guess
@@ -193,38 +170,25 @@ struct SolveReportView: View {
     }
 
     private func guessRow(_ g: GuessAnalysis) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 10) {
-                Text("\(g.number)")
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundColor(.quordleSecondaryText)
-                    .frame(width: 16, alignment: .trailing)
-
-                Text(g.word)
-                    .font(.system(size: 15, weight: .bold, design: .monospaced))
-                    .tracking(1)
-                    .foregroundColor(.quordlePrimaryText)
-
-                Spacer()
-
-                dots(g.rating)
-
-                Text(g.rating.label)
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(ratingColor(g.rating))
-                    .frame(width: 60, alignment: .trailing)
-            }
-
-            if let alt = g.betterAlternative {
-                HStack(spacing: 4) {
-                    Image(systemName: "arrow.turn.down.right")
-                        .font(.system(size: 9))
-                    Text("Sharper choice: \(alt)")
-                        .font(.system(size: 11))
-                }
+        HStack(spacing: 10) {
+            Text("\(g.number)")
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
                 .foregroundColor(.quordleSecondaryText)
-                .padding(.leading, 26)
-            }
+                .frame(width: 16, alignment: .trailing)
+
+            Text(g.word)
+                .font(.system(size: 15, weight: .bold, design: .monospaced))
+                .tracking(1)
+                .foregroundColor(.quordlePrimaryText)
+
+            Spacer()
+
+            dots(g.rating)
+
+            Text(g.rating.label)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundColor(ratingColor(g.rating))
+                .frame(width: 60, alignment: .trailing)
         }
         .padding(.vertical, 11)
     }
