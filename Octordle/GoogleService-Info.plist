@@ -3,28 +3,28 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyBXCR64E4em6CdfTdz4FBWjaH61evI3lNg</string>
+	<string>AIzaSyAa_u11uLAjSR0f-0DDM16E1q4LTL5wihs</string>
 	<key>GCM_SENDER_ID</key>
-	<string>391601436195</string>
+	<string>509094248367</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.ikuhei.octordle</string>
 	<key>PROJECT_ID</key>
-	<string>quordle-afe87</string>
+	<string>octordle-edcd6</string>
 	<key>STORAGE_BUCKET</key>
-	<string>quordle-afe87.firebasestorage.app</string>
+	<string>octordle-edcd6.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
-	<false></false>
+	<false/>
 	<key>IS_ANALYTICS_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_APPINVITE_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_GCM_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_SIGNIN_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:391601436195:ios:9c84b63390958f2e2c6396</string>
+	<string>1:509094248367:ios:7db09f466592984be1b95a</string>
 </dict>
 </plist>

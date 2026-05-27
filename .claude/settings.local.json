@@ -53,7 +53,8 @@
       "WebFetch(domain:itunes.apple.com)",
       "WebFetch(domain:apps.apple.com)",
       "Bash(plutil -lint Octordle/Info.plist)",
-      "Bash(plutil -lint Octordle/Products.storekit)"
+      "Bash(plutil -lint Octordle/Products.storekit)",
+      "Bash(plutil -lint Octordle/GoogleService-Info.plist)"
     ]
   }
 }
