@@ -122,7 +122,7 @@ struct DailyView: View {
     private var startView: some View {
         VStack(spacing: 0) {
             masthead
-            Spacer().frame(height: 56)
+            Spacer()
             VStack(spacing: 22) {
                 Text("Today's Edition")
                     .font(.system(size: 11, weight: .semibold))
@@ -161,6 +161,7 @@ struct DailyView: View {
             Spacer()
             countdownFooter
         }
+        .padding(.bottom, 100)
         .iPadReadableWidth()
     }
 
@@ -177,7 +178,7 @@ struct DailyView: View {
 
         return VStack(spacing: 0) {
             masthead
-            Spacer().frame(height: 44)
+            Spacer()
             VStack(spacing: 18) {
                 Text("SOLVED")
                     .font(.system(size: 18, weight: .bold, design: .serif))
@@ -249,6 +250,7 @@ struct DailyView: View {
             Spacer()
             countdownFooter
         }
+        .padding(.bottom, 100)
         .iPadReadableWidth()
     }
 }
