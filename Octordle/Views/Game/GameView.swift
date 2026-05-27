@@ -102,7 +102,10 @@ struct GameView: View {
 
             proceedAfterResult()
         }) {
-            GameResultView(gameState: viewModel.gameState)
+            PostGameFlowView(
+                gameState: viewModel.gameState,
+                puzzleNumber: viewModel.gameState.mode == .daily ? DailyPuzzleService.shared.puzzleNumber : nil
+            )
         }
         .overlay {
             if showConfetti {

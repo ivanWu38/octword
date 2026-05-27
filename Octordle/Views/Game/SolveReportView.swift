@@ -133,7 +133,10 @@ struct SolveReportView: View {
     // MARK: - Guess Breakdown
 
     private func breakdownSection(_ report: SolveReport) -> some View {
-        sectionContainer(title: "GUESS BREAKDOWN") {
+        sectionContainer(
+            title: "GUESS BREAKDOWN",
+            subtitle: "How many answers were still possible across the 8 boards after each guess. The bar shows how much that guess cut down — watch it fall toward zero."
+        ) {
             VStack(spacing: 0) {
                 ForEach(Array(report.guesses.enumerated()), id: \.element.id) { idx, g in
                     breakdownRow(g)
@@ -160,22 +163,36 @@ struct SolveReportView: View {
 
                 Spacer()
 
-                Text("\(g.candidatesBefore.formatted()) → \(g.candidatesAfter.formatted())")
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundColor(.quordleSecondaryText)
+                // Possible answers still left after this guess.
+                HStack(spacing: 3) {
+                    Text(g.candidatesAfter.formatted())
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundColor(.quordlePrimaryText)
+                    Text("left")
+                        .font(.system(size: 11))
+                        .foregroundColor(.quordleSecondaryText)
+                }
 
                 tagChip(g.tag)
             }
 
-            // Reduction bar
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(Color.quordleCardBorder.opacity(0.5))
-                    Capsule().fill(barColor(g.tag))
-                        .frame(width: max(2, geo.size.width * CGFloat(g.reductionFraction)))
+            // Reduction bar — how much of the field this guess eliminated.
+            HStack(spacing: 8) {
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(Color.quordleCardBorder.opacity(0.5))
+                        Capsule().fill(barColor(g.tag))
+                            .frame(width: max(2, geo.size.width * CGFloat(g.reductionFraction)))
+                    }
+                }
+                .frame(height: 4)
+
+                if g.eliminated > 0 {
+                    Text("−\(g.eliminated.formatted())")
+                        .font(.system(size: 10, weight: .medium, design: .rounded))
+                        .foregroundColor(.quordleSecondaryText)
                 }
             }
-            .frame(height: 4)
         }
         .padding(.vertical, 11)
     }
@@ -258,16 +275,65 @@ struct SolveReportView: View {
             .padding(.horizontal, 24)
     }
 
-    private func sectionContainer<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
+    private func sectionContainer<Content: View>(title: String, subtitle: String? = nil, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text(title)
-                .font(.system(size: 11, weight: .semibold))
-                .tracking(1.5)
-                .foregroundColor(.quordleSecondaryText)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title)
+                    .font(.system(size: 11, weight: .semibold))
+                    .tracking(1.5)
+                    .foregroundColor(.quordleSecondaryText)
+                if let subtitle = subtitle {
+                    Text(subtitle)
+                        .font(.system(size: 12))
+                        .foregroundColor(.quordleSecondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
             content()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 24)
         .padding(.vertical, 22)
+    }
+}
+
+/// Post-game flow shown in the result sheet: the Solve Report comes first, then a
+/// "See Result" button reveals the standard result card. This makes the report
+/// impossible to miss while keeping the result card design unchanged.
+struct PostGameFlowView: View {
+    let gameState: GameState
+    let puzzleNumber: Int?
+
+    @State private var showResult = false
+
+    var body: some View {
+        ZStack {
+            if showResult {
+                GameResultView(gameState: gameState)
+            } else {
+                NavigationStack {
+                    SolveReportView(gameState: gameState, puzzleNumber: puzzleNumber)
+                        .safeAreaInset(edge: .bottom) { seeResultButton }
+                }
+            }
+        }
+    }
+
+    private var seeResultButton: some View {
+        Button {
+            HapticManager.shared.buttonTap()
+            withAnimation(.easeInOut(duration: 0.25)) { showResult = true }
+        } label: {
+            HStack(spacing: 8) {
+                Text("See Result")
+                Image(systemName: "arrow.right")
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(PrimaryButtonStyle())
+        .padding(.horizontal, 20)
+        .padding(.top, 10)
+        .padding(.bottom, 8)
+        .background(.ultraThinMaterial)
     }
 }
