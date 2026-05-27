@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Octordle 配色提案對照</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font: 15px/1.6 -apple-system, "PingFang TC", "Helvetica Neue", sans-serif;
+    background: #2b2b30; color: #e8e6e1; padding: 32px 20px 80px;
+  }
+  .page-head { max-width: 1200px; margin: 0 auto 28px; }
+  h1 { font-size: 1.7rem; font-weight: 600; letter-spacing: .3px; }
+  .sub { color: #a8a49c; margin-top: 6px; font-size: .95rem; }
+  .toggle {
+    margin: 18px 0 4px; display: inline-flex; gap: 0; border: 1px solid #4a4a52;
+    border-radius: 10px; overflow: hidden;
+  }
+  .toggle button {
+    background: transparent; color: #cfcbc3; border: none; padding: 8px 18px;
+    font: inherit; cursor: pointer;
+  }
+  .toggle button.active { background: #e8e6e1; color: #1c1c20; font-weight: 600; }
+
+  .row { max-width: 1200px; margin: 0 auto; display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; }
+
+  .col { width: 270px; }
+  .col .label { text-align: center; margin-bottom: 10px; }
+  .col .label .name { font-weight: 600; font-size: 1.02rem; }
+  .col .label .note { color: #a8a49c; font-size: .82rem; margin-top: 2px; }
+  .col.rec .name::after { content: " ★ 推薦"; color: #e0b54a; font-size: .8rem; }
+
+  /* phone frame */
+  .phone {
+    border-radius: 30px; overflow: hidden; border: 1px solid rgba(0,0,0,.25);
+    box-shadow: 0 8px 30px rgba(0,0,0,.45); aspect-ratio: 9/19.5; display: flex; flex-direction: column;
+  }
+  .phone .topbar {
+    padding: 14px 16px 8px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .wordmark {
+    font-family: "New York", Georgia, "Songti TC", serif;
+    font-size: 1.25rem; font-weight: 600; letter-spacing: .5px;
+  }
+  .wordmark.cur { font-family: -apple-system, sans-serif; font-weight: 800; }
+  .progress { display: flex; align-items: center; gap: 8px; font-size: .72rem; }
+  .chev { font-size: .9rem; opacity: .55; }
+  .dots { display: flex; gap: 5px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* board area: 2 columns x 2 rows of mini boards (representing 8, peeking) */
+  .boards {
+    flex: 1; padding: 4px 12px; display: grid; grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr; gap: 8px 10px; overflow: hidden;
+  }
+  .board { display: grid; grid-template-rows: repeat(5, 1fr); gap: 2px; }
+  .brow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
+  .tile {
+    aspect-ratio: 1; border-radius: 3px; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: .58rem; letter-spacing: .3px;
+  }
+
+  /* split keyboard */
+  .kb { padding: 8px 10px 16px; }
+  .krow { display: flex; gap: 4px; justify-content: center; margin-bottom: 4px; }
+  .key {
+    flex: 1; max-width: 30px; aspect-ratio: .72; border-radius: 4px; position: relative;
+    overflow: hidden; display: flex; align-items: center; justify-content: center;
+  }
+  .key.wide { max-width: 46px; flex: 1.6; }
+  .key .cells { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(4,1fr); }
+  .key .cells span { display: block; }
+  .key .glyph { position: relative; z-index: 2; font-size: .56rem; font-weight: 700; }
+  .caption { max-width: 1200px; margin: 30px auto 0; color: #b8b4ac; font-size: .9rem; }
+  .caption ul { margin: 8px 0 0 18px; }
+  .caption li { margin: 4px 0; }
+</style>
+</head>
+<body>
+  <div class="page-head">
+    <h1>Octordle 配色提案 — 互動對照</h1>
+    <div class="sub">左起:現況(Quordle 配色)→ 三個提案。每支手機都畫了 8 盤的縮影(2×2 取景 + peek)＋ 你的 8 格鍵盤。點按鈕切換淺/深色。</div>
+    <div class="toggle">
+      <button id="btnLight" class="active" onclick="setMode('light')">淺色</button>
+      <button id="btnDark" onclick="setMode('dark')">深色</button>
+    </div>
+  </div>
+  <div class="row" id="row"></div>
+
+  <div class="caption">
+    <strong>四支都共用的「氣質手法」:</strong>
+    <ul>
+      <li>標題用<strong>襯線體</strong>(現況是粗黑體)——一眼從「遊戲」變「書」。</li>
+      <li>全平塗、<strong>零漸層</strong>、邊框走<strong>細線</strong>。</li>
+      <li>背景退成中性,讓彩色磚塊跳出來(8 盤掃描更清楚)。</li>
+      <li>提示色維持<strong>冷=正確 / 暖=出現</strong>——色盲也分得出,勝過對手的綠/黃。</li>
+    </ul>
+    差別只在「正確色」與整體冷暖:<strong>A·petrol</strong> 最不像對手、最有書卷氣;<strong>B·保留藍</strong> 與 landing page 一致、風險最低;<strong>C·石板</strong> 最接近現狀。
+  </div>
+
+<script>
+// ---- palettes ----
+const P = {
+  current: {
+    name: "現況 (Quordle)", note: "亮藍紫 · 漸層 · 黑體", serif:false,
+    light: { bg:"#f5f3ee", tileEmpty:"#fffdf7", tileBorder:"#d2cfc7", text:"#26262e",
+             correct:"#6495ed", present:"#d9a640", absent:"#787c7e", onTile:"#ffffff",
+             keyBg:"#d9d6cf", keyText:"#26262e", brand:"#6a78ff", dotOn:"#6a78ff", dotOff:"#ccc8bf" },
+    dark:  { bg:"#14141f", tileEmpty:"#1a1a24", tileBorder:"#404048", text:"#ffffff",
+             correct:"#6495ed", present:"#d9a640", absent:"#3a3b3c", onTile:"#ffffff",
+             keyBg:"#59596b", keyText:"#ffffff", brand:"#8b96ff", dotOn:"#8b96ff", dotOff:"#3a3a44" }
+  },
+  petrol: {
+    name: "A · 墨與紙 petrol", note: "正確改孔雀綠 / petrol", serif:true, rec:true,
+    light: { bg:"#f3efe6", tileEmpty:"#fbf8f1", tileBorder:"#ddd5c6", text:"#2a2622",
+             correct:"#3c6e71", present:"#c79a3e", absent:"#9a9384", onTile:"#fbf8f1",
+             keyBg:"#e7e0d2", keyText:"#2a2622", brand:"#3c6e71", dotOn:"#3c6e71", dotOff:"#d8d0c0" },
+    dark:  { bg:"#16140f", tileEmpty:"#201c16", tileBorder:"#34302a", text:"#f0ebdf",
+             correct:"#4e8c8f", present:"#cba14a", absent:"#4a453c", onTile:"#16140f",
+             keyBg:"#33302a", keyText:"#f0ebdf", brand:"#4e8c8f", dotOn:"#4e8c8f", dotOff:"#34302a" }
+  },
+  blue: {
+    name: "B · 墨與紙 保留藍", note: "正確收成沉穩板岩藍", serif:true,
+    light: { bg:"#f3efe6", tileEmpty:"#fbf8f1", tileBorder:"#ddd5c6", text:"#2a2622",
+             correct:"#4a6da8", present:"#c79a3e", absent:"#9a9384", onTile:"#fbf8f1",
+             keyBg:"#e7e0d2", keyText:"#2a2622", brand:"#4a6da8", dotOn:"#4a6da8", dotOff:"#d8d0c0" },
+    dark:  { bg:"#16140f", tileEmpty:"#201c16", tileBorder:"#34302a", text:"#f0ebdf",
+             correct:"#6a8fce", present:"#cba14a", absent:"#4a453c", onTile:"#16140f",
+             keyBg:"#33302a", keyText:"#f0ebdf", brand:"#6a8fce", dotOn:"#6a8fce", dotOff:"#34302a" }
+  },
+  slate: {
+    name: "C · 石板冷調", note: "近 NYT · 差異最小", serif:true,
+    light: { bg:"#f6f5f3", tileEmpty:"#ffffff", tileBorder:"#dcdce0", text:"#16181c",
+             correct:"#4a6fa5", present:"#d8a23d", absent:"#8e8e93", onTile:"#ffffff",
+             keyBg:"#e3e3e6", keyText:"#16181c", brand:"#4a6fa5", dotOn:"#4a6fa5", dotOff:"#d3d3d8" },
+    dark:  { bg:"#101216", tileEmpty:"#1a1c22", tileBorder:"#34363d", text:"#f2f2f4",
+             correct:"#5e84bf", present:"#d8a23d", absent:"#48484e", onTile:"#101216",
+             keyBg:"#2c2e35", keyText:"#f2f2f4", brand:"#5e84bf", dotOn:"#5e84bf", dotOff:"#34363d" }
+  }
+};
+const ORDER = ["current","petrol","blue","slate"];
+
+// sample tile states per board (E=empty, C=correct, P=present, A=absent), letters
+const SAMPLE_WORDS = [
+  ["FLASH","CLEAR","_____","_____","_____"],
+  ["CRANE","_____","_____","_____","_____"],
+  ["PLANE","STORM","_____","_____","_____"],
+  ["BRAVE","_____","_____","_____","_____"]
+];
+// states matrix matching letters: c/p/a per filled tile
+const SAMPLE_STATES = [
+  ["aacpa","ccapa","-----","-----","-----"],
+  ["apaac","-----","-----","-----","-----"],
+  ["acaap","cacpa","-----","-----","-----"],
+  ["paaca","-----","-----","-----","-----"]
+];
+
+let mode = "light";
+
+function tileColor(pal, s) {
+  if (s==="c") return pal.correct;
+  if (s==="p") return pal.present;
+  if (s==="a") return pal.absent;
+  return null;
+}
+
+function buildBoard(pal, wi) {
+  const words = SAMPLE_WORDS[wi], states = SAMPLE_STATES[wi];
+  let h = '<div class="board">';
+  for (let r=0;r<5;r++){
+    h += '<div class="brow">';
+    const w = words[r], st = states[r];
+    for (let c=0;c<5;c++){
+      const ch = w[c]==="_"?"":w[c];
+      const s = st[c]==="-"?"":st[c];
+      const fill = tileColor(pal, s);
+      if (fill){
+        h += `<div class="tile" style="background:${fill};color:${pal.onTile};border:none">${ch}</div>`;
+      } else if (ch){
+        h += `<div class="tile" style="background:${pal.tileEmpty};color:${pal.text};border:1px solid ${pal.tileBorder}">${ch}</div>`;
+      } else {
+        h += `<div class="tile" style="background:${pal.tileEmpty};border:1px solid ${pal.tileBorder}"></div>`;
+      }
+    }
+    h += '</div>';
+  }
+  return h+'</div>';
+}
+
+// 8-cell key: 2 cols x 4 rows colored by board state (signature feature)
+const KEY_DEMO = {
+  Q:"c-a-a-cp-", W:"-p--a-c--", E:"caacpacp", R:"a-p-a--c", T:"-c-a--p-",
+  A:"caacpacp", S:"-a-c-p--", D:"c--a-p-c", F:"-c-a-c-a", G:"p--a--c-",
+  Z:"-a----", X:"c-----", C:"caacpacp", V:"-p-a--", B:"--c-a-", N:"-a--c-", M:"c--a--"
+};
+function keyCells(pal, code){
+  let h='<div class="cells">';
+  for(let i=0;i<8;i++){
+    const ch = code && code[i] ? code[i] : "-";
+    const col = (ch==="c")?pal.correct:(ch==="p")?pal.present:(ch==="a")?pal.absent:pal.keyBg;
+    h+=`<span style="background:${col}"></span>`;
+  }
+  return h+'</div>';
+}
+function buildKeyboard(pal){
+  const rows=[["Q","W","E","R","T","Y","U","I","O","P"],
+              ["A","S","D","F","G","H","J","K","L"],
+              ["⏎","Z","X","C","V","B","N","M","⌫"]];
+  let h='<div class="kb">';
+  rows.forEach((row,ri)=>{
+    h+='<div class="krow">';
+    row.forEach(k=>{
+      const wide = (k==="⏎"||k==="⌫");
+      const code = KEY_DEMO[k];
+      h+=`<div class="key ${wide?'wide':''}">`;
+      if(code) h+=keyCells(pal,code);
+      else h+=`<div class="cells"><span style="background:${pal.keyBg}"></span><span style="background:${pal.keyBg}"></span><span style="background:${pal.keyBg}"></span><span style="background:${pal.keyBg}"></span><span style="background:${pal.keyBg}"></span><span style="background:${pal.keyBg}"></span><span style="background:${pal.keyBg}"></span><span style="background:${pal.keyBg}"></span></div>`;
+      h+=`<span class="glyph" style="color:${pal.keyText}">${k}</span></div>`;
+    });
+    h+='</div>';
+  });
+  return h+'</div>';
+}
+
+function buildDots(pal){
+  let h='<div class="dots">';
+  for(let i=0;i<4;i++) h+=`<span class="dot" style="background:${i===1?pal.dotOn:pal.dotOff}"></span>`;
+  return h+'</div>';
+}
+
+function buildPhone(key){
+  const def = P[key]; const pal = def[mode];
+  let boards='';
+  for(let i=0;i<4;i++) boards+=buildBoard(pal,i);
+  return `
+    <div class="col ${def.rec?'rec':''}">
+      <div class="label"><div class="name">${def.name}</div><div class="note">${def.note}</div></div>
+      <div class="phone" style="background:${pal.bg}">
+        <div class="topbar">
+          <span class="wordmark ${def.serif?'':'cur'}" style="color:${pal.brand}">Octordle</span>
+          <span class="progress" style="color:${pal.text}">
+            <span class="chev">‹</span>${buildDots(pal)}<span class="chev">›</span>
+          </span>
+        </div>
+        <div class="boards">${boards}</div>
+        ${buildKeyboard(pal)}
+      </div>
+    </div>`;
+}
+
+function render(){
+  document.getElementById('row').innerHTML = ORDER.map(buildPhone).join('');
+}
+function setMode(m){
+  mode=m;
+  document.getElementById('btnLight').classList.toggle('active', m==='light');
+  document.getElementById('btnDark').classList.toggle('active', m==='dark');
+  render();
+}
+render();
+</script>
+</body>
+</html>

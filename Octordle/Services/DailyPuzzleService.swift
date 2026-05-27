@@ -31,12 +31,12 @@ class DailyPuzzleService: ObservableObject {
         return formatter.string(from: Date())
     }
 
-    /// Get puzzle number (days since launch)
+    /// Get puzzle number (days since launch). Puzzle #1 is the launch day.
     var puzzleNumber: Int {
         let calendar = Calendar.current
-        let launchDate = calendar.date(from: DateComponents(year: 2024, month: 1, day: 1))!
+        let launchDate = calendar.date(from: DateComponents(year: 2026, month: 5, day: 20))!
         let days = calendar.dateComponents([.day], from: launchDate, to: Date()).day ?? 0
-        return days + 1
+        return max(1, days + 1)
     }
 
     /// Time until next puzzle (next local midnight)

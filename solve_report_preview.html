@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Octordle · Solve Report 預覽</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font:15px/1.6 -apple-system,"PingFang TC",sans-serif;background:#2b2b30;color:#e8e6e1;padding:28px 16px 70px}
+  .head{max-width:920px;margin:0 auto 20px}
+  h1{font-size:1.55rem;font-weight:600}
+  .sub{color:#a8a49c;margin-top:6px;font-size:.92rem}
+  .toggle{margin-top:16px;display:inline-flex;border:1px solid #4a4a52;border-radius:10px;overflow:hidden}
+  .toggle button{background:transparent;color:#cfcbc3;border:none;padding:8px 18px;font:inherit;cursor:pointer}
+  .toggle button.active{background:#e8e6e1;color:#1c1c20;font-weight:600}
+  .stage{max-width:920px;margin:0 auto;display:flex;gap:30px;justify-content:center;flex-wrap:wrap;align-items:flex-start}
+
+  /* phone */
+  .phone{width:330px;border-radius:34px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.5);
+         border:1px solid rgba(0,0,0,.3)}
+  .scroll{height:710px;overflow-y:auto}
+  .scroll::-webkit-scrollbar{width:0}
+
+  /* serif */
+  .serif{font-family:"New York",Georgia,"Songti TC",serif}
+
+  /* nav */
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 6px}
+  .nav .back{font-size:1.3rem;opacity:.5}
+  .nav .pz{font-size:.8rem;letter-spacing:.4px}
+
+  /* score hero */
+  .hero{text-align:center;padding:14px 24px 26px}
+  .hero .cap{font-size:.74rem;letter-spacing:2px;text-transform:uppercase;opacity:.55}
+  .hero .score{font-size:4.6rem;font-weight:600;line-height:1;margin:6px 0 2px}
+  .hero .score small{font-size:1.4rem;opacity:.45;font-weight:400}
+  .bar{height:5px;border-radius:3px;margin:14px auto 14px;width:78%}
+  .bar .fill{height:100%;border-radius:3px}
+  .hero .verdict{font-size:.95rem;line-height:1.5;padding:0 6px}
+
+  .rule{height:1px;margin:0 22px}
+
+  .sec{padding:22px 22px}
+  .sec .label{font-size:.72rem;letter-spacing:1.6px;text-transform:uppercase;opacity:.5;margin-bottom:14px}
+
+  /* killer card */
+  .killer{border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px}
+  .killer .top{display:flex;align-items:center;gap:8px}
+  .killer .top .k{font-size:1.05rem}
+  .killer .top .meta{margin-left:auto;font-size:.8rem;opacity:.7}
+  .tiles{display:flex;gap:5px}
+  .tile{width:40px;height:44px;border-radius:5px;display:flex;align-items:center;justify-content:center;
+        font-weight:700;font-size:1.05rem}
+  .pips{display:flex;gap:5px}
+  .pip{width:9px;height:9px;border-radius:50%}
+
+  /* guess timeline */
+  .grow{display:flex;align-items:center;gap:12px;padding:11px 0}
+  .grow .word{font-family:ui-monospace,Menlo,monospace;font-weight:600;letter-spacing:2px;font-size:1rem;width:78px}
+  .grow .cand{font-size:.82rem;flex:1}
+  .grow .cand b{font-weight:600}
+  .grow .mini{display:flex;gap:3px}
+  .grow .mp{width:7px;height:7px;border-radius:2px}
+  .tag{font-size:.68rem;padding:2px 7px;border-radius:20px;white-space:nowrap}
+
+  /* per board */
+  .boards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .bcell{border-radius:10px;padding:10px 4px;text-align:center}
+  .bcell .bn{font-size:.66rem;opacity:.55}
+  .bcell .bg{font-size:1.15rem;font-weight:600;margin-top:2px}
+  .bcell .bg small{font-size:.6rem;opacity:.6;font-weight:400}
+
+  .done{margin:6px 22px 26px;text-align:center;padding:15px;border-radius:14px;font-weight:600;font-family:inherit}
+
+  .note{max-width:920px;margin:26px auto 0;color:#b8b4ac;font-size:.9rem}
+  .note b{color:#e8e6e1}
+</style>
+</head>
+<body>
+  <div class="head">
+    <h1>Octordle · Solve Report 預覽</h1>
+    <div class="sub">獨立一頁、從結算頁點「解題分析」進來。用「墨與紙 petrol」配色,順便看整體質感。可切換淺/深色。</div>
+    <div class="toggle">
+      <button id="bl" class="active" onclick="setMode('light')">淺色</button>
+      <button id="bd" onclick="setMode('dark')">深色</button>
+    </div>
+  </div>
+  <div class="stage" id="stage"></div>
+
+  <div class="note">
+    設計重點:<b>四段、每段之間大量留白 + 細線分隔</b>,不擠在一起。<b>① 效率總分</b>用大襯線數字當主角;
+    <b>② 神之一手</b>是 8 盤限定的 hero 卡;<b>③ 逐猜拆解</b>每列顯示「候選答案怎麼縮」+ 8 個小方塊代表「這猜解掉哪幾盤」(因為 8 盤各自有不同顏色,用方塊比硬塞彩色磚更誠實清楚);<b>④ 各盤攻略</b>一眼看哪盤最難纏。
+    「跟玩家平均比」那層先不放。
+  </div>
+
+<script>
+const PAL = {
+  light:{ bg:"#f3efe6", ink:"#2a2622", sub:"#8c8475", rule:"#e0d8c8", card:"#fbf8f1",
+          cardBorder:"#e6ddcc", petrol:"#3c6e71", ochre:"#c79a3e", stone:"#b3ab9c",
+          pipOff:"#e0d8c8", barTrack:"#e6ddcc", killerBg:"#eef2ec", doneBg:"#2a2622", doneTx:"#f3efe6" },
+  dark:{ bg:"#16140f", ink:"#f0ebdf", sub:"#9a9384", rule:"#2e2a23", card:"#201c16",
+          cardBorder:"#34302a", petrol:"#5fa3a6", ochre:"#cba14a", stone:"#5a5347",
+          pipOff:"#34302a", barTrack:"#2e2a23", killerBg:"#1c241f", doneBg:"#f0ebdf", doneTx:"#16140f" }
+};
+
+// guess timeline data: word, candidates before/after, boards solved this guess (1-8), tag
+const GUESSES = [
+  {w:"CRANE", a:18960, b:3120, solved:[],      tag:"★ 最佳開局", tagType:"best"},
+  {w:"SLOTH", a:3120,  b:712,  solved:[]},
+  {w:"DUMPY", a:712,   b:168,  solved:[2]},
+  {w:"STARE", a:168,   b:44,   solved:[1,5,7], tag:"🔑 一次破 3 盤", tagType:"killer"},
+  {w:"BLIMP", a:44,    b:18,   solved:[3]},
+  {w:"WEDGE", a:18,    b:6,    solved:[4,8]},
+  {w:"FROCK", a:6,     b:0,    solved:[6]}
+];
+// per board solved-at-guess
+const BOARDS = [4,3,5,6,4,7,4,6];
+
+let mode="light";
+
+function tiles(word,pal){
+  return `<div class="tiles">`+word.split("").map(c=>
+    `<div class="tile" style="background:${pal.petrol};color:${pal.card}">${c}</div>`).join("")+`</div>`;
+}
+function killerPips(n,pal){
+  let h=`<div class="pips">`;
+  for(let i=0;i<8;i++) h+=`<span class="pip" style="background:${i<n?pal.petrol:pal.pipOff}"></span>`;
+  return h+`</div>`;
+}
+function miniSolved(arr,pal){
+  let h=`<div class="mini">`;
+  for(let i=1;i<=8;i++){
+    const on=arr.includes(i);
+    h+=`<span class="mp" style="background:${on?pal.petrol:pal.pipOff}"></span>`;
+  }
+  return h+`</div>`;
+}
+
+function build(pal){
+  // guesses
+  let rows="";
+  GUESSES.forEach((g,i)=>{
+    let tag="";
+    if(g.tag){
+      const col = g.tagType==="killer"?pal.petrol:pal.ochre;
+      tag=`<span class="tag" style="background:${col}22;color:${col}">${g.tag}</span>`;
+    }
+    rows+=`<div class="grow" style="border-bottom:1px solid ${pal.rule}">
+        <span class="word" style="color:${pal.ink}">${g.w}</span>
+        <span class="cand" style="color:${pal.sub}">候選 <b style="color:${pal.ink}">${g.a.toLocaleString()}</b> → <b style="color:${pal.petrol}">${g.b.toLocaleString()}</b></span>
+        ${tag||miniSolved(g.solved,pal)}
+      </div>`;
+  });
+
+  // boards grid
+  let bcells="";
+  BOARDS.forEach((g,i)=>{
+    bcells+=`<div class="bcell" style="background:${pal.card};border:1px solid ${pal.cardBorder}">
+        <div class="bn" style="color:${pal.sub}">盤 ${i+1}</div>
+        <div class="bg" style="color:${pal.ink}">${g}<small> 猜</small></div>
+      </div>`;
+  });
+
+  return `
+  <div class="phone" style="background:${pal.bg};color:${pal.ink}">
+    <div class="scroll">
+      <div class="nav">
+        <span class="back" style="color:${pal.ink}">‹</span>
+        <span class="pz serif" style="color:${pal.sub}">SOLVE REPORT · Puzzle #128</span>
+        <span style="width:14px"></span>
+      </div>
+
+      <div class="hero">
+        <div class="cap" style="color:${pal.sub}">效率評分</div>
+        <div class="score serif" style="color:${pal.petrol}">87<small> / 99</small></div>
+        <div class="bar" style="background:${pal.barTrack}"><div class="fill" style="width:87%;background:${pal.petrol}"></div></div>
+        <div class="verdict" style="color:${pal.ink}">教科書級開局,中段精準收網。<br>全 8 盤 7 猜全解,只比最佳路徑多 1 步。</div>
+      </div>
+
+      <div class="rule" style="background:${pal.rule}"></div>
+
+      <div class="sec">
+        <div class="label" style="color:${pal.sub}">神之一手</div>
+        <div class="killer" style="background:${pal.killerBg};border:1px solid ${pal.cardBorder}">
+          <div class="top">
+            <span class="k serif" style="color:${pal.ink}">第 4 猜 · STARE</span>
+            <span class="meta" style="color:${pal.sub}">一次破 3 盤</span>
+          </div>
+          ${tiles("STARE",pal)}
+          ${killerPips(3,pal)}
+        </div>
+      </div>
+
+      <div class="rule" style="background:${pal.rule}"></div>
+
+      <div class="sec">
+        <div class="label" style="color:${pal.sub}">逐猜拆解</div>
+        ${rows}
+      </div>
+
+      <div class="rule" style="background:${pal.rule}"></div>
+
+      <div class="sec">
+        <div class="label" style="color:${pal.sub}">各盤攻略 · 第幾猜解出</div>
+        <div class="boards">${bcells}</div>
+      </div>
+
+      <div class="done" style="background:${pal.doneBg};color:${pal.doneTx}">完成</div>
+    </div>
+  </div>`;
+}
+
+function render(){ document.getElementById('stage').innerHTML = build(PAL[mode]); }
+function setMode(m){
+  mode=m;
+  document.getElementById('bl').classList.toggle('active',m==='light');
+  document.getElementById('bd').classList.toggle('active',m==='dark');
+  render();
+}
+render();
+</script>
+</body>
+</html>

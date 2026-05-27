@@ -115,18 +115,30 @@ class WordService: ObservableObject {
         validWords.contains(word.uppercased())
     }
 
+    /// The pool of possible daily answers (used by the post-game Solve Report analysis).
+    func solutionPool() -> [String] {
+        answerWords
+    }
+
     /// Get random words for a new game
     func getRandomWords(count: Int = 4) -> [String] {
         Array(answerWords.shuffled().prefix(count))
     }
 
-    /// Get words for daily puzzle based on date
+    /// Get words for daily puzzle based on date.
+    /// Uses an Octordle-specific seed (distinct formula + salt from the 4-board sibling game)
+    /// so the daily answers never coincide with another title sharing a similar word pool.
     func getDailyWords(for date: Date = Date(), count: Int = 4) -> [String] {
         let calendar = Calendar.current
         let components = calendar.dateComponents([.year, .month, .day], from: date)
-        let seed = (components.year ?? 2024) * 10000 + (components.month ?? 1) * 100 + (components.day ?? 1)
+        let year = components.year ?? 2026
+        let month = components.month ?? 1
+        let day = components.day ?? 1
 
-        var rng = SeededRandomNumberGenerator(seed: UInt64(seed))
+        let dayOrdinal = Int64(year) * 366 + Int64(month) * 31 + Int64(day)
+        // Mix with a multiplicative hash and an "OCTO" salt for an app-unique sequence.
+        let seed = UInt64(bitPattern: dayOrdinal) &* 2_654_435_761 &+ 0x4F43_544F
+        var rng = SeededRandomNumberGenerator(seed: seed)
         return Array(answerWords.shuffled(using: &rng).prefix(count))
     }
 }

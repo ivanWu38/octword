@@ -12,6 +12,7 @@
 		0AE2D33AF1C28112A6FB1583 /* Clarity in Frameworks */ = {isa = PBXBuildFile; productRef = F68371F901CEFBCABB337A87 /* Clarity */; };
 		0CFFD1F8ED1365805C62D645 /* ShareCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C880C14E1BB16E660D4179 /* ShareCardView.swift */; };
 		0DB729463A8D75C3A52C7C23 /* TileData.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD03D1A5F84FA4ADB2D7519D /* TileData.swift */; };
+		0E694114BB35D655B9047D66 /* SolveAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF29951F90673E9BC16FB91 /* SolveAnalyzer.swift */; };
 		0F38436B7500A1F1ABA00EB5 /* AdMobManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5859D80C1518D574771FFA15 /* AdMobManager.swift */; };
 		143282164B6EB58523FEF13A /* NotepadIntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B64ABA569D2976B678F378A0 /* NotepadIntroView.swift */; };
 		2145A4B12A1049A4AD45AC3A /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4A60CA8B3CB8DB61CE0A0BB /* GameState.swift */; };
@@ -50,6 +51,7 @@
 		C17217387E271511DD866B26 /* OctordleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42A61E61D07C282FB5E8CAB1 /* OctordleApp.swift */; };
 		C3ABB314C4D3E4F115A8BE44 /* KeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07535EE500F74799CB1606FC /* KeyboardView.swift */; };
 		C4EBF9BAA8682DB05FD84B38 /* BoardData.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBD21DF948838FD8715DB29E /* BoardData.swift */; };
+		C69E52763452DEB31975BA26 /* SolveReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AC7B2DC9E5608C1F0659BC7 /* SolveReportView.swift */; };
 		C6CD8FF1C384136F67B2DFB0 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D0FBAA63E58663BABF08E2 /* Constants.swift */; };
 		D6A36CB71BAF539DCFEA3A2D /* StatsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F54408581B1D6647B968487 /* StatsService.swift */; };
 		DC02685A940104AF800530B2 /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A1EB872191EE691958B55D /* SubscriptionService.swift */; };
@@ -87,6 +89,7 @@
 		5859D80C1518D574771FFA15 /* AdMobManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdMobManager.swift; sourceTree = "<group>"; };
 		589AA71BC7A1950FEB332012 /* Difficulty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Difficulty.swift; sourceTree = "<group>"; };
 		59C880C14E1BB16E660D4179 /* ShareCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCardView.swift; sourceTree = "<group>"; };
+		5AC7B2DC9E5608C1F0659BC7 /* SolveReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolveReportView.swift; sourceTree = "<group>"; };
 		7494CB1E6520EB08318CD858 /* ThemePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePickerView.swift; sourceTree = "<group>"; };
 		753F8CD4AA215BE10EA11FC0 /* StreakAnimationOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakAnimationOverlay.swift; sourceTree = "<group>"; };
 		77E7AB328A1FF98F036378C5 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
@@ -107,6 +110,7 @@
 		D05BBC82B8C4FB9BA01BC701 /* AchievementDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementDetailView.swift; sourceTree = "<group>"; };
 		DAD06AA7C774DF2460256AAE /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		DBD9DBC316D6A873CF0406D3 /* DailyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyView.swift; sourceTree = "<group>"; };
+		DDF29951F90673E9BC16FB91 /* SolveAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolveAnalyzer.swift; sourceTree = "<group>"; };
 		EBD21DF948838FD8715DB29E /* BoardData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardData.swift; sourceTree = "<group>"; };
 		F1BA9531D869AB674B443789 /* TileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileView.swift; sourceTree = "<group>"; };
 		F47EC0C50C5D02F82C24A238 /* ATTPrePromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ATTPrePromptView.swift; sourceTree = "<group>"; };
@@ -189,6 +193,7 @@
 				77E7AB328A1FF98F036378C5 /* GameView.swift */,
 				07535EE500F74799CB1606FC /* KeyboardView.swift */,
 				59C880C14E1BB16E660D4179 /* ShareCardView.swift */,
+				5AC7B2DC9E5608C1F0659BC7 /* SolveReportView.swift */,
 				753F8CD4AA215BE10EA11FC0 /* StreakAnimationOverlay.swift */,
 				F1BA9531D869AB674B443789 /* TileView.swift */,
 			);
@@ -291,6 +296,7 @@
 				44BF11CAF0377D44FA7305B7 /* DailyPuzzleService.swift */,
 				7DE89D9329F1D517A5695783 /* HapticManager.swift */,
 				C0E6FC45B2F7C4B2ED18872E /* ReviewManager.swift */,
+				DDF29951F90673E9BC16FB91 /* SolveAnalyzer.swift */,
 				7F54408581B1D6647B968487 /* StatsService.swift */,
 				34A1EB872191EE691958B55D /* SubscriptionService.swift */,
 				451F268654B082E140E4CFA4 /* ThemeService.swift */,
@@ -439,6 +445,8 @@
 				349945BD2E68FFA385CB45FA /* ReviewPromptView.swift in Sources */,
 				F993BEBC5F090AB38C07377F /* SettingsView.swift in Sources */,
 				0CFFD1F8ED1365805C62D645 /* ShareCardView.swift in Sources */,
+				0E694114BB35D655B9047D66 /* SolveAnalyzer.swift in Sources */,
+				C69E52763452DEB31975BA26 /* SolveReportView.swift in Sources */,
 				D6A36CB71BAF539DCFEA3A2D /* StatsService.swift in Sources */,
 				BA63B5474961D1AD2830E86B /* StatsView.swift in Sources */,
 				7B5D5C46A0B63445D70AD1C7 /* StreakAnimationOverlay.swift in Sources */,

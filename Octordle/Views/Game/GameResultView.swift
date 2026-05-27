@@ -23,6 +23,9 @@ struct GameResultView: View {
                             starRating
                         }
 
+                        // Solve Report entry
+                        solveReportLink
+
                         // Board results
                         boardResultsGrid
 
@@ -73,6 +76,39 @@ struct GameResultView: View {
             .font(.subheadline)
             .foregroundColor(.quordleSecondaryText)
         }
+    }
+
+    // MARK: - Solve Report Link
+
+    private var puzzleNumber: Int? {
+        gameState.mode == .daily ? DailyPuzzleService.shared.puzzleNumber : nil
+    }
+
+    private var solveReportLink: some View {
+        NavigationLink {
+            SolveReportView(gameState: gameState, puzzleNumber: puzzleNumber)
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "chart.bar.xaxis")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.quordleCorrect)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Solve Report")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.quordlePrimaryText)
+                    Text("See how sharp your guesses were")
+                        .font(.system(size: 12))
+                        .foregroundColor(.quordleSecondaryText)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.quordleSecondaryText.opacity(0.6))
+            }
+            .padding()
+            .cardStyle()
+        }
+        .buttonStyle(ScaleButtonStyle())
     }
 
     // MARK: - Star Rating
