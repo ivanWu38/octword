@@ -63,12 +63,17 @@ enum Difficulty: String, CaseIterable, Codable, Identifiable {
         }
     }
 
-    /// Calculate star rating based on guesses used
+    /// Calculate star rating based on guesses used.
+    /// Scales with how far above the theoretical minimum (one guess per board) the win was,
+    /// so it stays achievable for every board count. Ultimate (8 boards, 13 guesses):
+    /// ⭐⭐⭐ ≤10 · ⭐⭐ 11–12 · ⭐ 13.
     func starRating(guessesUsed: Int) -> Int {
-        let percentage = Double(guessesUsed) / Double(maxGuesses)
-        if percentage < 0.56 {
+        let extra = guessesUsed - boardCount
+        let allowance = max(1, maxGuesses - boardCount)
+        let ratio = Double(extra) / Double(allowance)
+        if ratio <= 0.4 {
             return 3
-        } else if percentage < 0.78 {
+        } else if ratio <= 0.8 {
             return 2
         } else {
             return 1

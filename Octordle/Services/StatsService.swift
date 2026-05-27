@@ -197,13 +197,13 @@ class StatsService: ObservableObject {
             }
         }
 
-        // Check speed demon (under 2 minutes)
-        if result.isWon && result.elapsedSeconds < 120 {
+        // Check speed demon (under 6 minutes)
+        if result.isWon && result.elapsedSeconds < 360 {
             achievementProgress.unlockedAchievements.insert(.speedDemon)
         }
 
-        // Check quick draw (under 1 minute)
-        if result.isWon && result.elapsedSeconds < 60 {
+        // Check quick draw (under 4 minutes)
+        if result.isWon && result.elapsedSeconds < 240 {
             achievementProgress.unlockedAchievements.insert(.quickDraw)
         }
 
@@ -443,9 +443,9 @@ class StatsService: ObservableObject {
         case .perfectGame:
             current = achievementProgress.perfectGamesCount > 0 ? 1 : 0
         case .speedDemon:
-            current = (fastestWin ?? Int.max) < 120 ? 1 : 0
+            current = (fastestWin ?? Int.max) < 360 ? 1 : 0
         case .quickDraw:
-            current = (fastestWin ?? Int.max) < 60 ? 1 : 0
+            current = (fastestWin ?? Int.max) < 240 ? 1 : 0
         case .clutchPlayer:
             current = clutchWins > 0 ? 1 : 0
         case .challengeMaster:

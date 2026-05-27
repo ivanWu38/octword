@@ -56,13 +56,13 @@ enum Achievement: String, CaseIterable, Codable, Identifiable {
         case .streak7: return "Win 7 games in a row"
         case .streak30: return "Win 30 games in a row"
         case .perfectGame: return "Win with 3 stars in Octordle"
-        case .speedDemon: return "Win a game in under 2 minutes"
+        case .speedDemon: return "Win a game in under 6 minutes"
         case .clutchPlayer: return "Win with only 1 guess remaining"
         case .challengeMaster: return "Win 10 Octordle games"
         case .dailyDedicated: return "Complete 30 daily puzzles"
         case .explorer: return "Complete 10 daily puzzles"
         case .sharpMind: return "Achieve 5 perfect games"
-        case .quickDraw: return "Win a game in under 1 minute"
+        case .quickDraw: return "Win a game in under 4 minutes"
         }
     }
 

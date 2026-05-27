@@ -389,8 +389,8 @@ struct PersonalBestCard: View {
                     .foregroundColor(difficultyColor)
             }
 
-            // Difficulty name
-            Text(difficulty.displayName)
+            // Single mode now — label the card by what it shows, not the difficulty name
+            Text("Best Result")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.quordlePrimaryText)
 

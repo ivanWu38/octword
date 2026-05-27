@@ -158,7 +158,7 @@ struct SettingsView: View {
     private var supportSection: some View {
         Section {
             // Rate on App Store
-            Link(destination: URL(string: "https://apps.apple.com/app/id6758416573?action=write-review")!) {
+            Link(destination: URL(string: "https://apps.apple.com/app/id\(Constants.App.appStoreId)?action=write-review")!) {
                 HStack {
                     Image(systemName: "star.fill")
                         .foregroundColor(.quordleGold)

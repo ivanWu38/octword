@@ -40,7 +40,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         AdMobManager.shared.initialize()
 
         // Initialize Microsoft Clarity
-        let clarityConfig = ClarityConfig(projectId: "vhk5vwdpl1")
+        let clarityConfig = ClarityConfig(projectId: "wxg3m4aogx")
         ClaritySDK.initialize(config: clarityConfig)
     }
 }

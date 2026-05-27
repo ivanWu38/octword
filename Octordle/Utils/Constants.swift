@@ -6,8 +6,8 @@ enum Constants {
     enum App {
         static let name = "Octordle"
         static let bundleId = "com.ikuhei.octordle"
-        static let appStoreId = "6758416573"
-        static let appStoreURL = "https://apps.apple.com/us/app/octordle/id6758416573"
+        static let appStoreId = "6773183406"
+        static let appStoreURL = "https://apps.apple.com/app/id6773183406"
     }
 
     /// Game settings
