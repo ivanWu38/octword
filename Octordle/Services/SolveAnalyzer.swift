@@ -1,161 +1,177 @@
 import Foundation
 
-/// Tag describing the role a guess played in the solve.
-enum GuessTag: Equatable {
-    case none
-    case opener
-    case sharpest
-    case wasted
-}
+/// How good a single guess was, relative to the best play available at that moment.
+enum GuessRating: Int {
+    case soft = 1, fair, good, great, brilliant
 
-/// Analysis of a single guess within a finished game.
-struct GuessAnalysis: Identifiable {
-    let id = UUID()
-    let number: Int            // 1-based guess number
-    let word: String
-    let candidatesBefore: Int  // total possible answers across still-unsolved boards, before this guess
-    let candidatesAfter: Int   // ...after this guess
-    var tag: GuessTag
+    /// Filled dots out of 5.
+    var dots: Int { rawValue }
 
-    /// How many possibilities this guess removed across all boards.
-    var eliminated: Int { max(0, candidatesBefore - candidatesAfter) }
-
-    /// Fraction of the pool removed (0...1).
-    var reductionFraction: Double {
-        guard candidatesBefore > 0 else { return 0 }
-        return Double(eliminated) / Double(candidatesBefore)
+    var label: String {
+        switch self {
+        case .brilliant: return "Brilliant"
+        case .great: return "Great"
+        case .good: return "Good"
+        case .fair: return "Fair"
+        case .soft: return "Soft"
+        }
     }
 }
 
-/// The complete post-game report.
+/// Analysis of one guess.
+struct GuessAnalysis: Identifiable {
+    let id = UUID()
+    let number: Int            // 1-based
+    let word: String
+    let ratio: Double          // 0...1, how close to the best available play
+    let rating: GuessRating
+    let betterAlternative: String?  // a sharper word that was available, if this guess was weak
+}
+
+/// The full post-game report. Two scores:
+/// - efficiency: how few guesses you used (8 boards solved in 8 = perfect).
+/// - skill: how smart your word choices were (information gained vs the best play each turn).
 struct SolveReport {
     let isWon: Bool
     let solvedCount: Int
     let totalBoards: Int
     let guessCount: Int
     let maxGuesses: Int
-    let efficiency: Int            // 0...99
-    let verdict: String            // headline sentence
-    let detail: String             // supporting sentence
+
+    let efficiency: Int        // 0...100
+    let skill: Int             // 0...100
+    let headline: String
+    let detail: String
+
     let guesses: [GuessAnalysis]
-    let sharpestNumber: Int?       // guess number with the largest elimination
-    let boardSolvedAt: [Int?]      // per board: guess number solved, or nil
+    let smartestNumber: Int?
+    let boardSolvedAt: [Int?]
 }
 
-/// Builds a `SolveReport` from a finished game by replaying every guess against
-/// the answer pool and measuring how the space of possible solutions collapsed.
+/// Builds a `SolveReport` using information theory: for each guess we measure how much
+/// it narrowed the still-possible answers across the boards, and compare that to the
+/// best play available at that moment. This is the same idea WordleBot uses.
 ///
-/// Pure value type — no UI, no global state. Runs in well under a frame for an 8-board game.
+/// Pure value type. Heavier than a trivial pass, so callers should run it off the main thread.
 enum SolveAnalyzer {
 
-    /// Standard Wordle feedback, encoded as a base-3 integer (0 = absent, 1 = present, 2 = correct).
-    /// Encoding the pattern as an Int makes candidate comparison a single `==`.
-    private static func feedbackCode(guess: [Character], target: [Character]) -> Int {
-        var result = [0, 0, 0, 0, 0]
-        var counts: [Character: Int] = [:]
-        for c in target { counts[c, default: 0] += 1 }
+    // Best opening play, precomputed offline against the current answer pool.
+    // (RAISE minimises expected remaining answers; ~5.32 bits of information.)
+    // If `words.json` solutions change, recompute via the offline opener script.
+    private static let bestOpenerInfoBits = 5.3191
+    private static let bestOpenerWord = "RAISE"
 
-        // First pass: correct positions.
-        for i in 0..<5 where guess[i] == target[i] {
-            result[i] = 2
-            counts[guess[i], default: 0] -= 1
+    /// Standard Wordle feedback as a base-3 code (0 absent, 1 present, 2 correct).
+    private static func code(_ g: [UInt8], _ t: [UInt8]) -> Int {
+        var counts = [Int](repeating: 0, count: 26)
+        for c in t { counts[Int(c) - 65] += 1 }
+        var r = [0, 0, 0, 0, 0]
+        for i in 0..<5 where g[i] == t[i] {
+            r[i] = 2; counts[Int(g[i]) - 65] -= 1
         }
-        // Second pass: present letters, respecting remaining counts.
-        for i in 0..<5 where result[i] != 2 {
-            let c = guess[i]
-            if counts[c, default: 0] > 0 {
-                result[i] = 1
-                counts[c, default: 0] -= 1
-            }
+        for i in 0..<5 where r[i] != 2 {
+            let x = Int(g[i]) - 65
+            if counts[x] > 0 { r[i] = 1; counts[x] -= 1 }
         }
-
-        var code = 0
-        for state in result { code = code * 3 + state }
-        return code
+        return (((r[0] * 3 + r[1]) * 3 + r[2]) * 3 + r[3]) * 3 + r[4]
     }
 
-    static func analyze(gameState: GameState, pool: [String]) -> SolveReport {
+    /// Expected information (bits) a guess extracts from a board's candidate set.
+    private static func infoBits(_ guess: [UInt8], _ candidateIdxs: [Int], _ pool: [[UInt8]]) -> Double {
+        let n = candidateIdxs.count
+        if n <= 1 { return 0 }
+        var buckets = [Int](repeating: 0, count: 243)
+        for idx in candidateIdxs { buckets[code(guess, pool[idx])] += 1 }
+        var expected = 0.0
+        for b in buckets where b > 0 { expected += Double(b) * Double(b) }
+        expected /= Double(n)
+        return log2(Double(n)) - log2(expected)
+    }
+
+    static func analyze(gameState: GameState, pool rawPool: [String]) -> SolveReport {
         let boards = gameState.boards
         let boardCount = boards.count
-        let targets = boards.map { Array($0.targetWord) }
-        let solvedAt = boards.map { $0.solvedAtGuess }   // 1-based, or nil
+        let pool: [[UInt8]] = rawPool.map { Array($0.uppercased().utf8) }
+        let targets: [[UInt8]] = boards.map { Array($0.targetWord.uppercased().utf8) }
+        let solvedAt = boards.map { $0.solvedAtGuess }
 
-        // Reconstruct the ordered guess words. The board solved last (or any unsolved
-        // board on a loss) holds the full guess sequence, so take the longest history.
+        // Ordered guess words come from the board with the most rows (solved last / unsolved).
         let guessWords: [String] = (boards.max(by: { $0.guesses.count < $1.guesses.count })?.guesses ?? [])
             .map { row in row.map { $0.letter }.joined().uppercased() }
 
-        // Per-board candidate sets, pre-converted to char arrays once.
-        let poolChars = pool.map { Array($0.uppercased()) }
-        var candidates: [[[Character]]] = Array(repeating: poolChars, count: boardCount)
+        // Per-board candidate sets, as indices into `pool`.
+        var candidates: [[Int]] = Array(repeating: Array(pool.indices), count: boardCount)
 
         var analyses: [GuessAnalysis] = []
+        var totalPlayerInfo = 0.0
+        var totalBestInfo = 0.0
 
         for (idx, word) in guessWords.enumerated() {
             let number = idx + 1
-            let guessChars = Array(word)
+            let guessBytes = Array(word.uppercased().utf8)
+            let activeBoards = (0..<boardCount).filter { solvedAt[$0] == nil || solvedAt[$0]! >= number }
 
-            // Count candidates across boards not yet solved going INTO this guess.
-            var before = 0
-            for b in 0..<boardCount where (solvedAt[b] == nil || solvedAt[b]! >= number) {
-                before += candidates[b].count
+            // Player info this turn = sum across active boards.
+            var playerInfo = 0.0
+            for b in activeBoards { playerInfo += infoBits(guessBytes, candidates[b], pool) }
+
+            // Best info available this turn.
+            var bestInfo = 0.0
+            var bestWord: String? = nil
+
+            if number == 1 {
+                // All boards start from the full pool; best opener is precomputed.
+                bestInfo = Double(activeBoards.count) * bestOpenerInfoBits
+                bestWord = bestOpenerWord
+            } else {
+                // Search the words that could still be answers (union of candidates).
+                var unionSet = Set<Int>()
+                for b in activeBoards { unionSet.formUnion(candidates[b]) }
+                for gIdx in unionSet {
+                    let g = pool[gIdx]
+                    var info = 0.0
+                    for b in activeBoards { info += infoBits(g, candidates[b], pool) }
+                    if info > bestInfo {
+                        bestInfo = info
+                        bestWord = String(decoding: g, as: UTF8.self)
+                    }
+                }
             }
 
-            // Filter each active board's candidate set by feedback consistency.
-            for b in 0..<boardCount where (solvedAt[b] == nil || solvedAt[b]! >= number) {
-                let actual = feedbackCode(guess: guessChars, target: targets[b])
-                candidates[b] = candidates[b].filter { feedbackCode(guess: guessChars, target: $0) == actual }
+            let ratio: Double = bestInfo > 0.0001 ? min(1.0, playerInfo / bestInfo) : 1.0
+            let rating = ratingFor(ratio)
+            // Suggest a sharper word only when the guess was clearly suboptimal.
+            let alt: String? = (rating.rawValue <= GuessRating.fair.rawValue
+                                && bestWord != nil
+                                && bestWord! != word) ? bestWord : nil
+
+            analyses.append(GuessAnalysis(number: number, word: word, ratio: ratio, rating: rating, betterAlternative: alt))
+
+            if bestInfo > 0.0001 {
+                totalPlayerInfo += playerInfo
+                totalBestInfo += bestInfo
             }
 
-            // Count candidates across boards still unsolved AFTER this guess.
-            var after = 0
-            for b in 0..<boardCount where (solvedAt[b] == nil || solvedAt[b]! > number) {
-                after += candidates[b].count
+            // Apply the actual guess: filter each active board's candidates.
+            for b in activeBoards {
+                let actual = code(guessBytes, targets[b])
+                candidates[b] = candidates[b].filter { code(guessBytes, pool[$0]) == actual }
             }
-
-            analyses.append(GuessAnalysis(
-                number: number,
-                word: word,
-                candidatesBefore: before,
-                candidatesAfter: after,
-                tag: .none
-            ))
         }
 
-        // Tagging.
-        if !analyses.isEmpty {
-            analyses[0].tag = .opener
-        }
-        var sharpestNumber: Int? = nil
-        if let maxA = analyses.max(by: { $0.eliminated < $1.eliminated }), maxA.eliminated > 0 {
-            sharpestNumber = maxA.number
-            if let i = analyses.firstIndex(where: { $0.number == maxA.number }) {
-                analyses[i].tag = .sharpest
-            }
-        }
-        // Flag clearly wasted guesses (removed < 4% of the field, not the opener / sharpest).
-        for i in analyses.indices where analyses[i].tag == .none {
-            if analyses[i].candidatesBefore > 30 && analyses[i].reductionFraction < 0.04 {
-                analyses[i].tag = .wasted
-            }
-        }
-
+        let skill = totalBestInfo > 0 ? Int((100.0 * totalPlayerInfo / totalBestInfo).rounded()) : 100
         let solvedCount = boards.filter { $0.isSolved }.count
-        let efficiency = computeEfficiency(
-            isWon: gameState.isWon,
-            solvedCount: solvedCount,
-            boardCount: boardCount,
-            guessCount: gameState.guessCount,
-            maxGuesses: gameState.difficulty.maxGuesses,
-            analyses: analyses
-        )
-        let (verdict, detail) = verdictText(
-            efficiency: efficiency,
-            isWon: gameState.isWon,
-            solvedCount: solvedCount,
-            boardCount: boardCount,
-            guessCount: gameState.guessCount
-        )
+        let efficiency = efficiencyScore(isWon: gameState.isWon, solvedCount: solvedCount,
+                                         boardCount: boardCount, guessCount: gameState.guessCount,
+                                         maxGuesses: gameState.difficulty.maxGuesses)
+
+        // Smartest guess = highest quality ratio (ties broken by earliest).
+        let smartest = analyses.max(by: { $0.ratio < $1.ratio })
+        let smartestNumber = (smartest?.ratio ?? 0) > 0.0001 ? smartest?.number : nil
+
+        let (headline, detail) = verdict(skill: skill, isWon: gameState.isWon,
+                                         solvedCount: solvedCount, boardCount: boardCount,
+                                         guessCount: gameState.guessCount)
 
         return SolveReport(
             isWon: gameState.isWon,
@@ -164,71 +180,59 @@ enum SolveAnalyzer {
             guessCount: gameState.guessCount,
             maxGuesses: gameState.difficulty.maxGuesses,
             efficiency: efficiency,
-            verdict: verdict,
+            skill: skill,
+            headline: headline,
             detail: detail,
             guesses: analyses,
-            sharpestNumber: sharpestNumber,
+            smartestNumber: smartestNumber,
             boardSolvedAt: solvedAt
         )
     }
 
-    // MARK: - Scoring
+    // MARK: - Scoring helpers
 
-    private static func computeEfficiency(
-        isWon: Bool,
-        solvedCount: Int,
-        boardCount: Int,
-        guessCount: Int,
-        maxGuesses: Int,
-        analyses: [GuessAnalysis]
-    ) -> Int {
-        // Economy: fewer guesses relative to the allowance is better.
-        // Floor is boardCount (each guess solves at most one board).
-        let floor = max(1, boardCount)
-        let span = max(1, maxGuesses - floor)
-        let economy = clamp(Double(maxGuesses - guessCount) / Double(span), 0, 1)
-
-        // Opener: how much of the field the first guess removed.
-        let opener = analyses.first?.reductionFraction ?? 0
-
-        // Consistency: share of guesses that meaningfully cut the field (or solved a board).
-        let meaningful = analyses.filter { $0.reductionFraction >= 0.10 }.count
-        let consistency = analyses.isEmpty ? 0 : Double(meaningful) / Double(analyses.count)
-
-        // Completion gates the whole score — an unsolved board caps the ceiling.
-        let completion = Double(solvedCount) / Double(boardCount)
-
-        let raw = 0.5 * economy + 0.3 * opener + 0.2 * consistency
-        let gated = isWon ? raw : raw * (0.4 + 0.5 * completion)
-        return Int((99 * clamp(gated, 0, 1)).rounded())
+    private static func ratingFor(_ ratio: Double) -> GuessRating {
+        switch ratio {
+        case 0.92...: return .brilliant
+        case 0.80..<0.92: return .great
+        case 0.65..<0.80: return .good
+        case 0.45..<0.65: return .fair
+        default: return .soft
+        }
     }
 
-    private static func verdictText(
-        efficiency: Int,
-        isWon: Bool,
-        solvedCount: Int,
-        boardCount: Int,
-        guessCount: Int
-    ) -> (String, String) {
-        let detail: String = isWon
-            ? "Solved all \(boardCount) in \(guessCount) guesses."
+    /// Efficiency = guess economy. Solving every board in the minimum number of
+    /// guesses (one per board) is a perfect 100; each extra guess costs points,
+    /// and any win stays at 50+.
+    private static func efficiencyScore(isWon: Bool, solvedCount: Int, boardCount: Int,
+                                        guessCount: Int, maxGuesses: Int) -> Int {
+        guard isWon else {
+            return Int((50.0 * Double(solvedCount) / Double(boardCount)).rounded())
+        }
+        let floor = boardCount
+        let span = max(1, maxGuesses - floor)
+        let penaltyPerGuess = 50.0 / Double(span)
+        let raw = 100.0 - Double(max(0, guessCount - floor)) * penaltyPerGuess
+        return Int(min(100.0, max(50.0, raw)).rounded())
+    }
+
+    private static func verdict(skill: Int, isWon: Bool, solvedCount: Int,
+                                boardCount: Int, guessCount: Int) -> (String, String) {
+        let detail = isWon
+            ? "Solved all \(boardCount) boards in \(guessCount) guesses."
             : "Solved \(solvedCount) of \(boardCount) boards."
 
-        let verdict: String
         if !isWon {
-            verdict = solvedCount >= boardCount - 1 ? "So close — one board slipped away." : "A tough board today."
-        } else {
-            switch efficiency {
-            case 85...: verdict = "Textbook solve. Ruthless efficiency."
-            case 70..<85: verdict = "Sharp and steady throughout."
-            case 55..<70: verdict = "Solid — a little room to tighten up."
-            default: verdict = "You got there. A few guesses went to waste."
-            }
+            return ("A tough one — but some sharp guessing in there.", detail)
         }
-        return (verdict, detail)
-    }
-
-    private static func clamp(_ x: Double, _ lo: Double, _ hi: Double) -> Double {
-        min(max(x, lo), hi)
+        let headline: String
+        switch skill {
+        case 90...: headline = "Brilliant word choices."
+        case 75..<90: headline = "Sharp, efficient guessing."
+        case 60..<75: headline = "Solid choices throughout."
+        case 45..<60: headline = "Nicely done — a few sharper options were there."
+        default: headline = "Got the win. Plenty of room to sharpen up."
+        }
+        return (headline, detail)
     }
 }

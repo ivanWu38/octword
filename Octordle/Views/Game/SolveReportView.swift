@@ -1,8 +1,7 @@
 import SwiftUI
 
-/// Post-game analysis screen. Pushed from the result screen via "Solve Report".
-/// Replays the solve and shows efficiency, the sharpest guess, a guess-by-guess
-/// breakdown of how the answer pool collapsed, and a per-board summary.
+/// Post-game analysis screen. Shows two scores (Efficiency + Skill), the smartest
+/// guess, a guess-by-guess quality breakdown, and a per-board summary.
 struct SolveReportView: View {
     let gameState: GameState
     let puzzleNumber: Int?
@@ -13,34 +12,53 @@ struct SolveReportView: View {
         ScrollView {
             if let report = report {
                 VStack(spacing: 0) {
-                    efficiencyHero(report)
+                    scoresHeader(report)
                     sectionDivider
-                    if let sharpest = sharpestGuess(report) {
-                        sharpestSection(sharpest)
+                    if let smartest = smartestGuess(report) {
+                        smartestSection(smartest)
                         sectionDivider
                     }
-                    breakdownSection(report)
+                    guessesSection(report)
                     sectionDivider
                     perBoardSection(report)
                 }
                 .padding(.bottom, 32)
                 .iPadReadableWidth(520)
+            } else {
+                loadingView
             }
         }
         .background(Color.quordleBackground.ignoresSafeArea())
         .navigationTitle("Solve Report")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            if report == nil {
-                report = SolveAnalyzer.analyze(gameState: gameState, pool: WordService.shared.solutionPool())
-            }
+        .onAppear(perform: computeIfNeeded)
+    }
+
+    private func computeIfNeeded() {
+        guard report == nil else { return }
+        let pool = WordService.shared.solutionPool()
+        let state = gameState
+        DispatchQueue.global(qos: .userInitiated).async {
+            let result = SolveAnalyzer.analyze(gameState: state, pool: pool)
+            DispatchQueue.main.async { report = result }
         }
     }
 
-    // MARK: - Efficiency Hero
-
-    private func efficiencyHero(_ report: SolveReport) -> some View {
+    private var loadingView: some View {
         VStack(spacing: 14) {
+            ProgressView()
+            Text("Analyzing your solve…")
+                .font(.system(size: 14))
+                .foregroundColor(.quordleSecondaryText)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 120)
+    }
+
+    // MARK: - Scores Header
+
+    private func scoresHeader(_ report: SolveReport) -> some View {
+        VStack(spacing: 18) {
             if let number = puzzleNumber {
                 Text("PUZZLE #\(number)")
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
@@ -48,32 +66,15 @@ struct SolveReportView: View {
                     .foregroundColor(.quordleSecondaryText)
             }
 
-            Text("EFFICIENCY")
-                .font(.system(size: 12, weight: .semibold))
-                .tracking(3)
-                .foregroundColor(.quordleSecondaryText)
-
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text("\(report.efficiency)")
-                    .font(.system(size: 72, weight: .bold, design: .serif))
-                    .foregroundColor(.quordleCorrect)
-                Text("/ 99")
-                    .font(.system(size: 22, weight: .regular, design: .serif))
-                    .foregroundColor(.quordleSecondaryText)
+            HStack(spacing: 12) {
+                scoreTile("EFFICIENCY", value: report.efficiency, accent: .quordleGold,
+                          caption: "how few guesses")
+                scoreTile("SKILL", value: report.skill, accent: .quordleCorrect,
+                          caption: "how smart your words were")
             }
-
-            // Score bar
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(Color.quordleCardBorder)
-                    Capsule().fill(Color.quordleCorrect)
-                        .frame(width: geo.size.width * CGFloat(report.efficiency) / 99.0)
-                }
-            }
-            .frame(width: 220, height: 5)
 
             VStack(spacing: 4) {
-                Text(report.verdict)
+                Text(report.headline)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.quordlePrimaryText)
                 Text(report.detail)
@@ -81,65 +82,108 @@ struct SolveReportView: View {
                     .foregroundColor(.quordleSecondaryText)
             }
             .multilineTextAlignment(.center)
-            .padding(.top, 2)
         }
         .frame(maxWidth: .infinity)
-        .padding(.top, 18)
-        .padding(.bottom, 24)
+        .padding(.top, 16)
+        .padding(.bottom, 22)
         .padding(.horizontal, 24)
     }
 
-    // MARK: - Sharpest Guess
+    private func scoreTile(_ title: String, value: Int, accent: Color, caption: String) -> some View {
+        VStack(spacing: 6) {
+            Text(title)
+                .font(.system(size: 11, weight: .semibold))
+                .tracking(1.5)
+                .foregroundColor(.quordleSecondaryText)
 
-    private func sharpestGuess(_ report: SolveReport) -> GuessAnalysis? {
-        guard let n = report.sharpestNumber else { return nil }
+            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                Text("\(value)")
+                    .font(.system(size: 46, weight: .bold, design: .serif))
+                    .foregroundColor(accent)
+                Text("/100")
+                    .font(.system(size: 14, weight: .regular, design: .serif))
+                    .foregroundColor(.quordleSecondaryText)
+            }
+
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.quordleCardBorder)
+                    Capsule().fill(accent).frame(width: geo.size.width * CGFloat(value) / 100.0)
+                }
+            }
+            .frame(height: 4)
+
+            Text(caption)
+                .font(.system(size: 10))
+                .foregroundColor(.quordleSecondaryText)
+                .multilineTextAlignment(.center)
+                .frame(height: 26)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .padding(.horizontal, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.quordleCardBackground)
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.quordleCardBorder, lineWidth: 1))
+        )
+    }
+
+    // MARK: - Smartest Guess
+
+    private func smartestGuess(_ report: SolveReport) -> GuessAnalysis? {
+        guard let n = report.smartestNumber else { return nil }
         return report.guesses.first { $0.number == n }
     }
 
-    private func sharpestSection(_ guess: GuessAnalysis) -> some View {
-        sectionContainer(title: "SHARPEST GUESS") {
+    private func smartestSection(_ guess: GuessAnalysis) -> some View {
+        sectionContainer(title: "SMARTEST GUESS") {
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
                     Text("Guess \(guess.number) · \(guess.word)")
                         .font(.system(size: 18, weight: .semibold, design: .serif))
                         .foregroundColor(.quordlePrimaryText)
                     Spacer()
-                    Text("−\(guess.eliminated.formatted())")
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
-                        .foregroundColor(.quordleCorrect)
+                    dots(guess.rating)
                 }
-
-                wordTiles(guess.word)
-
-                Text("Eliminated \(guess.eliminated.formatted()) possibilities across the boards in one move.")
+                wordTiles(guess.word, color: ratingColor(guess.rating))
+                Text(smartestBlurb(guess.rating))
                     .font(.system(size: 13))
                     .foregroundColor(.quordleSecondaryText)
             }
         }
     }
 
-    private func wordTiles(_ word: String) -> some View {
+    private func smartestBlurb(_ rating: GuessRating) -> String {
+        switch rating {
+        case .brilliant: return "Near-perfect — almost no word would have revealed more."
+        case .great: return "A strong, sharp choice that cut the field right down."
+        default: return "Your most informative guess of the game."
+        }
+    }
+
+    private func wordTiles(_ word: String, color: Color) -> some View {
         HStack(spacing: 5) {
             ForEach(Array(word.enumerated()), id: \.offset) { _, ch in
                 Text(String(ch))
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.white)
                     .frame(width: 38, height: 42)
-                    .background(RoundedRectangle(cornerRadius: 5).fill(Color.quordleCorrect))
+                    .background(RoundedRectangle(cornerRadius: 5).fill(color))
             }
         }
     }
 
-    // MARK: - Guess Breakdown
+    // MARK: - Guesses
 
-    private func breakdownSection(_ report: SolveReport) -> some View {
+    private func guessesSection(_ report: SolveReport) -> some View {
         sectionContainer(
-            title: "GUESS BREAKDOWN",
-            subtitle: "How many answers were still possible across the 8 boards after each guess. The bar shows how much that guess cut down — watch it fall toward zero."
+            title: "YOUR GUESSES",
+            subtitle: "How close each guess came to the best play available that turn. More dots = a sharper choice."
         ) {
             VStack(spacing: 0) {
                 ForEach(Array(report.guesses.enumerated()), id: \.element.id) { idx, g in
-                    breakdownRow(g)
+                    guessRow(g)
                     if idx < report.guesses.count - 1 {
                         Rectangle().fill(Color.quordleCardBorder).frame(height: 1)
                     }
@@ -148,8 +192,8 @@ struct SolveReportView: View {
         }
     }
 
-    private func breakdownRow(_ g: GuessAnalysis) -> some View {
-        VStack(spacing: 8) {
+    private func guessRow(_ g: GuessAnalysis) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 10) {
                 Text("\(g.number)")
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -163,73 +207,43 @@ struct SolveReportView: View {
 
                 Spacer()
 
-                // Possible answers still left after this guess.
-                HStack(spacing: 3) {
-                    Text(g.candidatesAfter.formatted())
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundColor(.quordlePrimaryText)
-                    Text("left")
-                        .font(.system(size: 11))
-                        .foregroundColor(.quordleSecondaryText)
-                }
+                dots(g.rating)
 
-                tagChip(g.tag)
+                Text(g.rating.label)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(ratingColor(g.rating))
+                    .frame(width: 60, alignment: .trailing)
             }
 
-            // Reduction bar — how much of the field this guess eliminated.
-            HStack(spacing: 8) {
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        Capsule().fill(Color.quordleCardBorder.opacity(0.5))
-                        Capsule().fill(barColor(g.tag))
-                            .frame(width: max(2, geo.size.width * CGFloat(g.reductionFraction)))
-                    }
+            if let alt = g.betterAlternative {
+                HStack(spacing: 4) {
+                    Image(systemName: "arrow.turn.down.right")
+                        .font(.system(size: 9))
+                    Text("Sharper choice: \(alt)")
+                        .font(.system(size: 11))
                 }
-                .frame(height: 4)
-
-                if g.eliminated > 0 {
-                    Text("−\(g.eliminated.formatted())")
-                        .font(.system(size: 10, weight: .medium, design: .rounded))
-                        .foregroundColor(.quordleSecondaryText)
-                }
+                .foregroundColor(.quordleSecondaryText)
+                .padding(.leading, 26)
             }
         }
         .padding(.vertical, 11)
     }
 
-    @ViewBuilder
-    private func tagChip(_ tag: GuessTag) -> some View {
-        switch tag {
-        case .opener:
-            chip(text: "Opener", color: .quordleGold, icon: "flag.fill")
-        case .sharpest:
-            chip(text: "Sharpest", color: .quordleCorrect, icon: "scissors")
-        case .wasted:
-            chip(text: "Soft", color: .quordleSecondaryText, icon: nil)
-        case .none:
-            EmptyView()
-        }
-    }
-
-    private func chip(text: String, color: Color, icon: String?) -> some View {
+    private func dots(_ rating: GuessRating) -> some View {
         HStack(spacing: 3) {
-            if let icon = icon {
-                Image(systemName: icon).font(.system(size: 8, weight: .bold))
+            ForEach(0..<5, id: \.self) { i in
+                Circle()
+                    .fill(i < rating.dots ? ratingColor(rating) : Color.quordleCardBorder)
+                    .frame(width: 6, height: 6)
             }
-            Text(text).font(.system(size: 10, weight: .semibold))
         }
-        .foregroundColor(color)
-        .padding(.horizontal, 7)
-        .padding(.vertical, 3)
-        .background(Capsule().fill(color.opacity(0.14)))
     }
 
-    private func barColor(_ tag: GuessTag) -> Color {
-        switch tag {
-        case .sharpest: return .quordleCorrect
-        case .opener: return .quordleGold
-        case .wasted: return .quordleSecondaryText.opacity(0.5)
-        case .none: return .quordleCorrect.opacity(0.65)
+    private func ratingColor(_ rating: GuessRating) -> Color {
+        switch rating {
+        case .brilliant, .great: return .quordleCorrect
+        case .good: return .quordleGold
+        case .fair, .soft: return .quordleOrange
         }
     }
 
