@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Daily challenge main view - shows start screen first, navigates to GameView
+/// Daily challenge main view — "front page" of the daily edition.
 struct DailyView: View {
     @EnvironmentObject var themeService: ThemeService
     @EnvironmentObject var statsService: StatsService
@@ -10,7 +10,8 @@ struct DailyView: View {
     @State private var showGame = false
     @State private var isReplaying = false
     @State private var savedState: GameState?
-    @State private var showDailyResult = false
+    @State private var showSolveReport = false
+    @State private var showResult = false
 
     var body: some View {
         NavigationStack {
@@ -21,9 +22,9 @@ struct DailyView: View {
                     startView
                 }
             }
-            .background(LinearGradient.quordleBackground.ignoresSafeArea())
-            .navigationTitle("Today")
-            .navigationBarTitleDisplayMode(.large)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.quordleBackground.ignoresSafeArea())
+            .toolbar(.hidden, for: .navigationBar)
             .onAppear {
                 let state = statsService.loadDailyState()
                 if let state = state, state.isGameOver {
@@ -46,361 +47,209 @@ struct DailyView: View {
                     savedState = statsService.loadDailyState()
                 }
             }
+            .sheet(isPresented: $showSolveReport) {
+                if let completed = statsService.loadCompletedDailyResult() {
+                    NavigationStack {
+                        SolveReportView(gameState: completed, puzzleNumber: dailyPuzzleService.puzzleNumber)
+                    }
+                }
+            }
+            .sheet(isPresented: $showResult) {
+                if let completed = statsService.loadCompletedDailyResult() {
+                    GameResultView(gameState: completed)
+                }
+            }
+        }
+    }
+
+    // MARK: - Masthead
+
+    private var dateLine: String {
+        let f = DateFormatter()
+        f.dateFormat = "EEEE · MMMM d yyyy"
+        return f.string(from: Date())
+    }
+
+    private var masthead: some View {
+        VStack(spacing: 0) {
+            Text(dateLine)
+                .font(.system(size: 11, weight: .medium))
+                .tracking(2)
+                .textCase(.uppercase)
+                .foregroundColor(.quordleSecondaryText)
+                .padding(.bottom, 8)
+
+            Rectangle().fill(Color.quordlePrimaryText).frame(height: 1)
+
+            Text("Octordle")
+                .font(.system(size: 38, weight: .bold, design: .serif))
+                .foregroundColor(.quordlePrimaryText)
+                .padding(.vertical, 8)
+
+            Rectangle().fill(Color.quordlePrimaryText).frame(height: 1)
+
+            Text("No. \(dailyPuzzleService.puzzleNumber)  ·  Eight Words  ·  Daily")
+                .font(.system(size: 10.5, weight: .medium))
+                .tracking(2)
+                .textCase(.uppercase)
+                .foregroundColor(.quordleSecondaryText)
+                .padding(.top, 8)
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 8)
+    }
+
+    private var countdownFooter: some View {
+        VStack(spacing: 14) {
+            Rectangle().fill(Color.quordleCardBorder).frame(height: 1).padding(.horizontal, 24)
+            VStack(spacing: 4) {
+                Text("Next Edition In")
+                    .font(.system(size: 10, weight: .medium))
+                    .tracking(2.5)
+                    .textCase(.uppercase)
+                    .foregroundColor(.quordleSecondaryText)
+                Text(dailyPuzzleService.countdownString)
+                    .font(.system(size: 30, weight: .semibold, design: .serif))
+                    .foregroundColor(.quordlePrimaryText)
+                    .monospacedDigit()
+            }
+            .padding(.bottom, 18)
         }
     }
 
     // MARK: - Start View
 
     private var startView: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 28) {
+        VStack(spacing: 0) {
+            masthead
+            Spacer().frame(height: 56)
+            VStack(spacing: 22) {
+                Text("Today's Edition")
+                    .font(.system(size: 11, weight: .semibold))
+                    .tracking(3)
+                    .textCase(.uppercase)
+                    .foregroundColor(.quordleSecondaryText)
 
-                // Calendar icon
-                ZStack {
-                    Circle()
-                        .fill(Color.quordlePrimary.opacity(0.15))
-                        .frame(width: 120, height: 120)
-
-                    Image(systemName: "calendar")
-                        .font(.system(size: 56))
-                        .foregroundColor(.quordlePrimary)
+                VStack(spacing: 2) {
+                    Text("Eight words.")
+                        .font(.system(size: 30, weight: .bold, design: .serif))
+                    Text("Thirteen guesses.")
+                        .font(.system(size: 30, weight: .regular, design: .serif))
+                        .italic()
                 }
+                .foregroundColor(.quordlePrimaryText)
+                .multilineTextAlignment(.center)
 
-                // Title
-                VStack(spacing: 8) {
-                    Text("Daily Challenge")
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundColor(.quordlePrimaryText)
-
-                    Text("Puzzle #\(dailyPuzzleService.puzzleNumber)")
-                        .font(.system(size: 18, weight: .medium, design: .rounded))
-                        .foregroundColor(.quordleSecondaryText)
-                }
-
-                // Streak badge (only show if streak >= 1)
-                // Dimmed when today's puzzle hasn't been completed yet
-                if statsService.currentStreak >= 1 {
-                    let isActive = dailyPuzzleService.isTodayCompleted
-                    let flameColor: Color = isActive ? .quordleOrange : .quordleOrange.opacity(0.4)
-                    HStack(spacing: 6) {
-                        Image(systemName: "flame.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(flameColor)
-                        Text("\(statsService.currentStreak)-day streak")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
-                            .foregroundColor(flameColor)
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 7)
-                    .background(
-                        Capsule()
-                            .fill(Color.quordleOrange.opacity(isActive ? 0.12 : 0.06))
-                    )
-                }
-
-                // Info card
-                VStack(spacing: 16) {
-                    HStack {
-                        Image(systemName: "square.grid.3x3.fill")
-                            .font(.system(size: 20))
-                            .foregroundColor(.quordleSecondary)
-                        Text("8 Words to Solve")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(.quordlePrimaryText)
-                        Spacer()
-                    }
-
-                    HStack {
-                        Image(systemName: "number.circle.fill")
-                            .font(.system(size: 20))
-                            .foregroundColor(.quordleOrange)
-                        Text("13 Guesses Available")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(.quordlePrimaryText)
-                        Spacer()
-                    }
-
-                    HStack {
-                        Image(systemName: "clock.fill")
-                            .font(.system(size: 20))
-                            .foregroundColor(.quordleGold)
-                        Text("New puzzle every day")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(.quordlePrimaryText)
-                        Spacer()
-                    }
-                }
-                .padding(20)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.quordleCardBackground)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.quordleCardBorder, lineWidth: 1)
-                )
-                .padding(.horizontal, 4)
-
-                Spacer().frame(height: 20)
-
-                // Play button
                 Button {
                     HapticManager.shared.gameStart()
-                    if savedState == nil {
-                        // No saved state — start fresh
-                    }
                     showGame = true
                 } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: savedState != nil ? "arrow.clockwise" : "play.fill")
-                            .font(.system(size: 20))
-                        Text(savedState != nil ? "Resume" : "Play Now")
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                    }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 18)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(LinearGradient.quordleButtonGradient)
-                    )
+                    Text(savedState != nil ? "Resume Today's Puzzle" : "Begin Today's Puzzle")
                 }
-                .buttonStyle(ScaleButtonStyle())
+                .buttonStyle(PrimaryButtonStyle())
+                .padding(.top, 4)
 
-                Spacer().frame(height: 100)
+                if statsService.currentStreak >= 1 {
+                    let active = dailyPuzzleService.isTodayCompleted
+                    Text("— a \(statsService.currentStreak)-day streak —")
+                        .font(.system(size: 14, design: .serif))
+                        .italic()
+                        .foregroundColor(active ? .quordleOrange : .quordleSecondaryText)
+                }
             }
-            .padding(.horizontal, 20)
-            .iPadReadableWidth()
+            .padding(.horizontal, 28)
+            Spacer()
+            countdownFooter
         }
+        .iPadReadableWidth()
     }
 
     // MARK: - Completed View
 
     private var completedView: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 28) {
+        let completed = statsService.loadCompletedDailyResult()
+        let solved = completed?.boards.filter { $0.isSolved }.count ?? 0
+        let total = completed?.boards.count ?? 8
+        let guesses = completed?.guessCount ?? 0
+        let secs = completed?.elapsedSeconds ?? 0
+        let timeStr = String(format: "%d:%02d", secs / 60, secs % 60)
+        let stars = completed?.starRating ?? 0
 
-                // Success icon
-                ZStack {
-                    Circle()
-                        .fill(Color.quordleSuccess.opacity(0.2))
-                        .frame(width: 100, height: 100)
+        return VStack(spacing: 0) {
+            masthead
+            Spacer().frame(height: 44)
+            VStack(spacing: 18) {
+                Text("SOLVED")
+                    .font(.system(size: 18, weight: .bold, design: .serif))
+                    .tracking(3)
+                    .foregroundColor(.quordlePrimary)
+                    .padding(.horizontal, 16).padding(.vertical, 6)
+                    .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.quordlePrimary, lineWidth: 2.5))
+                    .rotationEffect(.degrees(-7))
+                    .opacity(solved == total ? 1 : 0)        // only stamp a full solve
 
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 50))
-                        .foregroundColor(.quordleSuccess)
-                }
-
-                // Title
-                VStack(spacing: 8) {
-                    Text("Completed!")
-                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                if solved != total {
+                    Text("Edition Closed")
+                        .font(.system(size: 22, weight: .semibold, design: .serif))
                         .foregroundColor(.quordlePrimaryText)
-
-                    Text("Puzzle #\(dailyPuzzleService.puzzleNumber)")
-                        .font(.system(size: 18, weight: .medium, design: .rounded))
-                        .foregroundColor(.quordleSecondaryText)
                 }
 
-                // Stats card
-                statsCard
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text("\(solved)").font(.system(size: 56, weight: .bold, design: .serif))
+                    Text("/ \(total)").font(.system(size: 24, design: .serif)).foregroundColor(.quordleSecondaryText)
+                }
+                .foregroundColor(.quordlePrimaryText)
 
-                // Today's result review card
-                if let completedState = statsService.loadCompletedDailyResult() {
-                    todayResultCard(
-                        starRating: completedState.starRating,
-                        solvedCount: completedState.boards.filter { $0.isSolved }.count,
-                        totalBoards: completedState.boards.count,
-                        guessCount: completedState.guessCount,
-                        elapsedSeconds: completedState.elapsedSeconds
-                    )
+                if stars > 0 {
+                    HStack(spacing: 6) {
+                        ForEach(0..<3) { i in
+                            Image(systemName: i < stars ? "star.fill" : "star")
+                                .font(.system(size: 13))
+                                .foregroundColor(i < stars ? .quordleGold : .quordleSecondaryText.opacity(0.4))
+                        }
+                    }
                 }
 
-                // Countdown card
-                countdownCard
+                Text("\(guesses) guesses  ·  \(timeStr)")
+                    .font(.system(size: 14, design: .serif))
+                    .foregroundColor(.quordleSecondaryText)
 
-                // Replay button
+                Button {
+                    HapticManager.shared.buttonTap()
+                    showSolveReport = true
+                } label: {
+                    Text("Read your Solve Report")
+                }
+                .buttonStyle(PrimaryButtonStyle())
+                .padding(.top, 4)
+
+                Button {
+                    HapticManager.shared.buttonTap()
+                    showResult = true
+                } label: {
+                    Text("View result & share")
+                        .font(.system(size: 14, weight: .semibold, design: .serif))
+                        .foregroundColor(.quordlePrimary)
+                        .underline()
+                }
+
                 Button {
                     HapticManager.shared.gameStart()
                     isReplaying = true
                     savedState = nil
                     showGame = true
                 } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 18))
-                        Text("Play Again")
-                            .font(.system(size: 18, weight: .semibold, design: .rounded))
-                    }
-                    .foregroundColor(.quordlePrimary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 18)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(Color.quordleCardBackground)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(Color.quordlePrimary.opacity(0.3), lineWidth: 1)
-                    )
+                    Text("Play again")
+                        .font(.system(size: 13, design: .serif))
+                        .foregroundColor(.quordleSecondaryText)
+                        .underline()
                 }
-                .buttonStyle(ScaleButtonStyle())
-                .padding(.horizontal, 4)
-
-                Spacer().frame(height: 100)
             }
-            .padding(.horizontal, 20)
-            .iPadReadableWidth()
+            .padding(.horizontal, 28)
+            Spacer()
+            countdownFooter
         }
-        .sheet(isPresented: $showDailyResult) {
-            if let completedState = statsService.loadCompletedDailyResult() {
-                GameResultView(gameState: completedState)
-            }
-        }
-    }
-
-    // MARK: - Today's Result Card
-
-    private func todayResultCard(
-        starRating: Int,
-        solvedCount: Int,
-        totalBoards: Int,
-        guessCount: Int,
-        elapsedSeconds: Int
-    ) -> some View {
-        let timeString = String(format: "%d:%02d", elapsedSeconds / 60, elapsedSeconds % 60)
-
-        return Button {
-            HapticManager.shared.buttonTap()
-            showDailyResult = true
-        } label: {
-            HStack(spacing: 16) {
-                // Star & score
-                VStack(spacing: 4) {
-                    HStack(spacing: 2) {
-                        ForEach(0..<3) { index in
-                            Image(systemName: index < starRating ? "star.fill" : "star")
-                                .font(.system(size: 12))
-                                .foregroundColor(index < starRating ? .quordleGold : .quordleSecondaryText.opacity(0.3))
-                        }
-                    }
-
-                    Text("\(solvedCount)/\(totalBoards)")
-                        .font(.system(size: 28, weight: .black, design: .rounded))
-                        .foregroundColor(.quordlePrimaryText)
-                }
-
-                // Divider
-                Rectangle()
-                    .fill(Color.quordleCardBorder)
-                    .frame(width: 1, height: 40)
-
-                // Details
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Today's Result")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
-                        .foregroundColor(.quordlePrimaryText)
-
-                    HStack(spacing: 12) {
-                        Label("\(guessCount) guesses", systemImage: "number")
-                        Label(timeString, systemImage: "clock")
-                    }
-                    .font(.system(size: 13))
-                    .foregroundColor(.quordleSecondaryText)
-                }
-
-                Spacer()
-
-                // Chevron
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.quordleSecondaryText.opacity(0.5))
-            }
-            .padding(20)
-            .background(
-                RoundedRectangle(cornerRadius: 18)
-                    .fill(Color.quordleCardBackground)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 18)
-                            .stroke(Color.quordleCardBorder, lineWidth: 1)
-                    )
-            )
-        }
-        .buttonStyle(ScaleButtonStyle())
-    }
-
-    // MARK: - Stats Card
-
-    private var statsCard: some View {
-        VStack(spacing: 20) {
-            HStack {
-                Image(systemName: "flame.fill")
-                    .font(.system(size: 22))
-                    .foregroundColor(dailyPuzzleService.isTodayCompleted ? .quordleOrange : .quordleOrange.opacity(0.4))
-
-                Text("Current Streak")
-                    .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .foregroundColor(.quordleSecondaryText)
-
-                Spacer()
-
-                Text("\(statsService.currentStreak) \(statsService.currentStreak == 1 ? "day" : "days")")
-                    .font(.system(size: 18, weight: .semibold, design: .rounded))
-                    .foregroundColor(.quordlePrimaryText)
-            }
-
-            Divider().background(Color.quordleCardBorder)
-
-            HStack {
-                Image(systemName: "trophy.fill")
-                    .font(.system(size: 22))
-                    .foregroundColor(.quordleGold)
-
-                Text("Total Wins")
-                    .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .foregroundColor(.quordleSecondaryText)
-
-                Spacer()
-
-                Text("\(statsService.totalWins)")
-                    .font(.system(size: 18, weight: .semibold, design: .rounded))
-                    .foregroundColor(.quordlePrimaryText)
-            }
-        }
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 18)
-                .fill(Color.quordleCardBackground)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 18)
-                        .stroke(Color.quordleCardBorder, lineWidth: 1)
-                )
-        )
-    }
-
-    // MARK: - Countdown Card
-
-    private var countdownCard: some View {
-        VStack(spacing: 12) {
-            Text("Next Puzzle In")
-                .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundColor(.quordleSecondaryText)
-
-            Text(dailyPuzzleService.countdownString)
-                .font(.system(size: 36, weight: .bold, design: .rounded))
-                .foregroundColor(.quordlePrimaryText)
-                .monospacedDigit()
-        }
-        .padding(.vertical, 24)
-        .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 18)
-                .fill(Color.quordleCardBackground)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 18)
-                        .stroke(Color.quordleCardBorder, lineWidth: 1)
-                )
-        )
+        .iPadReadableWidth()
     }
 }
 

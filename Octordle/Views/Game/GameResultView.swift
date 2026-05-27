@@ -14,7 +14,7 @@ struct GameResultView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 ScrollView {
-                    VStack(spacing: 24) {
+                    VStack(spacing: 22) {
                         // Result header
                         resultHeader
 
@@ -23,14 +23,8 @@ struct GameResultView: View {
                             starRating
                         }
 
-                        // Solve Report entry
-                        solveReportLink
-
-                        // Board results
-                        boardResultsGrid
-
-                        // Statistics
-                        statisticsSection
+                        // The answers
+                        answersSection
                     }
                     .padding()
                 }
@@ -42,7 +36,7 @@ struct GameResultView: View {
                     .padding(.top, 12)
             }
             .background(Color.quordleBackground.ignoresSafeArea())
-            .navigationTitle(gameState.isWon ? "Victory!" : "Game Over")
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -60,55 +54,38 @@ struct GameResultView: View {
     // MARK: - Result Header
 
     private var resultHeader: some View {
-        VStack(spacing: 12) {
-            Image(systemName: gameState.isWon ? "trophy.fill" : "xmark.circle.fill")
-                .font(.system(size: 60))
-                .foregroundColor(gameState.isWon ? .quordleGold : .red)
-
-            Text(gameState.isWon ? "Congratulations!" : "Better luck next time!")
-                .font(.title2.bold())
+        let solved = gameState.boards.filter { $0.isSolved }.count
+        let total = gameState.boards.count
+        return VStack(spacing: 10) {
+            Rectangle().fill(Color.quordleCardBorder).frame(height: 1)
+            Text(gameState.isWon ? "Victory" : "Edition Closed")
+                .font(.system(size: 26, weight: .bold, design: .serif))
                 .foregroundColor(.quordlePrimaryText)
+                .padding(.vertical, 2)
+            Rectangle().fill(Color.quordleCardBorder).frame(height: 1)
 
-            HStack(spacing: 20) {
-                Label("\(gameState.guessCount)/\(gameState.difficulty.maxGuesses)", systemImage: "number")
-                Label(gameState.elapsedTimeString, systemImage: "clock")
+            if gameState.isWon {
+                Text("SOLVED")
+                    .font(.system(size: 15, weight: .bold, design: .serif))
+                    .tracking(3)
+                    .foregroundColor(.quordlePrimary)
+                    .padding(.horizontal, 14).padding(.vertical, 5)
+                    .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.quordlePrimary, lineWidth: 2))
+                    .rotationEffect(.degrees(-7))
+                    .padding(.top, 6)
             }
-            .font(.subheadline)
-            .foregroundColor(.quordleSecondaryText)
-        }
-    }
 
-    // MARK: - Solve Report Link
-
-    private var puzzleNumber: Int? {
-        gameState.mode == .daily ? DailyPuzzleService.shared.puzzleNumber : nil
-    }
-
-    private var solveReportLink: some View {
-        NavigationLink {
-            SolveReportView(gameState: gameState, puzzleNumber: puzzleNumber)
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: "chart.bar.xaxis")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.quordleCorrect)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Solve Report")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.quordlePrimaryText)
-                    Text("See how sharp your guesses were")
-                        .font(.system(size: 12))
-                        .foregroundColor(.quordleSecondaryText)
-                }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.quordleSecondaryText.opacity(0.6))
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text("\(solved)").font(.system(size: 44, weight: .bold, design: .serif))
+                Text("/ \(total)").font(.system(size: 20, design: .serif)).foregroundColor(.quordleSecondaryText)
             }
-            .padding()
-            .cardStyle()
+            .foregroundColor(.quordlePrimaryText)
+            .padding(.top, 4)
+
+            Text("\(gameState.guessCount) guesses  ·  \(gameState.elapsedTimeString)")
+                .font(.system(size: 14, design: .serif))
+                .foregroundColor(.quordleSecondaryText)
         }
-        .buttonStyle(ScaleButtonStyle())
     }
 
     // MARK: - Star Rating
@@ -124,102 +101,77 @@ struct GameResultView: View {
         .padding(.vertical, 8)
     }
 
-    // MARK: - Board Results Grid
+    // MARK: - The Answers (editorial ledger)
 
-    private var boardResultsGrid: some View {
-        VStack(spacing: 8) {
-            // Hide/Show answers toggle (Daily mode only)
-            if gameState.mode == .daily {
-                HStack {
-                    Spacer()
+    private var answersSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text("The Answers")
+                    .font(.system(size: 11, weight: .semibold))
+                    .tracking(2)
+                    .textCase(.uppercase)
+                    .foregroundColor(.quordleSecondaryText)
+                Spacer()
+                if gameState.mode == .daily {
                     Button {
                         HapticManager.shared.buttonTap()
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            answersHidden.toggle()
-                        }
+                        withAnimation(.easeInOut(duration: 0.2)) { answersHidden.toggle() }
                     } label: {
-                        HStack(spacing: 5) {
-                            Image(systemName: answersHidden ? "eye.slash" : "eye")
-                                .font(.system(size: 11))
-                            Text(answersHidden ? "Show Answers" : "Hide Answers")
-                                .font(.system(size: 12, weight: .medium))
-                        }
-                        .foregroundColor(.quordleSecondaryText)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(
-                            Capsule()
-                                .fill(Color.quordleSecondaryText.opacity(0.1))
-                        )
+                        Text(answersHidden ? "Show" : "Hide")
+                            .font(.system(size: 12, weight: .semibold, design: .serif))
+                            .foregroundColor(.quordlePrimary)
                     }
                 }
             }
+            .padding(.bottom, 6)
 
-            // Dynamic rows: 2 boards per row
-            let rowCount = gameState.boards.count / 2
+            let rowCount = (gameState.boards.count + 1) / 2
             ForEach(0..<rowCount, id: \.self) { row in
-                HStack(spacing: 8) {
-                    boardResultCard(board: gameState.boards[row * 2], index: row * 2 + 1)
-                    boardResultCard(board: gameState.boards[row * 2 + 1], index: row * 2 + 2)
+                HStack(spacing: 18) {
+                    answerCell(board: gameState.boards[row * 2], index: row * 2 + 1)
+                    if row * 2 + 1 < gameState.boards.count {
+                        answerCell(board: gameState.boards[row * 2 + 1], index: row * 2 + 2)
+                    } else {
+                        Spacer()
+                    }
                 }
+                Rectangle().fill(Color.quordleCardBorder).frame(height: 1)
             }
         }
     }
 
-    private func boardResultCard(board: BoardData, index: Int) -> some View {
-        VStack(spacing: 4) {
-            Text("Board \(index)")
-                .font(.caption)
+    private func answerCell(board: BoardData, index: Int) -> some View {
+        HStack(spacing: 8) {
+            Text("\(index)")
+                .font(.system(size: 11, design: .serif))
                 .foregroundColor(.quordleSecondaryText)
+                .frame(width: 14, alignment: .leading)
 
             if answersHidden && gameState.mode == .daily {
-                Text(String(repeating: "●", count: board.targetWord.count))
-                    .font(.headline.bold())
-                    .foregroundColor(.quordleSecondaryText.opacity(0.3))
+                Text("•••••")
+                    .font(.system(size: 15, weight: .bold, design: .serif))
+                    .foregroundColor(.quordleSecondaryText.opacity(0.4))
             } else {
                 Text(board.targetWord)
-                    .font(.headline.bold())
+                    .font(.system(size: 15, weight: .bold, design: .serif))
+                    .tracking(1)
                     .foregroundColor(.quordlePrimaryText)
             }
 
+            Spacer(minLength: 4)
+
             if board.isSolved {
-                HStack(spacing: 4) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.quordleCorrect)
-                    Text("Guess \(board.solvedAtGuess ?? 0)")
-                }
-                .font(.caption)
+                Text("\(board.solvedAtGuess ?? 0)")
+                    .font(.system(size: 14, weight: .semibold, design: .serif))
+                    .foregroundColor(.quordlePrimary)
             } else {
-                HStack(spacing: 4) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.red)
-                    Text("Not solved")
-                }
-                .font(.caption)
-                .foregroundColor(.red)
+                Image(systemName: "xmark")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(.red.opacity(0.8))
             }
         }
+        .padding(.vertical, 9)
         .frame(maxWidth: .infinity)
-        .padding()
-        .cardStyle()
-    }
-
-    // MARK: - Statistics Section
-
-    private var statisticsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Summary")
-                .font(.headline)
-                .foregroundColor(.quordlePrimaryText)
-
-            HStack(spacing: 16) {
-                StatItem(value: "\(gameState.boards.filter { $0.isSolved }.count)/\(gameState.boards.count)", label: "Boards Solved")
-                StatItem(value: gameState.difficulty.displayName, label: "Difficulty")
-                StatItem(value: gameState.mode == .daily ? "Daily" : "Practice", label: "Mode")
-            }
-        }
-        .padding()
-        .cardStyle()
     }
 
     // MARK: - Action Buttons

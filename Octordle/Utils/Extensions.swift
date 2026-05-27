@@ -2,189 +2,120 @@ import SwiftUI
 import UIKit
 
 // MARK: - Color Extensions
+//
+// "The Daily Edition" palette — paper, ink, and terracotta. Warm editorial tones
+// that avoid both the green/yellow of Wordle-clones and the blue/purple of Quordle.
+// Every value has a light (paper) and dark (night edition) variant.
+
+private func dynamicColor(light: (CGFloat, CGFloat, CGFloat), dark: (CGFloat, CGFloat, CGFloat)) -> Color {
+    Color(UIColor { tc in
+        let c = tc.userInterfaceStyle == .dark ? dark : light
+        return UIColor(red: c.0, green: c.1, blue: c.2, alpha: 1)
+    })
+}
 
 extension Color {
-    // MARK: - Primary Colors (Blue-Purple Theme)
+    // MARK: - Accent (terracotta)
 
-    /// Primary accent color - soft blue
-    static let quordlePrimary = Color(red: 0.4, green: 0.5, blue: 1.0)
+    /// Primary accent — terracotta (rust).
+    static let quordlePrimary = dynamicColor(light: (0.682, 0.255, 0.141), dark: (0.824, 0.337, 0.173))
 
-    /// Secondary accent color - purple
-    static let quordleSecondary = Color(red: 0.6, green: 0.4, blue: 1.0)
+    /// Secondary accent — deeper rust (used where a second tone is needed).
+    static let quordleSecondary = dynamicColor(light: (0.561, 0.200, 0.082), dark: (0.690, 0.271, 0.122))
 
-    // MARK: - Game Hint Colors (Replaces Green/Yellow)
+    // MARK: - Game Hint Colors (red / amber / grey — clearly distinct in both modes)
 
-    /// Correct position - Cornflower blue #6495ED
-    static let quordleCorrect = Color(red: 0.39, green: 0.58, blue: 0.93)
+    /// Correct position — rust red.
+    static let quordleCorrect = dynamicColor(light: (0.682, 0.255, 0.141), dark: (0.824, 0.337, 0.173))
 
-    /// Present but wrong position - Amber gold #D9A640
-    static let quordlePresent = Color(red: 0.85, green: 0.65, blue: 0.25)
+    /// Present but wrong position — amber gold.
+    static let quordlePresent = dynamicColor(light: (0.890, 0.647, 0.184), dark: (0.925, 0.698, 0.243))
 
-    /// Absent letter
-    static let quordleAbsent = Color(UIColor { traitCollection in
-        traitCollection.userInterfaceStyle == .dark
-            ? UIColor(red: 0.23, green: 0.24, blue: 0.25, alpha: 1) // #3A3B3C
-            : UIColor(red: 0.47, green: 0.49, blue: 0.51, alpha: 1) // #787C7E
-    })
+    /// Absent letter — neutral warm grey.
+    static let quordleAbsent = dynamicColor(light: (0.655, 0.627, 0.553), dark: (0.329, 0.298, 0.247))
 
-    // MARK: - Background Colors (Warm Tones)
+    // MARK: - Backgrounds (paper / night)
 
-    /// Main background - cream/dark blue-black
-    static let quordleBackground = Color(UIColor { traitCollection in
-        traitCollection.userInterfaceStyle == .dark
-            ? UIColor(red: 0.08, green: 0.08, blue: 0.12, alpha: 1)
-            : UIColor(red: 0.96, green: 0.95, blue: 0.93, alpha: 1)
-    })
+    static let quordleBackground = dynamicColor(light: (0.957, 0.941, 0.902), dark: (0.090, 0.075, 0.055))
+    static let quordleBackgroundSecondary = dynamicColor(light: (0.984, 0.973, 0.945), dark: (0.141, 0.122, 0.090))
+    static let quordleBackgroundStart = dynamicColor(light: (0.957, 0.941, 0.902), dark: (0.090, 0.075, 0.055))
+    static let quordleBackgroundEnd = dynamicColor(light: (0.957, 0.941, 0.902), dark: (0.090, 0.075, 0.055))
 
-    /// Secondary background
-    static let quordleBackgroundSecondary = Color(UIColor { traitCollection in
-        traitCollection.userInterfaceStyle == .dark
-            ? UIColor(red: 0.12, green: 0.12, blue: 0.16, alpha: 1)
-            : UIColor(red: 0.93, green: 0.91, blue: 0.88, alpha: 1)
-    })
+    // MARK: - Cards
 
-    /// Gradient start color
-    static let quordleBackgroundStart = Color(UIColor { traitCollection in
-        traitCollection.userInterfaceStyle == .dark
-            ? UIColor(red: 0.08, green: 0.08, blue: 0.12, alpha: 1)
-            : UIColor(red: 0.96, green: 0.95, blue: 0.93, alpha: 1)
-    })
+    static let quordleCardBackground = dynamicColor(light: (0.984, 0.973, 0.945), dark: (0.141, 0.122, 0.090))
+    static let quordleCardBorder = dynamicColor(light: (0.847, 0.816, 0.749), dark: (0.235, 0.204, 0.165))
 
-    /// Gradient end color
-    static let quordleBackgroundEnd = Color(UIColor { traitCollection in
-        traitCollection.userInterfaceStyle == .dark
-            ? UIColor(red: 0.12, green: 0.10, blue: 0.18, alpha: 1)
-            : UIColor(red: 0.93, green: 0.91, blue: 0.88, alpha: 1)
-    })
+    // MARK: - Text (ink)
 
-    // MARK: - Card Colors
+    static let quordlePrimaryText = dynamicColor(light: (0.149, 0.133, 0.110), dark: (0.929, 0.898, 0.831))
+    static let quordleSecondaryText = dynamicColor(light: (0.541, 0.510, 0.459), dark: (0.604, 0.561, 0.486))
 
-    /// Card background - ivory white / semi-transparent
-    static let quordleCardBackground = Color(UIColor { traitCollection in
-        traitCollection.userInterfaceStyle == .dark
-            ? UIColor(white: 1.0, alpha: 0.08)
-            : UIColor(red: 1.0, green: 0.99, blue: 0.97, alpha: 1)
-    })
+    // MARK: - Tiles
 
-    /// Card border - warm tones
-    static let quordleCardBorder = Color(UIColor { traitCollection in
-        traitCollection.userInterfaceStyle == .dark
-            ? UIColor(white: 1.0, alpha: 0.15)
-            : UIColor(red: 0.85, green: 0.82, blue: 0.78, alpha: 1)
-    })
+    static let quordleTileEmpty = dynamicColor(light: (0.984, 0.973, 0.945), dark: (0.141, 0.122, 0.090))
+    static let quordleTileBorder = dynamicColor(light: (0.847, 0.816, 0.749), dark: (0.235, 0.204, 0.165))
+    static let quordleTileTypingBorder = dynamicColor(light: (0.722, 0.682, 0.592), dark: (0.353, 0.318, 0.259))
 
-    // MARK: - Text Colors
+    // MARK: - Keyboard
 
-    static let quordlePrimaryText = Color(UIColor { traitCollection in
-        traitCollection.userInterfaceStyle == .dark
-            ? UIColor.white
-            : UIColor(red: 0.15, green: 0.15, blue: 0.18, alpha: 1)
-    })
+    static let quordleKeyBackground = dynamicColor(light: (0.918, 0.890, 0.827), dark: (0.196, 0.173, 0.141))
 
-    static let quordleSecondaryText = Color(UIColor { traitCollection in
-        traitCollection.userInterfaceStyle == .dark
-            ? UIColor(white: 0.7, alpha: 1)
-            : UIColor(white: 0.4, alpha: 1)
-    })
+    // MARK: - Tab Bar
 
-    // MARK: - Tile Colors
+    static let quordleTabBarBackground = dynamicColor(light: (0.957, 0.941, 0.902), dark: (0.075, 0.063, 0.047))
+    static let quordleTabInactive = dynamicColor(light: (0.620, 0.588, 0.533), dark: (0.502, 0.467, 0.404))
 
-    static let quordleTileEmpty = Color(UIColor { traitCollection in
-        traitCollection.userInterfaceStyle == .dark
-            ? UIColor(red: 0.1, green: 0.1, blue: 0.14, alpha: 1)
-            : UIColor(red: 1.0, green: 0.99, blue: 0.97, alpha: 1)
-    })
+    // MARK: - Accent extras
 
-    static let quordleTileBorder = Color(UIColor { traitCollection in
-        traitCollection.userInterfaceStyle == .dark
-            ? UIColor(red: 0.25, green: 0.25, blue: 0.30, alpha: 1)
-            : UIColor(red: 0.82, green: 0.80, blue: 0.76, alpha: 1)
-    })
+    /// Gold for stars / achievements (amber, matches "present").
+    static let quordleGold = dynamicColor(light: (0.847, 0.612, 0.157), dark: (0.925, 0.698, 0.243))
 
-    static let quordleTileTypingBorder = Color(UIColor { traitCollection in
-        traitCollection.userInterfaceStyle == .dark
-            ? UIColor(red: 0.5, green: 0.5, blue: 0.6, alpha: 1)
-            : UIColor(red: 0.55, green: 0.53, blue: 0.50, alpha: 1)
-    })
+    /// Orange for streaks / the flame animation.
+    static let quordleOrange = dynamicColor(light: (0.847, 0.412, 0.169), dark: (0.886, 0.451, 0.196))
 
-    // MARK: - Keyboard Colors
-
-    static let quordleKeyBackground = Color(UIColor { traitCollection in
-        traitCollection.userInterfaceStyle == .dark
-            ? UIColor(red: 0.35, green: 0.35, blue: 0.42, alpha: 1)
-            : UIColor(red: 0.85, green: 0.83, blue: 0.80, alpha: 1)
-    })
-
-    // MARK: - Tab Bar Colors
-
-    static let quordleTabBarBackground = Color(UIColor { traitCollection in
-        traitCollection.userInterfaceStyle == .dark
-            ? UIColor(red: 0.06, green: 0.06, blue: 0.10, alpha: 1.0)
-            : UIColor(red: 0.98, green: 0.97, blue: 0.95, alpha: 1.0)
-    })
-
-    static let quordleTabInactive = Color(UIColor { traitCollection in
-        traitCollection.userInterfaceStyle == .dark
-            ? UIColor(white: 0.45, alpha: 1)
-            : UIColor(white: 0.55, alpha: 1)
-    })
-
-    // MARK: - Accent Colors
-
-    /// Gold color for achievements/stars
-    static let quordleGold = Color(red: 1.0, green: 0.8, blue: 0.3)
-
-    /// Orange for streaks/fire
-    static let quordleOrange = Color(red: 1.0, green: 0.6, blue: 0.2)
-
-    /// Success green (for non-hint use)
-    static let quordleSuccess = Color(red: 0.3, green: 0.75, blue: 0.45)
+    /// Success (checkmarks, confirmations) — uses the terracotta accent to stay on-brand.
+    static let quordleSuccess = dynamicColor(light: (0.682, 0.255, 0.141), dark: (0.824, 0.337, 0.173))
 }
 
 // MARK: - LinearGradient Extensions
+//
+// The editorial look is flat — these "gradients" are intentionally single-tone so any
+// existing call sites render as clean solid fills instead of the old blue→purple wash.
 
 extension LinearGradient {
-    /// Main background gradient
     static let quordleBackground = LinearGradient(
-        colors: [.quordleBackgroundStart, .quordleBackgroundEnd],
-        startPoint: .top,
-        endPoint: .bottom
+        colors: [.quordleBackground, .quordleBackground],
+        startPoint: .top, endPoint: .bottom
     )
 
-    /// Button gradient (blue to purple)
     static let quordleButtonGradient = LinearGradient(
-        colors: [.quordlePrimary, .quordleSecondary],
-        startPoint: .leading,
-        endPoint: .trailing
+        colors: [.quordlePrimary, .quordlePrimary],
+        startPoint: .leading, endPoint: .trailing
     )
 
-    /// Accent gradient
     static let quordleAccentGradient = LinearGradient(
-        colors: [
-            Color(red: 0.45, green: 0.55, blue: 1.0),
-            Color(red: 0.65, green: 0.45, blue: 1.0)
-        ],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
+        colors: [.quordlePrimary, .quordlePrimary],
+        startPoint: .topLeading, endPoint: .bottomTrailing
     )
 }
 
 // MARK: - View Extensions
 
 extension View {
-    /// Glass background effect
+    /// Flat editorial card (replaces the old translucent "glass" look).
     func glassBackground(cornerRadius: CGFloat = 16) -> some View {
         self.background(
             RoundedRectangle(cornerRadius: cornerRadius)
-                .fill(Color.white.opacity(0.08))
+                .fill(Color.quordleCardBackground)
                 .overlay(
                     RoundedRectangle(cornerRadius: cornerRadius)
-                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                        .stroke(Color.quordleCardBorder, lineWidth: 1)
                 )
         )
     }
 
-    /// Card style with warm border
+    /// Card style with hairline border.
     func cardStyle(cornerRadius: CGFloat = 12) -> some View {
         self.background(
             RoundedRectangle(cornerRadius: cornerRadius)
@@ -196,9 +127,9 @@ extension View {
         )
     }
 
-    /// Gradient background
+    /// Flat background.
     func quordleGradientBackground() -> some View {
-        self.background(LinearGradient.quordleBackground.ignoresSafeArea())
+        self.background(Color.quordleBackground.ignoresSafeArea())
     }
 
     /// Shake animation modifier
@@ -224,41 +155,36 @@ struct ScaleButtonStyle: ButtonStyle {
     }
 }
 
-/// Primary button style with gradient
+/// Primary button — flat terracotta with a small corner radius (editorial, not pill).
 struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.headline)
-            .foregroundColor(.white)
+            .font(.system(.headline, design: .serif))
+            .foregroundColor(Color(UIColor { tc in
+                tc.userInterfaceStyle == .dark
+                    ? UIColor(red: 0.984, green: 0.953, blue: 0.902, alpha: 1)
+                    : UIColor(red: 0.984, green: 0.973, blue: 0.945, alpha: 1)
+            }))
             .padding(.horizontal, 24)
-            .padding(.vertical, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(LinearGradient.quordleButtonGradient)
-            )
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
-            .opacity(configuration.isPressed ? 0.7 : 1.0)
+            .padding(.vertical, 13)
+            .background(RoundedRectangle(cornerRadius: 4).fill(Color.quordlePrimary))
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .opacity(configuration.isPressed ? 0.85 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }
 }
 
-/// Secondary button style
+/// Secondary button — hairline outline.
 struct SecondaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.headline)
+            .font(.system(.headline, design: .serif))
             .foregroundColor(.quordlePrimaryText)
             .padding(.horizontal, 24)
-            .padding(.vertical, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.quordleCardBackground)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.quordleCardBorder, lineWidth: 1)
-            )
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+            .padding(.vertical, 13)
+            .background(RoundedRectangle(cornerRadius: 4).fill(Color.quordleCardBackground))
+            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.quordleCardBorder, lineWidth: 1))
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }
 }

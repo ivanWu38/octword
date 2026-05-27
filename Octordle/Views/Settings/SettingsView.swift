@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Settings view
+/// Settings — editorial "Daily Edition" styling.
 struct SettingsView: View {
     @EnvironmentObject var themeService: ThemeService
     @EnvironmentObject var subscriptionService: SubscriptionService
@@ -10,261 +10,184 @@ struct SettingsView: View {
     @State private var showOnboarding = false
     @State private var onboardingCompleted = false
 
+    private var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
+    }
+
     var body: some View {
         NavigationStack {
-            List {
-                // Premium section
-                premiumSection
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    masthead
 
-                // Appearance section
-                appearanceSection
+                    groupLabel("Subscription")
+                    premiumRow
 
-                // Sound & Haptics section
-                feedbackSection
+                    groupLabel("Appearance")
+                    NavigationLink { ThemePickerView() } label: {
+                        rowBody(symbol: "paintpalette", title: "Theme", trailingText: themeService.selectedTheme.displayName)
+                    }
+                    hairline
+                    Menu {
+                        ForEach(ColorSchemePreference.allCases, id: \.self) { pref in
+                            Button(pref.displayName) { themeService.colorSchemePreference = pref }
+                        }
+                    } label: {
+                        rowBody(symbol: "circle.lefthalf.filled", title: "Appearance",
+                                trailingText: themeService.colorSchemePreference.displayName, trailingSymbol: "chevron.up.chevron.down")
+                    }
 
-                // Support section
-                supportSection
+                    groupLabel("Feedback")
+                    toggleRow(symbol: "iphone.radiowaves.left.and.right", title: "Haptic Feedback", isOn: $themeService.hapticEnabled)
+                    hairline
+                    toggleRow(symbol: "speaker.wave.2", title: "Sound Effects", isOn: $themeService.soundEnabled)
 
-                // Privacy section (only in CMP-required regions)
-                if consentManager.isPrivacyOptionsRequired {
-                    privacySection
+                    groupLabel("Support")
+                    Link(destination: URL(string: "https://apps.apple.com/app/id\(Constants.App.appStoreId)?action=write-review")!) {
+                        rowBody(symbol: "star", title: "Rate on App Store", trailingSymbol: "arrow.up.right")
+                    }
+                    hairline
+                    Link(destination: URL(string: "mailto:wuyuping38@gmail.com?subject=Octordle%20Feedback")!) {
+                        rowBody(symbol: "envelope", title: "Send Feedback", trailingSymbol: "arrow.up.right")
+                    }
+
+                    if consentManager.isPrivacyOptionsRequired {
+                        groupLabel("Privacy")
+                        Button {
+                            HapticManager.shared.buttonTap()
+                            Task { await consentManager.presentPrivacyOptionsForm() }
+                        } label: {
+                            rowBody(symbol: "hand.raised", title: "Privacy Settings")
+                        }
+                    }
+
+                    groupLabel("About")
+                    Button {
+                        HapticManager.shared.buttonTap()
+                        showOnboarding = true
+                    } label: {
+                        rowBody(symbol: "questionmark.circle", title: "How to Play")
+                    }
+                    hairline
+                    rowBody(symbol: "info.circle", title: "Version", trailingText: appVersion, trailingSymbol: nil)
+                    hairline
+                    Link(destination: URL(string: "https://ikuheikure.xyz/apps/octordle-word-puzzle/")!) {
+                        rowBody(symbol: "doc.text", title: "Privacy Policy", trailingSymbol: "arrow.up.right")
+                    }
+                    hairline
+                    Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
+                        rowBody(symbol: "doc.plaintext", title: "Terms of Use", trailingSymbol: "arrow.up.right")
+                    }
+
+                    Spacer().frame(height: 90)
                 }
-
-                // About section
-                aboutSection
+                .iPadReadableWidth(520)
             }
-            .safeAreaInset(edge: .bottom) {
-                Color.clear.frame(height: 50)
-            }
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.large)
-            .sheet(isPresented: $showSubscription) {
-                SubscriptionView()
-            }
+            .background(Color.quordleBackground.ignoresSafeArea())
+            .toolbar(.hidden, for: .navigationBar)
+            .sheet(isPresented: $showSubscription) { SubscriptionView() }
             .fullScreenCover(isPresented: $showOnboarding) {
                 OnboardingView(hasSeenOnboarding: $onboardingCompleted)
             }
             .onChange(of: onboardingCompleted) { newValue in
                 if newValue {
                     showOnboarding = false
-                    onboardingCompleted = false  // Reset for next time
+                    onboardingCompleted = false
                 }
             }
         }
     }
 
-    // MARK: - Premium Section
+    // MARK: - Masthead
 
-    private var premiumSection: some View {
-        Section {
-            if subscriptionService.isPremium {
-                HStack {
-                    Image(systemName: "crown.fill")
-                        .foregroundColor(.quordleGold)
-                    Text("Premium Active")
-                        .foregroundColor(.quordlePrimaryText)
-                    Spacer()
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.quordleCorrect)
-                }
-            } else {
-                Button {
-                    HapticManager.shared.buttonTap()
-                    showSubscription = true
-                } label: {
-                    HStack {
-                        Image(systemName: "crown.fill")
-                            .foregroundColor(.quordleGold)
-                        Text("Upgrade to Premium")
-                            .foregroundColor(.quordlePrimaryText)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.quordleSecondaryText)
-                    }
-                }
-            }
-        } header: {
-            Text("Subscription")
+    private var masthead: some View {
+        VStack(spacing: 0) {
+            Rectangle().fill(Color.quordleCardBorder).frame(height: 1)
+            Text("Settings")
+                .font(.system(size: 28, weight: .bold, design: .serif))
+                .foregroundColor(.quordlePrimaryText)
+                .padding(.vertical, 8)
+            Rectangle().fill(Color.quordleCardBorder).frame(height: 1)
         }
+        .padding(.horizontal, 22)
+        .padding(.top, 12)
     }
 
-    // MARK: - Appearance Section
+    // MARK: - Premium Row
 
-    private var appearanceSection: some View {
-        Section {
-            // Theme picker
-            NavigationLink {
-                ThemePickerView()
-            } label: {
-                HStack {
-                    Image(systemName: "paintpalette.fill")
-                        .foregroundColor(.quordlePresent)
-                    Text("Theme")
-                    Spacer()
-                    Text(themeService.selectedTheme.displayName)
-                        .foregroundColor(.quordleSecondaryText)
-                }
-            }
-
-            // Color scheme
-            Picker(selection: $themeService.colorSchemePreference) {
-                ForEach(ColorSchemePreference.allCases, id: \.self) { preference in
-                    Text(preference.displayName).tag(preference)
-                }
-            } label: {
-                HStack {
-                    Image(systemName: "moon.fill")
-                        .foregroundColor(.purple)
-                    Text("Appearance")
-                }
-            }
-        } header: {
-            Text("Appearance")
-        }
-    }
-
-    // MARK: - Feedback Section
-
-    private var feedbackSection: some View {
-        Section {
-            Toggle(isOn: $themeService.hapticEnabled) {
-                HStack {
-                    Image(systemName: "iphone.radiowaves.left.and.right")
-                        .foregroundColor(.quordleCorrect)
-                    Text("Haptic Feedback")
-                }
-            }
-            .onChange(of: themeService.hapticEnabled) { _ in
-                HapticManager.shared.toggleSwitch()
-            }
-
-            Toggle(isOn: $themeService.soundEnabled) {
-                HStack {
-                    Image(systemName: "speaker.wave.2.fill")
-                        .foregroundColor(.blue)
-                    Text("Sound Effects")
-                }
-            }
-            .onChange(of: themeService.soundEnabled) { _ in
-                HapticManager.shared.toggleSwitch()
-            }
-        } header: {
-            Text("Feedback")
-        }
-    }
-
-    // MARK: - Support Section
-
-    private var supportSection: some View {
-        Section {
-            // Rate on App Store
-            Link(destination: URL(string: "https://apps.apple.com/app/id\(Constants.App.appStoreId)?action=write-review")!) {
-                HStack {
-                    Image(systemName: "star.fill")
-                        .foregroundColor(.quordleGold)
-                    Text("Rate on App Store")
-                        .foregroundColor(.quordlePrimaryText)
-                    Spacer()
-                    Image(systemName: "arrow.up.right")
-                        .foregroundColor(.quordleSecondaryText)
-                }
-            }
-
-            // Send Feedback
-            Link(destination: URL(string: "mailto:wuyuping38@gmail.com?subject=Octordle%20Feedback")!) {
-                HStack {
-                    Image(systemName: "envelope.fill")
-                        .foregroundColor(.quordlePrimary)
-                    Text("Send Feedback")
-                        .foregroundColor(.quordlePrimaryText)
-                    Spacer()
-                    Image(systemName: "arrow.up.right")
-                        .foregroundColor(.quordleSecondaryText)
-                }
-            }
-        } header: {
-            Text("Support")
-        } footer: {
-            Text("We'd love to hear from you! Your feedback helps us improve.")
-        }
-    }
-
-    // MARK: - Privacy Section
-
-    private var privacySection: some View {
-        Section {
+    @ViewBuilder
+    private var premiumRow: some View {
+        if subscriptionService.isPremium {
+            rowBody(symbol: "crown.fill", title: "Premium Active", trailingText: "Thank you", trailingSymbol: nil)
+        } else {
             Button {
                 HapticManager.shared.buttonTap()
-                Task {
-                    await consentManager.presentPrivacyOptionsForm()
-                }
+                showSubscription = true
             } label: {
-                HStack {
-                    Image(systemName: "hand.raised.fill")
-                        .foregroundColor(.orange)
-                    Text("Privacy Settings")
-                        .foregroundColor(.quordlePrimaryText)
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(.quordleSecondaryText)
-                }
+                rowBody(symbol: "crown", title: "Upgrade to Premium")
             }
-        } header: {
-            Text("Privacy")
-        } footer: {
-            Text("Manage your ad personalization and data privacy preferences.")
         }
     }
 
-    // MARK: - About Section
+    // MARK: - Building blocks
 
-    private var aboutSection: some View {
-        Section {
-            // How to Play button
-            Button {
-                HapticManager.shared.buttonTap()
-                showOnboarding = true
-            } label: {
-                HStack {
-                    Image(systemName: "questionmark.circle.fill")
-                        .foregroundColor(.quordlePrimary)
-                    Text("How to Play")
-                        .foregroundColor(.quordlePrimaryText)
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(.quordleSecondaryText)
-                }
-            }
-
-            HStack {
-                Text("Version")
-                Spacer()
-                Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
-                    .foregroundColor(.quordleSecondaryText)
-            }
-
-            Link(destination: URL(string: "https://ikuheikure.xyz/apps/octordle-word-puzzle/")!) {
-                HStack {
-                    Text("Privacy Policy")
-                        .foregroundColor(.quordlePrimaryText)
-                    Spacer()
-                    Image(systemName: "arrow.up.right")
-                        .foregroundColor(.quordleSecondaryText)
-                }
-            }
-
-            Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
-                HStack {
-                    Text("Terms of Use")
-                        .foregroundColor(.quordlePrimaryText)
-                    Spacer()
-                    Image(systemName: "arrow.up.right")
-                        .foregroundColor(.quordleSecondaryText)
-                }
-            }
-        } header: {
-            Text("About")
+    private func groupLabel(_ title: String) -> some View {
+        HStack {
+            Text(title)
+                .font(.system(size: 11, weight: .semibold))
+                .tracking(2)
+                .textCase(.uppercase)
+                .foregroundColor(.quordleSecondaryText)
+            Spacer()
         }
+        .padding(.horizontal, 22)
+        .padding(.top, 26)
+        .padding(.bottom, 4)
+    }
+
+    private var hairline: some View {
+        Rectangle().fill(Color.quordleCardBorder).frame(height: 1).padding(.leading, 58)
+    }
+
+    private func rowBody(symbol: String, title: String, trailingText: String? = nil, trailingSymbol: String? = "chevron.right") -> some View {
+        HStack(spacing: 14) {
+            Image(systemName: symbol)
+                .font(.system(size: 16))
+                .foregroundColor(.quordlePrimary)
+                .frame(width: 22)
+            Text(title)
+                .font(.system(size: 16, design: .serif))
+                .foregroundColor(.quordlePrimaryText)
+            Spacer()
+            if let t = trailingText {
+                Text(t).font(.system(size: 14, design: .serif)).foregroundColor(.quordleSecondaryText)
+            }
+            if let s = trailingSymbol {
+                Image(systemName: s).font(.system(size: 12, weight: .semibold)).foregroundColor(.quordleSecondaryText.opacity(0.6))
+            }
+        }
+        .padding(.horizontal, 22)
+        .padding(.vertical, 14)
+        .contentShape(Rectangle())
+    }
+
+    private func toggleRow(symbol: String, title: String, isOn: Binding<Bool>) -> some View {
+        HStack(spacing: 14) {
+            Image(systemName: symbol)
+                .font(.system(size: 16))
+                .foregroundColor(.quordlePrimary)
+                .frame(width: 22)
+            Text(title)
+                .font(.system(size: 16, design: .serif))
+                .foregroundColor(.quordlePrimaryText)
+            Spacer()
+            Toggle("", isOn: isOn)
+                .labelsHidden()
+                .tint(.quordlePrimary)
+        }
+        .padding(.horizontal, 22)
+        .padding(.vertical, 10)
+        .onChange(of: isOn.wrappedValue) { _ in HapticManager.shared.toggleSwitch() }
     }
 }
 

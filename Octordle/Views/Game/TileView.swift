@@ -122,9 +122,13 @@ struct TileView: View {
     }
 
     private var textColor: Color {
-        if isRevealed {
-            return .white
-        } else {
+        switch tile.state {
+        case .present:
+            // Dark ink reads cleanly on the bright amber tile.
+            return Color(red: 0.227, green: 0.165, blue: 0.071)
+        case .correct, .absent:
+            return Color(red: 0.984, green: 0.973, blue: 0.945)
+        default:
             return .quordlePrimaryText
         }
     }

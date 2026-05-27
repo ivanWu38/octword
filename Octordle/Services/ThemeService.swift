@@ -93,7 +93,7 @@ enum BoardTheme: String, CaseIterable, Identifiable, Codable {
     /// Correct letter color (blue tones)
     var correctColor: Color {
         switch self {
-        case .classic:  return Color(red: 0.39, green: 0.58, blue: 0.93) // Cornflower blue
+        case .classic:  return Color(UIColor { $0.userInterfaceStyle == .dark ? UIColor(red: 0.824, green: 0.337, blue: 0.173, alpha: 1) : UIColor(red: 0.682, green: 0.255, blue: 0.141, alpha: 1) }) // Terracotta
         case .mint:     return Color(red: 0.30, green: 0.62, blue: 0.70) // Teal
         case .lavender: return Color(red: 0.50, green: 0.48, blue: 0.88) // Soft indigo
         case .rose:     return Color(red: 0.42, green: 0.56, blue: 0.82) // Dusty blue
@@ -111,7 +111,7 @@ enum BoardTheme: String, CaseIterable, Identifiable, Codable {
     /// Present letter color (warm tones — distinct per theme)
     var presentColor: Color {
         switch self {
-        case .classic:  return Color(red: 0.85, green: 0.65, blue: 0.25) // Amber gold
+        case .classic:  return Color(UIColor { $0.userInterfaceStyle == .dark ? UIColor(red: 0.925, green: 0.698, blue: 0.243, alpha: 1) : UIColor(red: 0.890, green: 0.647, blue: 0.184, alpha: 1) }) // Amber gold
         case .mint:     return Color(red: 0.90, green: 0.52, blue: 0.50) // Coral
         case .lavender: return Color(red: 0.88, green: 0.72, blue: 0.35) // Warm yellow
         case .rose:     return Color(red: 0.82, green: 0.48, blue: 0.55) // Dusty rose
@@ -126,12 +126,12 @@ enum BoardTheme: String, CaseIterable, Identifiable, Codable {
         }
     }
 
-    /// Absent letter color (gray)
+    /// Absent letter color (neutral warm grey)
     var absentColor: Color {
         Color(UIColor { traitCollection in
             traitCollection.userInterfaceStyle == .dark
-                ? UIColor(red: 0.23, green: 0.24, blue: 0.25, alpha: 1)
-                : UIColor(red: 0.47, green: 0.49, blue: 0.51, alpha: 1)
+                ? UIColor(red: 0.329, green: 0.298, blue: 0.247, alpha: 1)
+                : UIColor(red: 0.655, green: 0.627, blue: 0.553, alpha: 1)
         })
     }
 
@@ -139,8 +139,8 @@ enum BoardTheme: String, CaseIterable, Identifiable, Codable {
     var emptyColor: Color {
         Color(UIColor { traitCollection in
             traitCollection.userInterfaceStyle == .dark
-                ? UIColor(red: 0.1, green: 0.1, blue: 0.14, alpha: 1)
-                : UIColor(red: 1.0, green: 0.99, blue: 0.97, alpha: 1)
+                ? UIColor(red: 0.141, green: 0.122, blue: 0.090, alpha: 1)
+                : UIColor(red: 0.984, green: 0.973, blue: 0.945, alpha: 1)
         })
     }
 
@@ -148,8 +148,8 @@ enum BoardTheme: String, CaseIterable, Identifiable, Codable {
     var emptyBorderColor: Color {
         Color(UIColor { traitCollection in
             traitCollection.userInterfaceStyle == .dark
-                ? UIColor(red: 0.25, green: 0.25, blue: 0.30, alpha: 1)
-                : UIColor(red: 0.82, green: 0.80, blue: 0.76, alpha: 1)
+                ? UIColor(red: 0.235, green: 0.204, blue: 0.165, alpha: 1)
+                : UIColor(red: 0.847, green: 0.816, blue: 0.749, alpha: 1)
         })
     }
 
@@ -157,8 +157,8 @@ enum BoardTheme: String, CaseIterable, Identifiable, Codable {
     var typingBorderColor: Color {
         Color(UIColor { traitCollection in
             traitCollection.userInterfaceStyle == .dark
-                ? UIColor(red: 0.5, green: 0.5, blue: 0.6, alpha: 1)
-                : UIColor(red: 0.55, green: 0.53, blue: 0.50, alpha: 1)
+                ? UIColor(red: 0.353, green: 0.318, blue: 0.259, alpha: 1)
+                : UIColor(red: 0.722, green: 0.682, blue: 0.592, alpha: 1)
         })
     }
 
@@ -166,8 +166,8 @@ enum BoardTheme: String, CaseIterable, Identifiable, Codable {
     var currentRowBorderColor: Color {
         Color(UIColor { traitCollection in
             traitCollection.userInterfaceStyle == .dark
-                ? UIColor(red: 0.38, green: 0.38, blue: 0.46, alpha: 1)
-                : UIColor(red: 0.68, green: 0.66, blue: 0.62, alpha: 1)
+                ? UIColor(red: 0.45, green: 0.40, blue: 0.32, alpha: 1)
+                : UIColor(red: 0.60, green: 0.55, blue: 0.45, alpha: 1)
         })
     }
 
@@ -178,8 +178,8 @@ enum BoardTheme: String, CaseIterable, Identifiable, Codable {
             switch self {
             case .classic:
                 return isDark
-                    ? UIColor(red: 0.08, green: 0.08, blue: 0.12, alpha: 1)
-                    : UIColor(red: 0.96, green: 0.95, blue: 0.93, alpha: 1)
+                    ? UIColor(red: 0.090, green: 0.075, blue: 0.055, alpha: 1)
+                    : UIColor(red: 0.957, green: 0.941, blue: 0.902, alpha: 1)
             case .mint:
                 return isDark
                     ? UIColor(red: 0.06, green: 0.10, blue: 0.11, alpha: 1)
@@ -232,8 +232,8 @@ enum BoardTheme: String, CaseIterable, Identifiable, Codable {
     var keyboardBackgroundColor: Color {
         Color(UIColor { traitCollection in
             traitCollection.userInterfaceStyle == .dark
-                ? UIColor(red: 0.35, green: 0.35, blue: 0.42, alpha: 1)
-                : UIColor(red: 0.85, green: 0.83, blue: 0.80, alpha: 1)
+                ? UIColor(red: 0.196, green: 0.173, blue: 0.141, alpha: 1)
+                : UIColor(red: 0.918, green: 0.890, blue: 0.827, alpha: 1)
         })
     }
 

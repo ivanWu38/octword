@@ -1,46 +1,30 @@
 import SwiftUI
 
-/// Statistics view - Zip Game JourneyView style
+/// Journey — "The Record", an editorial almanac of the player's history.
 struct StatsView: View {
     @EnvironmentObject var statsService: StatsService
     @StateObject private var dailyPuzzleService = DailyPuzzleService.shared
-    @Environment(\.colorScheme) private var colorScheme
     @State private var selectedAchievement: Achievement?
 
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
-                    // Streak cards (side by side)
-                    streakCardsSection
-
-                    // Guess distribution chart
+                VStack(spacing: 0) {
+                    masthead
+                    ledgerSection
                     if statsService.totalWins > 0 {
-                        guessDistributionSection
+                        blockLabel("Guess Distribution")
+                        guessDistribution
                     }
-
-                    // Statistics section
-                    statisticsSection
-
-                    // Personal bests section
-                    personalBestsSection
-
-                    // Fun facts section
-                    if statsService.totalGamesPlayed > 0 {
-                        funFactsSection
-                    }
-
-                    // Achievements section (at bottom)
-                    achievementsSection
-
+                    blockLabel("Marks of Distinction",
+                               trailing: "\(statsService.unlockedAchievementsCount) / \(statsService.totalAchievementsCount)")
+                    marksSection
                     Spacer().frame(height: 100)
                 }
-                .padding(.horizontal, 20)
-                .iPadReadableWidth()
+                .iPadReadableWidth(520)
             }
-            .background(LinearGradient.quordleBackground.ignoresSafeArea())
-            .navigationTitle("Journey")
-            .navigationBarTitleDisplayMode(.large)
+            .background(Color.quordleBackground.ignoresSafeArea())
+            .toolbar(.hidden, for: .navigationBar)
             .overlay {
                 if let achievement = selectedAchievement {
                     AchievementDetailView(
@@ -54,490 +38,207 @@ struct StatsView: View {
         }
     }
 
-    // MARK: - Achievements Section
+    // MARK: - Masthead
 
-    private var achievementsSection: some View {
-        VStack(spacing: 16) {
-            // Header with progress
-            HStack {
-                HStack(spacing: 10) {
-                    Image(systemName: "star.circle.fill")
-                        .font(.system(size: 18))
-                        .foregroundColor(.quordleGold)
+    private var masthead: some View {
+        VStack(spacing: 0) {
+            Rectangle().fill(Color.quordleCardBorder).frame(height: 1)
+            Text("The Record")
+                .font(.system(size: 30, weight: .bold, design: .serif))
+                .foregroundColor(.quordlePrimaryText)
+                .padding(.vertical, 8)
+            Text("Your Octordle Almanac")
+                .font(.system(size: 10.5, weight: .medium))
+                .tracking(2)
+                .textCase(.uppercase)
+                .foregroundColor(.quordleSecondaryText)
+                .padding(.bottom, 8)
+            Rectangle().fill(Color.quordleCardBorder).frame(height: 1)
+        }
+        .padding(.horizontal, 22)
+        .padding(.top, 12)
+    }
 
-                    Text("Achievements")
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
-                        .foregroundColor(.quordlePrimaryText)
-                }
-
-                Spacer()
-
-                // Progress indicator
-                Text("\(statsService.unlockedAchievementsCount)/\(statsService.totalAchievementsCount)")
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+    private func blockLabel(_ title: String, trailing: String? = nil) -> some View {
+        HStack {
+            Text(title)
+                .font(.system(size: 11, weight: .semibold))
+                .tracking(2)
+                .textCase(.uppercase)
+                .foregroundColor(.quordleSecondaryText)
+            Spacer()
+            if let trailing = trailing {
+                Text(trailing)
+                    .font(.system(size: 12, weight: .semibold, design: .serif))
                     .foregroundColor(.quordleSecondaryText)
             }
+        }
+        .padding(.horizontal, 22)
+        .padding(.top, 26)
+        .padding(.bottom, 4)
+    }
 
-            // Achievement grid (2 columns)
-            LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: 12),
-                GridItem(.flexible(), spacing: 12)
-            ], spacing: 12) {
-                ForEach(Achievement.allCases) { achievement in
-                    AchievementBadge(
-                        achievement: achievement,
-                        isUnlocked: statsService.isUnlocked(achievement),
-                        progress: statsService.progressFor(achievement)
-                    )
-                    .onTapGesture {
-                        selectedAchievement = achievement
-                    }
-                }
+    // MARK: - Ledger
+
+    private var ledgerSection: some View {
+        VStack(spacing: 0) {
+            LedgerRow(key: "Editions Solved", value: "\(statsService.dailyChallengesCompleted)")
+            LedgerRow(key: "Current Streak", value: "\(statsService.currentStreak)")
+            LedgerRow(key: "Longest Streak", value: "\(statsService.maxStreak)")
+            LedgerRow(key: "Words Solved", value: "\(statsService.totalWordsSolved)")
+            LedgerRow(key: "Win Rate", value: statsService.winRateString)
+            if statsService.totalWins > 0 {
+                LedgerRow(key: "Avg Guesses / Win", value: statsService.averageGuessesString)
+            }
+            if statsService.perfectGames > 0 {
+                LedgerRow(key: "Perfect Editions", value: "\(statsService.perfectGames)")
+            }
+            if let fastest = statsService.fastestWin {
+                LedgerRow(key: "Fastest Solve", value: statsService.formatTime(fastest))
             }
         }
+        .padding(.horizontal, 22)
+        .padding(.top, 14)
     }
 
-    // MARK: - Guess Distribution Section
+    // MARK: - Guess Distribution
 
-    private var guessDistributionSection: some View {
-        VStack(spacing: 16) {
-            sectionHeader(icon: "chart.bar.xaxis", title: "Guess Distribution", color: .quordlePrimary)
-
-            VStack(spacing: 8) {
-                let distribution = statsService.guessDistribution()
-                let sortedKeys = distribution.keys.sorted()
-                let maxCount = distribution.values.max() ?? 1
-
-                ForEach(sortedKeys, id: \.self) { guessCount in
-                    GuessDistributionBar(
-                        guessCount: guessCount,
-                        count: distribution[guessCount] ?? 0,
-                        maxCount: maxCount
-                    )
-                }
-            }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.quordleCardBackground)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(Color.quordleCardBorder, lineWidth: 1)
-            )
-        }
-    }
-
-    // MARK: - Top Stats Cards Section
-
-    private var streakCardsSection: some View {
-        HStack(spacing: 16) {
-            // Words Solved
-            StreakCard(
-                icon: "textformat.abc",
-                iconColor: .quordlePrimary,
-                value: statsService.totalWordsSolved,
-                label: "Words Solved",
-                sublabel: statsService.totalWordsSolved == 1 ? "word" : "words"
-            )
-
-            // Current Streak
-            // Dimmed when today's puzzle hasn't been completed yet
-            StreakCard(
-                icon: "flame.fill",
-                iconColor: .quordleOrange,
-                value: statsService.currentStreak,
-                label: "Current Streak",
-                sublabel: statsService.currentStreak == 1 ? "day" : "days",
-                isActive: dailyPuzzleService.isTodayCompleted
-            )
-        }
-    }
-
-    // MARK: - Statistics Section
-
-    private var statisticsSection: some View {
-        VStack(spacing: 16) {
-            sectionHeader(icon: "chart.bar.fill", title: "Statistics", color: .quordlePrimary)
-
-            VStack(spacing: 0) {
-                StatisticRow(label: "Total Wins", value: "\(statsService.totalWins)")
-                Divider().background(Color.quordleCardBorder)
-                StatisticRow(label: "Win Rate", value: statsService.winRateString)
-                Divider().background(Color.quordleCardBorder)
-                StatisticRow(label: "Daily Puzzles", value: "\(statsService.dailyChallengesCompleted)")
-            }
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.quordleCardBackground)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(Color.quordleCardBorder, lineWidth: 1)
-            )
-        }
-    }
-
-    // MARK: - Personal Bests Section
-
-    private var personalBestsSection: some View {
-        VStack(spacing: 16) {
-            sectionHeader(icon: "medal.fill", title: "Personal Bests", color: .quordleGold)
-
-            VStack(spacing: 12) {
-                ForEach(Difficulty.allCases) { difficulty in
-                    PersonalBestCard(
-                        difficulty: difficulty,
-                        bestTime: statsService.bestTime(for: difficulty),
-                        bestGuesses: statsService.bestGuesses(for: difficulty),
-                        formatTime: statsService.formatTime
-                    )
-                }
+    private var guessDistribution: some View {
+        let distribution = statsService.guessDistribution()
+        let sortedKeys = distribution.keys.sorted()
+        let maxCount = distribution.values.max() ?? 1
+        return VStack(spacing: 8) {
+            ForEach(sortedKeys, id: \.self) { guessCount in
+                GuessDistributionBar(guessCount: guessCount, count: distribution[guessCount] ?? 0, maxCount: maxCount)
             }
         }
+        .padding(.horizontal, 22)
+        .padding(.top, 10)
     }
 
-    // MARK: - Fun Facts Section
+    // MARK: - Marks of Distinction
 
-    private var funFactsSection: some View {
-        VStack(spacing: 16) {
-            sectionHeader(icon: "sparkles", title: "Highlights", color: .quordleSecondary)
-
-            VStack(spacing: 0) {
-                // Fastest win
-                if let fastest = statsService.fastestWin {
-                    FunFactCard(
-                        icon: "bolt.fill",
-                        title: "Fastest Win",
-                        value: statsService.formatTime(fastest)
-                    )
-                    Divider().background(Color.quordleCardBorder)
-                }
-
-                // Clutch wins
-                if statsService.clutchWins > 0 {
-                    FunFactCard(
-                        icon: "exclamationmark.triangle.fill",
-                        title: "Clutch Wins",
-                        value: "\(statsService.clutchWins)"
-                    )
-                    Divider().background(Color.quordleCardBorder)
-                }
-
-                // Perfect games
-                if statsService.perfectGames > 0 {
-                    FunFactCard(
-                        icon: "star.fill",
-                        title: "Perfect Games",
-                        value: "\(statsService.perfectGames)"
-                    )
-                    Divider().background(Color.quordleCardBorder)
-                }
-
-                // Average guesses
-                if statsService.totalWins > 0 {
-                    FunFactCard(
-                        icon: "number.circle.fill",
-                        title: "Avg Guesses/Win",
-                        value: statsService.averageGuessesString
-                    )
-                    Divider().background(Color.quordleCardBorder)
-                }
-
-                // Favorite mode
-                if let mostPlayed = statsService.mostPlayedDifficulty {
-                    FunFactCard(
-                        icon: mostPlayed.iconName,
-                        title: "Favorite Mode",
-                        value: mostPlayed.displayName
-                    )
-                    Divider().background(Color.quordleCardBorder)
-                }
-
-                // This week activity
-                FunFactCard(
-                    icon: "calendar.badge.clock",
-                    title: "This Week",
-                    value: "\(statsService.winsThisWeek)/\(statsService.gamesThisWeek) wins"
+    private var marksSection: some View {
+        VStack(spacing: 0) {
+            ForEach(Achievement.allCases) { achievement in
+                Rectangle().fill(Color.quordleCardBorder).frame(height: 1)
+                MarkColumn(
+                    achievement: achievement,
+                    isUnlocked: statsService.isUnlocked(achievement),
+                    progress: statsService.progressFor(achievement)
                 )
+                .contentShape(Rectangle())
+                .onTapGesture { selectedAchievement = achievement }
             }
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.quordleCardBackground)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(Color.quordleCardBorder, lineWidth: 1)
-            )
         }
-    }
-
-    // MARK: - Section Header
-
-    private func sectionHeader(icon: String, title: String, color: Color) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: icon)
-                .font(.system(size: 18))
-                .foregroundColor(color)
-
-            Text(title)
-                .font(.system(size: 20, weight: .bold, design: .rounded))
-                .foregroundColor(.quordlePrimaryText)
-
-            Spacer()
-        }
+        .padding(.horizontal, 22)
+        .padding(.top, 6)
     }
 }
 
-// MARK: - Streak Card
+// MARK: - Ledger Row (dotted-leader table)
 
-struct StreakCard: View {
-    let icon: String
-    let iconColor: Color
-    let value: Int
-    let label: String
-    let sublabel: String
-    var isActive: Bool = true
-
-    private var effectiveIconColor: Color {
-        isActive ? iconColor : iconColor.opacity(0.4)
-    }
-
-    var body: some View {
-        VStack(spacing: 12) {
-            // Icon
-            ZStack {
-                Circle()
-                    .fill(effectiveIconColor.opacity(0.15))
-                    .frame(width: 50, height: 50)
-
-                Image(systemName: icon)
-                    .font(.system(size: 24))
-                    .foregroundColor(effectiveIconColor)
-            }
-
-            // Value
-            Text("\(value)")
-                .font(.system(size: 36, weight: .bold, design: .rounded))
-                .foregroundColor(.quordlePrimaryText)
-
-            // Label
-            VStack(spacing: 2) {
-                Text(label)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.quordleSecondaryText)
-
-                Text(sublabel)
-                    .font(.system(size: 11))
-                    .foregroundColor(.quordleSecondaryText.opacity(0.7))
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
-        .background(
-            RoundedRectangle(cornerRadius: 18)
-                .fill(Color.quordleCardBackground)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.quordleCardBorder, lineWidth: 1)
-        )
-    }
-}
-
-// MARK: - Statistic Row
-
-struct StatisticRow: View {
-    let label: String
+struct LedgerRow: View {
+    let key: String
     let value: String
 
     var body: some View {
-        HStack {
-            Text(label)
-                .font(.system(size: 16, weight: .medium))
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(key)
+                .font(.system(size: 11, weight: .medium))
+                .tracking(1.4)
+                .textCase(.uppercase)
                 .foregroundColor(.quordleSecondaryText)
+                .fixedSize()
 
-            Spacer()
-
-            Text(value)
-                .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundColor(.quordlePrimaryText)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-    }
-}
-
-// MARK: - Personal Best Card
-
-struct PersonalBestCard: View {
-    let difficulty: Difficulty
-    let bestTime: Int?
-    let bestGuesses: Int?
-    let formatTime: (Int) -> String
-
-    var body: some View {
-        HStack(spacing: 14) {
-            // Difficulty icon
-            ZStack {
-                Circle()
-                    .fill(difficultyColor.opacity(0.15))
-                    .frame(width: 44, height: 44)
-
-                Image(systemName: difficulty.iconName)
-                    .font(.system(size: 20))
-                    .foregroundColor(difficultyColor)
-            }
-
-            // Single mode now — label the card by what it shows, not the difficulty name
-            Text("Best Result")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.quordlePrimaryText)
-
-            Spacer()
-
-            // Stats
-            if let time = bestTime, let guesses = bestGuesses {
-                HStack(spacing: 16) {
-                    // Time
-                    HStack(spacing: 4) {
-                        Image(systemName: "clock")
-                            .font(.system(size: 12))
-                        Text(formatTime(time))
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
-                    }
-                    .foregroundColor(.quordleSecondaryText)
-
-                    // Guesses
-                    HStack(spacing: 4) {
-                        Image(systemName: "number")
-                            .font(.system(size: 12))
-                        Text("\(guesses)")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
-                    }
-                    .foregroundColor(.quordleSecondaryText)
+            GeometryReader { g in
+                Path { p in
+                    p.move(to: CGPoint(x: 0, y: g.size.height - 3))
+                    p.addLine(to: CGPoint(x: g.size.width, y: g.size.height - 3))
                 }
-            } else {
-                Text("No wins")
-                    .font(.system(size: 14))
-                    .foregroundColor(.quordleSecondaryText.opacity(0.6))
+                .stroke(Color.quordleCardBorder, style: StrokeStyle(lineWidth: 1, dash: [1.5, 3]))
             }
-        }
-        .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.quordleCardBackground)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.quordleCardBorder, lineWidth: 1)
-        )
-    }
-
-    private var difficultyColor: Color {
-        switch difficulty {
-        case .relaxed: return .quordleSuccess
-        case .classic: return .quordlePrimary
-        case .challenge: return .quordleOrange
-        case .ultimate: return .red
-        }
-    }
-}
-
-// MARK: - Fun Fact Card
-
-struct FunFactCard: View {
-    let icon: String
-    let title: String
-    let value: String
-
-    var body: some View {
-        HStack {
-            Image(systemName: icon)
-                .font(.system(size: 18))
-                .foregroundColor(.quordleSecondary)
-                .frame(width: 28)
-
-            Text(title)
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.quordleSecondaryText)
-
-            Spacer()
+            .frame(height: 16)
 
             Text(value)
-                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .font(.system(size: 21, weight: .semibold, design: .serif))
                 .foregroundColor(.quordlePrimaryText)
+                .fixedSize()
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
+        .padding(.vertical, 9)
     }
 }
 
-// MARK: - Achievement Badge
+// MARK: - Mark of Distinction (newspaper feature column)
 
-struct AchievementBadge: View {
+struct MarkColumn: View {
     let achievement: Achievement
     let isUnlocked: Bool
     let progress: (current: Int, required: Int)
 
     var body: some View {
-        VStack(spacing: 8) {
-            // Icon
-            ZStack {
-                Circle()
-                    .fill(isUnlocked ? iconColor.opacity(0.2) : Color.gray.opacity(0.1))
-                    .frame(width: 48, height: 48)
+        HStack(alignment: .top, spacing: 14) {
+            framedIcon
+            VStack(alignment: .leading, spacing: 4) {
+                Text(achievement.title)
+                    .font(.system(size: 16, weight: .bold, design: .serif))
+                    .foregroundColor(isUnlocked ? .quordlePrimaryText : .quordleSecondaryText)
 
-                Image(systemName: achievement.iconName)
-                    .font(.system(size: 22))
-                    .foregroundColor(isUnlocked ? iconColor : .gray.opacity(0.4))
+                Text(achievement.description)
+                    .font(.system(size: 13, design: .serif))
+                    .italic()
+                    .foregroundColor(.quordleSecondaryText)
+
+                progressLine
             }
-
-            // Title
-            Text(achievement.title)
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(isUnlocked ? .quordlePrimaryText : .quordleSecondaryText.opacity(0.6))
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-
-            // Progress or checkmark
-            if isUnlocked {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 12))
-                    .foregroundColor(.quordleSuccess)
-            } else if progress.required > 1 {
-                Text("\(progress.current)/\(progress.required)")
-                    .font(.system(size: 10, weight: .medium, design: .rounded))
-                    .foregroundColor(.quordleSecondaryText.opacity(0.6))
-            } else {
-                Circle()
-                    .fill(Color.gray.opacity(0.2))
-                    .frame(width: 12, height: 12)
-            }
+            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 14)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(isUnlocked ? Color.quordleCardBackground : Color.quordleCardBackground.opacity(0.5))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(isUnlocked ? iconColor.opacity(0.3) : Color.quordleCardBorder.opacity(0.5), lineWidth: 1)
-        )
+        .padding(.vertical, 13)
     }
 
-    private var iconColor: Color {
-        switch achievement.iconColor {
-        case "gold": return .quordleGold
-        case "orange": return .quordleOrange
-        case "blue": return .quordlePrimary
-        case "purple": return .quordleSecondary
-        case "green": return .quordleSuccess
-        case "red": return .red
-        case "pink": return .pink
-        case "cyan": return .cyan
-        default: return .quordlePrimary
+    private var framedIcon: some View {
+        ZStack {
+            Rectangle().fill(Color.quordleCardBackground)
+            Rectangle().stroke(isUnlocked ? Color.quordlePrimaryText : Color.quordleCardBorder, lineWidth: 1)
+            Rectangle().stroke(Color.quordleCardBorder, lineWidth: 1).padding(3)
+            Image(systemName: achievement.iconName)
+                .font(.system(size: 20))
+                .foregroundColor(isUnlocked ? .quordlePrimary : .quordleSecondaryText.opacity(0.5))
+        }
+        .frame(width: 54, height: 54)
+    }
+
+    @ViewBuilder
+    private var progressLine: some View {
+        if isUnlocked {
+            Text("— Earned —")
+                .font(.system(size: 10, weight: .bold))
+                .tracking(2)
+                .textCase(.uppercase)
+                .foregroundColor(.quordlePrimary)
+                .padding(.top, 3)
+        } else if progress.required > 1 {
+            HStack(spacing: 8) {
+                GeometryReader { g in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(Color.quordleCardBorder)
+                        Capsule().fill(Color.quordlePrimary)
+                            .frame(width: g.size.width * CGFloat(progress.current) / CGFloat(progress.required))
+                    }
+                }
+                .frame(width: 120, height: 4)
+                Text("\(progress.current) / \(progress.required)")
+                    .font(.system(size: 11, design: .serif))
+                    .foregroundColor(.quordleSecondaryText)
+            }
+            .padding(.top, 6)
+        } else {
+            Text("Locked")
+                .font(.system(size: 10, weight: .semibold))
+                .tracking(2)
+                .textCase(.uppercase)
+                .foregroundColor(.quordleSecondaryText.opacity(0.6))
+                .padding(.top, 3)
         }
     }
 }
@@ -551,39 +252,26 @@ struct GuessDistributionBar: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            // Guess number
             Text("\(guessCount)")
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .font(.system(size: 14, weight: .semibold, design: .serif))
                 .foregroundColor(.quordleSecondaryText)
-                .frame(width: 20, alignment: .trailing)
+                .frame(width: 22, alignment: .trailing)
 
-            // Bar
             GeometryReader { geometry in
-                let barWidth = maxCount > 0
-                    ? CGFloat(count) / CGFloat(maxCount) * geometry.size.width
-                    : 0
-
+                let barWidth = maxCount > 0 ? CGFloat(count) / CGFloat(maxCount) * geometry.size.width : 0
                 HStack {
-                    if count > 0 {
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(LinearGradient.quordleAccentGradient)
-                            .frame(width: max(barWidth, 24))
-                    } else {
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(Color.gray.opacity(0.2))
-                            .frame(width: 8)
-                    }
-
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(count > 0 ? Color.quordlePrimary : Color.quordleCardBorder)
+                        .frame(width: count > 0 ? max(barWidth, 18) : 6)
                     Spacer(minLength: 0)
                 }
             }
-            .frame(height: 24)
+            .frame(height: 18)
 
-            // Count
             Text("\(count)")
-                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .font(.system(size: 14, weight: .bold, design: .serif))
                 .foregroundColor(.quordlePrimaryText)
-                .frame(width: 30, alignment: .trailing)
+                .frame(width: 28, alignment: .trailing)
         }
     }
 }

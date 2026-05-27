@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Octordle — 全畫面概念稿 (The Daily Edition)</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#F4F0E6;--surface:#FBF8F1;--ink:#26221C;--ink2:#8A8275;--line:#D8D0BF;
+    --correct:#AE4124;--present:#E3A52F;--absent:#A7A08D;--absentInk:#FBF8F1;
+    --onCorrect:#FBF8F1;--onPresent:#3A2A12;--keybg:#EAE3D3;--card:#FBF8F1;
+  }
+  body.dark{
+    --bg:#17130E;--surface:#241F17;--ink:#EDE5D4;--ink2:#9A8F7C;--line:#3C342A;
+    --correct:#D2562C;--present:#ECB23E;--absent:#544C3F;--absentInk:#D7CCB6;
+    --onCorrect:#FBF3E6;--onPresent:#2A2010;--keybg:#322C24;--card:#241F17;
+  }
+  body{font:14px/1.55 -apple-system,"PingFang TC",sans-serif;background:#2b2b30;color:#e6e3da;padding:28px 16px 90px;}
+  .serif{font-family:Georgia,"Times New Roman","Songti TC",serif;}
+  .head{max-width:1320px;margin:0 auto 18px;}
+  h1{font-size:1.55rem;font-weight:600;}
+  .sub{color:#a8a49c;margin-top:6px;font-size:.9rem;}
+  .toggle{margin-top:14px;display:inline-flex;border:1px solid #4a4a52;border-radius:10px;overflow:hidden;position:sticky;}
+  .toggle button{background:transparent;color:#cfcbc3;border:none;padding:8px 20px;font:inherit;cursor:pointer;}
+  .toggle button.active{background:#e8e6e1;color:#1c1c20;font-weight:600;}
+  .barwrap{position:sticky;top:0;z-index:50;background:#2b2b30;padding:10px 0;max-width:1320px;margin:0 auto;}
+
+  .group{max-width:1320px;margin:30px auto 0;}
+  .group > h2{font-size:1rem;color:#cfcbc3;font-weight:600;margin-bottom:14px;border-left:3px solid #6a6a72;padding-left:10px;}
+  .row{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;}
+  .col{width:288px;}
+  .col .cap{text-align:center;color:#a8a49c;font-size:.8rem;margin-bottom:9px;}
+
+  .phone{width:288px;height:610px;border-radius:30px;overflow:hidden;background:var(--bg);color:var(--ink);
+    box-shadow:0 10px 38px rgba(0,0,0,.5);border:1px solid rgba(0,0,0,.3);display:flex;flex-direction:column;}
+  .scroll{flex:1;overflow-y:auto;}
+  .scroll::-webkit-scrollbar{width:0;}
+
+  .rule{height:1px;background:var(--ink);opacity:.85;}
+  .rule.thin{background:var(--line);opacity:1;}
+  .masthead{padding:18px 20px 10px;text-align:center;}
+  .mast-name{font-size:1.85rem;font-weight:700;letter-spacing:.5px;margin:8px 0;}
+  .mast-sm{font-size:1.25rem;font-weight:700;margin:6px 0;}
+  .dateline{font-size:.58rem;letter-spacing:2.3px;color:var(--ink2);text-transform:uppercase;}
+
+  .pad{padding:22px 22px;}
+  .center{text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;}
+  .kicker{font-size:.6rem;letter-spacing:3px;color:var(--ink2);text-transform:uppercase;}
+  .lede{font-size:1.3rem;line-height:1.4;}
+  .lede em{font-style:italic;}
+  .cta{background:var(--correct);color:var(--onCorrect);border:none;font:600 .98rem Georgia,serif;
+    padding:12px 28px;border-radius:3px;letter-spacing:.4px;cursor:default;}
+  .linkbtn{background:none;border:none;color:var(--correct);font:600 .9rem Georgia,serif;border-bottom:1px solid var(--correct);padding:2px 0;cursor:default;}
+  .muted{font-size:.78rem;color:var(--ink2);}
+  .next{padding:13px 0 16px;text-align:center;}
+  .next .lab{font-size:.55rem;letter-spacing:2.4px;color:var(--ink2);text-transform:uppercase;}
+  .next .clk{font-family:Georgia,serif;font-size:1.4rem;margin-top:3px;letter-spacing:2px;}
+
+  /* stamp */
+  .stamp{display:inline-block;border:2.5px solid var(--correct);color:var(--correct);font-family:Georgia,serif;
+    font-weight:700;letter-spacing:3px;padding:6px 16px;transform:rotate(-7deg);border-radius:4px;font-size:1.1rem;opacity:.9;}
+
+  /* tiles */
+  .boards{padding:6px 12px;display:grid;grid-template-columns:1fr 1fr;gap:7px 9px;}
+  .board{display:grid;grid-template-rows:repeat(5,1fr);gap:3px;}
+  .brow{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;}
+  .tile{aspect-ratio:1;border-radius:3px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.6rem;}
+  .t-c{background:var(--correct);color:var(--onCorrect);}
+  .t-p{background:var(--present);color:var(--onPresent);}
+  .t-a{background:var(--absent);color:var(--absentInk);}
+  .t-e{background:var(--surface);border:1px solid var(--line);}
+  .gbar{display:flex;align-items:center;gap:8px;padding:11px 15px 7px;font-size:.7rem;color:var(--ink2);}
+  .gbar .nm{font-family:Georgia,serif;font-size:.92rem;color:var(--ink);letter-spacing:.4px;}
+  .gbar .sp{flex:1;}
+  .kb{padding:8px 11px 13px;}
+  .krow{display:flex;gap:4px;justify-content:center;margin-bottom:4px;}
+  .key{flex:1;max-width:26px;aspect-ratio:.72;border-radius:4px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+  .key.wide{max-width:40px;flex:1.6;}
+  .key .cells{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(4,1fr);}
+  .key .glyph{position:relative;z-index:2;font-size:.52rem;font-weight:700;color:var(--ink);}
+
+  /* result */
+  .stars{font-size:1.2rem;letter-spacing:4px;color:var(--correct);}
+  .bigscore{font-family:Georgia,serif;font-size:3.2rem;font-weight:700;line-height:1;}
+  .bigscore small{font-size:1.1rem;color:var(--ink2);}
+  .resultline{font-size:.82rem;color:var(--ink2);letter-spacing:.3px;}
+  .answers{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px 20px;}
+  .ans{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:5px 0;font-size:.78rem;}
+  .ans .w{font-family:Georgia,serif;font-weight:600;letter-spacing:1px;}
+  .ans .g{color:var(--ink2);}
+  .ans .x{color:var(--correct);font-weight:700;}
+  .btnstack{padding:14px 20px;display:flex;flex-direction:column;gap:9px;}
+  .btn-primary{background:var(--correct);color:var(--onCorrect);border:none;padding:13px;border-radius:3px;font:600 .95rem Georgia,serif;cursor:default;text-align:center;}
+  .btn-secondary{background:none;border:1px solid var(--line);color:var(--ink);padding:13px;border-radius:3px;font:600 .92rem Georgia,serif;cursor:default;text-align:center;}
+
+  /* solve report */
+  .sr-skill{text-align:center;padding:14px 0 4px;}
+  .sr-skill .lab{font-size:.6rem;letter-spacing:3px;color:var(--ink2);text-transform:uppercase;}
+  .sr-skill .n{font-family:Georgia,serif;font-size:3.6rem;font-weight:700;color:var(--correct);line-height:1;}
+  .sr-skill .n small{font-size:1.1rem;color:var(--ink2);}
+  .sr-bar{height:4px;width:170px;margin:10px auto;background:var(--line);border-radius:2px;overflow:hidden;}
+  .sr-bar i{display:block;height:100%;background:var(--correct);}
+  .blocklabel{font-size:.58rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--ink2);padding:14px 22px 6px;}
+  .feat{margin:0 22px;padding:14px;border:1px solid var(--line);border-radius:4px;background:var(--card);}
+  .feat .ttl{font-family:Georgia,serif;font-size:1rem;display:flex;justify-content:space-between;align-items:center;}
+  .wt{display:flex;gap:4px;margin:10px 0;}
+  .wt span{width:32px;height:36px;border-radius:4px;background:var(--correct);color:var(--onCorrect);display:flex;align-items:center;justify-content:center;font-weight:700;}
+  .dots{display:inline-flex;gap:3px;}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--line);}
+  .dot.on{background:var(--correct);}
+  .grow{display:flex;align-items:center;gap:9px;padding:9px 22px;border-bottom:1px solid var(--line);}
+  .grow .num{font-size:.72rem;color:var(--ink2);width:14px;text-align:right;}
+  .grow .w{font-family:ui-monospace,Menlo,monospace;font-weight:700;letter-spacing:1px;font-size:.86rem;}
+  .grow .sp{flex:1;}
+  .grow .lab{font-size:.66rem;font-weight:600;width:54px;text-align:right;}
+  .perboard{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:6px 22px 20px;}
+  .pb{border:1px solid var(--line);border-radius:8px;text-align:center;padding:9px 2px;background:var(--card);}
+  .pb .bn{font-size:.58rem;color:var(--ink2);}
+  .pb .bg{font-family:Georgia,serif;font-size:1.1rem;font-weight:700;}
+
+  /* journey ledger + marks */
+  .sec-title{font-family:Georgia,serif;font-size:1.45rem;text-align:center;padding:4px 0 2px;}
+  .ledger{padding:12px 22px;}
+  .ldr-row{display:flex;align-items:baseline;padding:10px 0;}
+  .ldr-row .k{font-size:.6rem;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink2);white-space:nowrap;}
+  .ldr-row .dd{flex:1;border-bottom:1px dotted var(--line);margin:0 8px;transform:translateY(-3px);}
+  .ldr-row .v{font-family:Georgia,serif;font-size:1.3rem;font-weight:600;}
+  .spark{display:flex;align-items:flex-end;gap:4px;height:42px;padding:0 22px;}
+  .spark span{flex:1;background:var(--correct);border-radius:1px;opacity:.85;}
+  /* mark column (newspaper feature) */
+  .mark-col{display:flex;gap:12px;padding:13px 22px;border-top:1px solid var(--line);align-items:flex-start;}
+  .mark-fig{width:54px;height:54px;flex:none;border:1px solid var(--ink);display:flex;align-items:center;justify-content:center;
+    font-size:1.5rem;background:var(--surface);position:relative;}
+  .mark-fig::after{content:"";position:absolute;inset:3px;border:1px solid var(--line);}
+  .mark-fig.locked{filter:grayscale(1);opacity:.45;}
+  .mark-body .mt{font-family:Georgia,serif;font-weight:700;font-size:.96rem;}
+  .mark-body .md{font-family:Georgia,serif;font-style:italic;color:var(--ink2);font-size:.8rem;margin:2px 0 7px;}
+  .mark-prog{display:flex;align-items:center;gap:8px;}
+  .mark-prog .track{flex:1;height:4px;background:var(--line);border-radius:2px;overflow:hidden;max-width:130px;}
+  .mark-prog .track i{display:block;height:100%;background:var(--correct);}
+  .mark-prog .pl{font-size:.66rem;color:var(--ink2);letter-spacing:.5px;}
+  .earned{font-size:.64rem;letter-spacing:2px;color:var(--correct);text-transform:uppercase;font-weight:700;}
+
+  /* mark detail (modal) */
+  .modal{position:relative;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);}
+  .mcard{width:230px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:24px 22px;text-align:center;
+    box-shadow:0 18px 50px rgba(0,0,0,.4);}
+  .mcard .bigfig{width:84px;height:84px;margin:0 auto 14px;border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;
+    font-size:2.4rem;background:var(--surface);position:relative;}
+  .mcard .bigfig::after{content:"";position:absolute;inset:4px;border:1px solid var(--line);}
+  .mcard .mt{font-family:Georgia,serif;font-size:1.2rem;font-weight:700;letter-spacing:1px;}
+  .mcard .md{font-family:Georgia,serif;font-style:italic;color:var(--ink2);font-size:.85rem;margin:6px 0 16px;}
+
+  /* settings */
+  .set-row{display:flex;align-items:center;gap:12px;padding:13px 22px;border-bottom:1px solid var(--line);font-size:.9rem;}
+  .set-row .sp{flex:1;}
+  .set-row .val{color:var(--ink2);font-size:.82rem;}
+  .set-grouplabel{font-size:.58rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--ink2);padding:16px 22px 4px;}
+
+  /* share card */
+  .sharewrap{display:flex;justify-content:center;padding:14px;}
+  .sharecard{width:250px;background:var(--bg);border:1px solid var(--ink);padding:20px;text-align:center;color:var(--ink);}
+  .sharecard .sm-rule{height:1px;background:var(--ink);margin:8px 0;}
+  .emoji-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 14px;padding:6px 10px;}
+  .eg{display:flex;justify-content:center;gap:2px;}
+  .eg b{width:9px;height:9px;border-radius:2px;display:block;}
+
+  .note{max-width:1320px;margin:26px auto 0;color:#b8b4ac;font-size:.9rem;}
+  .note b{color:#e8e6e1;}
+</style>
+</head>
+<body class="light">
+  <div class="head">
+    <h1>Octordle — 全畫面概念稿「The Daily Edition」</h1>
+    <div class="sub">亮版 = Light mode、暗版 = Dark mode(兩者都保留)。暗版磚塊已調亮加清晰。Marks of Distinction 改成報紙小專欄(有圖、可點開圖卡+進度)。</div>
+  </div>
+  <div class="barwrap">
+    <div class="toggle">
+      <button id="bl" class="active" onclick="setMode('light')">☀︎ 亮版 (Light)</button>
+      <button id="bd" onclick="setMode('dark')">☾ 暗版 (Dark)</button>
+    </div>
+  </div>
+
+  <div id="app"></div>
+
+  <div class="note">
+    全部走<b>紙・墨・赤陶</b>暖色(亮/暗各一套)。<b>Today=報紙頭版、Journey=紀錄簿、成就=報紙小專欄(可點開圖卡)、結算/Solve Report/Share 全部統一報刊感。</b>
+    這是概念稿;實機字體用 iOS 內建襯線(New York),磚塊與互動以實機為準。
+  </div>
+
+<script>
+// ---------- shared builders ----------
+function mastheadFull(){
+  return `<div class="masthead">
+    <div class="dateline">Tuesday · May 27 2026</div>
+    <div class="rule" style="margin-top:7px"></div>
+    <div class="mast-name serif">Octordle</div>
+    <div class="rule"></div>
+    <div class="dateline">No. 8 &nbsp;·&nbsp; Eight Words &nbsp;·&nbsp; Daily</div>
+  </div>`;
+}
+function tiles(word, st){ // st string of c/p/a/e
+  let h='<div class="board">';
+  const words=word;
+  for(let r=0;r<5;r++){ h+='<div class="brow">';
+    for(let c=0;c<5;c++){ const s=st[r][c]; const ch=(words[r]&&words[r][c])?words[r][c]:'';
+      h+=`<div class="tile t-${s}">${s==='e'?'':ch}</div>`;
+    } h+='</div>';
+  } return h+'</div>';
+}
+function sampleBoard(i){
+  const W=["FLASH","CLEAR","WITCH","",""];
+  const S=[["c","a","p","a","a"],["a","c","c","a","p"],["a","p","a","c","a"],["e","e","e","e","e"],["e","e","e","e","e"]];
+  return tiles(W,S);
+}
+const KD={Q:"c-a-a-cp-",W:"-p--a-c--",E:"caacpacp",R:"a-p-a--c",T:"-c-a--p-",Y:"--a-c-",U:"-a----",I:"c--a--",O:"caacpa--",P:"-p-a-c--",
+A:"caacpacp",S:"-a-c-p--",D:"c--a-p-c",F:"-c-a-c-a",G:"p--a--c-",H:"-a-c--",J:"----c-",K:"-a----",L:"c-p---",
+Z:"-a----",X:"c-----",C:"caacpacp",V:"-p-a--",B:"--c-a-",N:"-a--c-",M:"c--a--"};
+function kbCells(code){let h='<div class="cells">';for(let i=0;i<8;i++){const ch=code&&code[i]?code[i]:"-";
+  const v=ch==='c'?'var(--correct)':ch==='p'?'var(--present)':ch==='a'?'var(--absent)':'var(--keybg)';
+  h+=`<span style="background:${v}"></span>`;}return h+'</div>';}
+function keyboard(){const rows=[["Q","W","E","R","T","Y","U","I","O","P"],["A","S","D","F","G","H","J","K","L"],["⏎","Z","X","C","V","B","N","M","⌫"]];
+  let h='<div class="kb">';rows.forEach(r=>{h+='<div class="krow">';r.forEach(k=>{const w=(k==="⏎"||k==="⌫");
+  h+=`<div class="key ${w?'wide':''}">${kbCells(KD[k])}<span class="glyph">${k}</span></div>`;});h+='</div>';});return h+'</div>';}
+function dots(n){let h='<span class="dots">';for(let i=0;i<5;i++)h+=`<span class="dot ${i<n?'on':''}"></span>`;return h+'</span>';}
+
+function phone(cap, inner){ return `<div class="col"><div class="cap">${cap}</div><div class="phone"><div class="scroll">${inner}</div></div></div>`; }
+
+// ---------- screens ----------
+function todayStart(){
+  return mastheadFull()+`
+  <div class="pad center" style="flex:1">
+    <div class="kicker">Today's Edition</div>
+    <div class="lede serif">Eight words.<br><em>Thirteen guesses.</em></div>
+    <button class="cta serif">Begin Today's Puzzle</button>
+    <div class="muted serif">— a 5-day streak —</div>
+  </div>
+  <div class="rule thin"></div>
+  <div class="next"><div class="lab">Next Edition In</div><div class="clk">08 : 14 : 22</div></div>`;
+}
+function todayDone(){
+  return mastheadFull()+`
+  <div class="pad center">
+    <div class="stamp">SOLVED</div>
+    <div class="bigscore serif" style="margin-top:6px">8<small> / 8</small></div>
+    <div class="resultline serif">Skill 78 · 9 guesses · 6:12</div>
+    <button class="cta serif">Read your Solve Report</button>
+    <button class="linkbtn">Play again</button>
+  </div>
+  <div class="rule thin"></div>
+  <div class="next"><div class="lab">Next Edition In</div><div class="clk">08 : 14 : 22</div></div>`;
+}
+function gameBoard(){
+  return `<div class="gbar"><span>‹</span><span class="nm serif">Octordle · No.8</span><span class="sp"></span><span>04:21</span><span style="color:var(--correct);font-weight:700">11 left</span></div>
+  <div class="rule thin" style="margin:0 14px"></div>
+  <div class="boards">${sampleBoard()+sampleBoard()+sampleBoard()+sampleBoard()}</div>
+  ${keyboard()}`;
+}
+function resultWin(){
+  const answers=[["HONOR",4],["TOUCH",3],["BROKE",5],["SOLVE",6],["DELAY",4],["DEVIL",7],["CHORD",4],["SNAIL",6]];
+  let ans='<div class="answers">';answers.forEach((a,i)=>{ans+=`<div class="ans"><span class="w">${a[0]}</span><span class="g">${a[1]}</span></div>`;});ans+='</div>';
+  return `<div class="masthead" style="padding-bottom:6px"><div class="rule thin"></div><div class="mast-sm serif">Victory</div><div class="dateline">Edition No. 8 · Complete</div><div class="rule thin" style="margin-top:7px"></div></div>
+  <div class="pad center" style="padding-bottom:10px">
+    <div class="stars">★ ★ ★</div>
+    <div class="bigscore serif">8<small> / 8</small></div>
+    <div class="resultline serif">9 guesses · 6:12</div>
+  </div>
+  <div class="blocklabel">The Answers</div>${ans}
+  <div class="btnstack">
+    <div class="btn-primary">Share Result</div>
+    <div class="btn-secondary">Done</div>
+  </div>`;
+}
+function resultLoss(){
+  const answers=[["HONOR","✗"],["TOUCH","✗"],["BROKE","3"],["SOLVE","✗"],["DELAY","4"],["DEVIL","✗"],["CHORD","2"],["SNAIL","✗"]];
+  let ans='<div class="answers">';answers.forEach(a=>{ans+=`<div class="ans"><span class="w">${a[0]}</span><span class="${a[1]==='✗'?'x':'g'}">${a[1]}</span></div>`;});ans+='</div>';
+  return `<div class="masthead" style="padding-bottom:6px"><div class="rule thin"></div><div class="mast-sm serif">A Tough Edition</div><div class="dateline">Edition No. 8 · 3 of 8 solved</div><div class="rule thin" style="margin-top:7px"></div></div>
+  <div class="pad center" style="padding-bottom:10px">
+    <div class="bigscore serif">3<small> / 8</small></div>
+    <div class="resultline serif">Out of guesses · 8:44</div>
+  </div>
+  <div class="blocklabel">The Answers</div>${ans}
+  <div class="btnstack"><div class="btn-primary">Share Result</div><div class="btn-secondary">Done</div></div>`;
+}
+function solveReport(){
+  const gs=[["CHORD",5,"Brilliant"],["CHAMP",4,"Great"],["WITCH",3,"Good"],["GAFFE",4,"Great"],["POSIT",2,"Fair"],["SPUNK",3,"Good"],["CROCK",4,"Great"],["SNAIL",5,"Brilliant"]];
+  let rows='';gs.forEach(g=>{rows+=`<div class="grow"><span class="num">${gs.indexOf(g)+1}</span><span class="w">${g[0]}</span><span class="sp"></span>${dots(g[1])}<span class="lab" style="color:var(--correct)">${g[2]}</span></div>`;});
+  const pbv=[4,3,5,6,4,7,4,6];let pb='<div class="perboard">';pbv.forEach((v,i)=>{pb+=`<div class="pb"><div class="bn">Board ${i+1}</div><div class="bg serif">${v}</div></div>`;});pb+='</div>';
+  return `<div class="masthead" style="padding-bottom:4px"><div class="rule thin"></div><div class="mast-sm serif">Solve Report</div><div class="dateline">Edition No. 8</div><div class="rule thin" style="margin-top:7px"></div></div>
+  <div class="sr-skill"><div class="lab">Skill</div><div class="n serif">78<small> / 100</small></div><div class="sr-bar"><i style="width:78%"></i></div>
+    <div class="serif" style="font-weight:600">Sharp, efficient guessing.</div><div class="muted serif">Solved all 8 boards in 9 guesses.</div></div>
+  <div class="blocklabel">Smartest Guess</div>
+  <div class="feat"><div class="ttl serif">Guess 1 · CHORD ${dots(5)}</div>
+    <div class="wt"><span>C</span><span>H</span><span>O</span><span>R</span><span>D</span></div>
+    <div class="muted serif">Near-perfect — almost no word would have revealed more.</div></div>
+  <div class="blocklabel">Your Guesses · more dots = sharper</div>${rows}
+  <div class="blocklabel">Per Board · solved on guess</div>${pb}`;
+}
+function shareCard(){
+  const eg=[ "ccccc","ccpac","cacca","ccccc"," accca","ccccc","cccac","ccccc" ];
+  let grid='<div class="emoji-grid">';
+  for(let i=0;i<8;i++){grid+='<div class="eg">';for(let c=0;c<5;c++){const s=eg[i][c];const v=s==='c'?'var(--correct)':s==='p'?'var(--present)':'var(--absent)';grid+=`<b style="background:${v}"></b>`;}grid+='</div>';}
+  grid+='</div>';
+  return `<div class="sharewrap"><div class="sharecard serif">
+    <div class="dateline" style="color:var(--ink)">The Daily Edition</div>
+    <div style="font-size:1.5rem;font-weight:700;letter-spacing:.5px;margin:4px 0">Octordle</div>
+    <div class="dateline" style="color:var(--ink2)">No. 8 · May 27 2026</div>
+    <div class="sm-rule"></div>
+    <div style="font-size:1.6rem;font-weight:700">SOLVED 8/8</div>
+    <div class="muted serif" style="margin-bottom:4px">Skill 78 · 9 guesses</div>
+    ${grid}
+    <div class="sm-rule"></div>
+    <div class="dateline" style="color:var(--ink2)">ikuheikure.xyz · Octordle</div>
+  </div></div>
+  <div style="text-align:center;padding:4px 20px 16px" class="muted">↑ 玩家分享出去的圖卡(剪報風)</div>`;
+}
+function journeyRecord(){
+  const marks=[
+    {ic:"🏆",t:"First Victory",d:"Your first solved edition.",earned:true},
+    {ic:"⚔︎",t:"Weekly Warrior",d:"Seven days, unbroken.",earned:true},
+    {ic:"♛",t:"Monthly Master",d:"Thirty days of devotion.",cur:12,max:30},
+    {ic:"✦",t:"Sharp Mind",d:"Five flawless editions.",cur:3,max:5},
+  ];
+  let mh='';marks.forEach(m=>{
+    let prog = m.earned? `<div class="earned">— Earned —</div>`
+      : `<div class="mark-prog"><span class="track"><i style="width:${Math.round(m.cur/m.max*100)}%"></i></span><span class="pl">${m.cur} / ${m.max}</span></div>`;
+    mh+=`<div class="mark-col"><div class="mark-fig ${m.earned?'':'locked'}">${m.ic}</div>
+      <div class="mark-body"><div class="mt serif">${m.t}</div><div class="md serif">${m.d}</div>${prog}</div></div>`;
+  });
+  return `<div class="masthead" style="padding-bottom:4px"><div class="rule thin"></div><div class="sec-title serif">The Record</div><div class="dateline">Your Octordle Almanac</div><div class="rule thin" style="margin-top:7px"></div></div>
+  <div class="ledger">
+    <div class="ldr-row"><span class="k">Editions Solved</span><span class="dd"></span><span class="v serif">23</span></div>
+    <div class="ldr-row"><span class="k">Current Streak</span><span class="dd"></span><span class="v serif">5</span></div>
+    <div class="ldr-row"><span class="k">Longest Streak</span><span class="dd"></span><span class="v serif">12</span></div>
+    <div class="ldr-row"><span class="k">Average Skill</span><span class="dd"></span><span class="v serif">78</span></div>
+  </div>
+  <div class="blocklabel">Skill · last 14 editions</div>
+  <div class="spark"><span style="height:60%"></span><span style="height:75%"></span><span style="height:50%"></span><span style="height:80%"></span><span style="height:68%"></span><span style="height:90%"></span><span style="height:72%"></span><span style="height:85%"></span><span style="height:78%"></span><span style="height:95%"></span><span style="height:66%"></span><span style="height:88%"></span><span style="height:82%"></span><span style="height:92%"></span></div>
+  <div class="blocklabel">Marks of Distinction</div>${mh}<div style="height:12px"></div>`;
+}
+function markDetail(){
+  return `<div class="modal"><div class="mcard">
+    <div class="bigfig">♛</div>
+    <div class="mt serif">Monthly Master</div>
+    <div class="md serif">Thirty days of devotion.</div>
+    <div class="mark-prog" style="justify-content:center"><span class="track" style="max-width:150px"><i style="width:40%"></i></span></div>
+    <div class="muted serif" style="margin-top:10px">12 of 30 · eighteen editions to go</div>
+  </div></div>`;
+}
+function settings(){
+  return `<div class="masthead" style="padding-bottom:4px"><div class="rule thin"></div><div class="sec-title serif">Settings</div><div class="rule thin" style="margin-top:7px"></div></div>
+  <div class="set-grouplabel">Subscription</div>
+  <div class="set-row"><span>♔</span><span>Upgrade to Premium</span><span class="sp"></span><span class="val">›</span></div>
+  <div class="set-grouplabel">Appearance</div>
+  <div class="set-row"><span>◑</span><span>Appearance</span><span class="sp"></span><span class="val">System ›</span></div>
+  <div class="set-row"><span>♪</span><span>Sound & Haptics</span><span class="sp"></span><span class="val">On ›</span></div>
+  <div class="set-grouplabel">About</div>
+  <div class="set-row"><span>?</span><span>How to Play</span><span class="sp"></span><span class="val">›</span></div>
+  <div class="set-row"><span>✉</span><span>Send Feedback</span><span class="sp"></span><span class="val">↗</span></div>
+  <div class="set-row"><span>§</span><span>Privacy Policy</span><span class="sp"></span><span class="val">↗</span></div>
+  <div class="set-row"><span>★</span><span>Rate on App Store</span><span class="sp"></span><span class="val">↗</span></div>`;
+}
+function howto(){
+  return `<div class="masthead" style="padding-bottom:4px"><div class="rule thin"></div><div class="sec-title serif">How to Play</div><div class="dateline">A Reader's Guide</div><div class="rule thin" style="margin-top:7px"></div></div>
+  <div class="pad serif" style="gap:14px">
+    <p style="font-size:.92rem">Solve <b>eight</b> five-letter words at once. Every guess is played on all eight boards. You have <b>thirteen</b> guesses.</p>
+    <div style="display:flex;gap:6px;align-items:center"><span class="tile t-c" style="width:26px;height:26px">R</span><span class="muted">in the word, right spot</span></div>
+    <div style="display:flex;gap:6px;align-items:center"><span class="tile t-p" style="width:26px;height:26px">A</span><span class="muted">in the word, wrong spot</span></div>
+    <div style="display:flex;gap:6px;align-items:center"><span class="tile t-a" style="width:26px;height:26px">T</span><span class="muted">not in the word</span></div>
+    <p style="font-size:.92rem;margin-top:6px">A fresh edition arrives every day at midnight. Keep your streak alive.</p>
+  </div>`;
+}
+
+function subscription(){
+  return `<div class="masthead" style="padding-bottom:4px"><div class="rule thin"></div><div class="sec-title serif">Octordle Premium</div><div class="dateline">A Subscriber's Edition</div><div class="rule thin" style="margin-top:7px"></div></div>
+  <div class="pad center" style="gap:8px;padding-bottom:8px">
+    <div class="lede serif" style="font-size:1.25rem">Every edition,<br><em>uninterrupted.</em></div>
+  </div>
+  <div class="ach">
+    <div class="mark-col" style="padding:11px 0;align-items:center"><div class="mark-fig" style="width:38px;height:38px;font-size:1.1rem">⊘</div><div class="mark-body"><div class="mt serif" style="font-size:.92rem">No Advertisements</div><div class="md serif" style="margin:0">A clean, quiet page.</div></div></div>
+    <div class="mark-col" style="padding:11px 0;align-items:center"><div class="mark-fig" style="width:38px;height:38px;font-size:1.1rem">❦</div><div class="mark-body"><div class="mt serif" style="font-size:.92rem">Every Theme Unlocked</div><div class="md serif" style="margin:0">Dress the page your way.</div></div></div>
+    <div class="mark-col" style="padding:11px 0;align-items:center"><div class="mark-fig" style="width:38px;height:38px;font-size:1.1rem">✶</div><div class="mark-body"><div class="mt serif" style="font-size:.92rem">Support the Press</div><div class="md serif" style="margin:0">Made by one person.</div></div></div>
+  </div>
+  <div class="blocklabel">Choose your subscription</div>
+  <div style="padding:0 22px;display:flex;flex-direction:column;gap:9px">
+    <div style="display:flex;align-items:center;border:1px solid var(--line);border-radius:4px;padding:11px 14px"><div><div class="serif" style="font-weight:700">Monthly</div></div><div style="flex:1"></div><div class="serif" style="font-weight:600">$1.99</div></div>
+    <div style="display:flex;align-items:center;border:1px solid var(--line);border-radius:4px;padding:11px 14px"><div><div class="serif" style="font-weight:700">Quarterly</div></div><div style="flex:1"></div><div class="serif" style="font-weight:600">$4.99</div></div>
+    <div style="display:flex;align-items:center;border:2px solid var(--correct);border-radius:4px;padding:11px 14px;position:relative">
+      <div><div class="serif" style="font-weight:700">Yearly</div><div class="muted serif" style="font-size:.72rem">$1.25 / month</div></div><div style="flex:1"></div>
+      <div style="text-align:right"><div class="serif" style="font-weight:600">$14.99</div><div class="earned" style="font-size:.56rem">Best Value</div></div>
+    </div>
+  </div>
+  <div class="btnstack"><div class="btn-primary">Start 7-Day Free Trial</div></div>
+  <div class="dateline" style="text-align:center;color:var(--ink2);padding-bottom:18px">Restore &nbsp;·&nbsp; Terms &nbsp;·&nbsp; Privacy</div>`;
+}
+
+// ---------- render ----------
+const groups=[
+  ["Today 主畫面", [["開始 (未玩)",todayStart()],["已完成 (玩過後)",todayDone()]]],
+  ["遊戲 + 結算", [["遊戲盤 (進行中)",gameBoard()],["破關 · 勝",resultWin()],["破關 · 敗",resultLoss()]]],
+  ["Solve Report", [["解題分析",solveReport()]]],
+  ["分享", [["Share 卡 (分享出去的圖)",shareCard()]]],
+  ["Journey 紀錄簿", [["The Record + Marks",journeyRecord()],["Mark 點開 · 圖卡+進度",markDetail()]]],
+  ["訂閱 + 其他", [["訂閱頁 Premium",subscription()],["Settings",settings()],["How to Play",howto()]]],
+];
+let html='';
+groups.forEach(g=>{ html+=`<div class="group"><h2>${g[0]}</h2><div class="row">`;
+  g[1].forEach(s=>{ html+=phone(s[0], s[1]); }); html+='</div></div>'; });
+document.getElementById('app').innerHTML=html;
+
+function setMode(m){ document.body.className=m;
+  document.getElementById('bl').classList.toggle('active',m==='light');
+  document.getElementById('bd').classList.toggle('active',m==='dark'); }
+</script>
+</body>
+</html>
