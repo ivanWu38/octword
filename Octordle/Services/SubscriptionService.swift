@@ -7,9 +7,9 @@ class SubscriptionService: ObservableObject {
     static let shared = SubscriptionService()
 
     private let productIds = [
-        "com.octordle.premium.monthly.v1",
-        "com.octordle.premium.quarterly.v1",
-        "com.octordle.premium.yearly.v1"
+        "com.oct.premium.monthly.v1",
+        "com.oct.premium.quarterly.v1",
+        "com.oct.premium.yearly.v1"
     ]
 
     @Published private(set) var products: [Product] = []

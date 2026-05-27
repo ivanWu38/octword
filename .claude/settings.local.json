@@ -49,7 +49,11 @@
       "WebFetch(domain:www.sedecordle.com)",
       "WebFetch(domain:www.britannica.com)",
       "WebFetch(domain:octordle.com)",
-      "WebFetch(domain:nerdschalk.com)"
+      "WebFetch(domain:nerdschalk.com)",
+      "WebFetch(domain:itunes.apple.com)",
+      "WebFetch(domain:apps.apple.com)",
+      "Bash(plutil -lint Octordle/Info.plist)",
+      "Bash(plutil -lint Octordle/Products.storekit)"
     ]
   }
 }

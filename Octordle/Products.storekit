@@ -93,7 +93,7 @@
               "locale" : "zh_TW"
             }
           ],
-          "productID" : "com.octordle.premium.monthly.v1",
+          "productID" : "com.oct.premium.monthly.v1",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Monthly Premium",
           "subscriptionGroupID" : "21620001",
@@ -123,7 +123,7 @@
               "locale" : "zh_TW"
             }
           ],
-          "productID" : "com.octordle.premium.quarterly.v1",
+          "productID" : "com.oct.premium.quarterly.v1",
           "recurringSubscriptionPeriod" : "P3M",
           "referenceName" : "Quarterly Premium",
           "subscriptionGroupID" : "21620001",
@@ -153,7 +153,7 @@
               "locale" : "zh_TW"
             }
           ],
-          "productID" : "com.octordle.premium.yearly.v1",
+          "productID" : "com.oct.premium.yearly.v1",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "Yearly Premium",
           "subscriptionGroupID" : "21620001",

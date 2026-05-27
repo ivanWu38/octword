@@ -10,7 +10,7 @@ struct SubscriptionView: View {
     @State private var showError = false
     @State private var errorMessage = ""
 
-    private let yearlyProductId = "com.octordle.premium.yearly.v1"
+    private let yearlyProductId = "com.oct.premium.yearly.v1"
 
     var body: some View {
         NavigationStack {
