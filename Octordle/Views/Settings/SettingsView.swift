@@ -243,7 +243,7 @@ struct SettingsView: View {
                     .foregroundColor(.quordleSecondaryText)
             }
 
-            Link(destination: URL(string: "https://ikuheikure.xyz/apps/q_uordle/")!) {
+            Link(destination: URL(string: "https://ikuheikure.xyz/apps/octordle-word-puzzle/")!) {
                 HStack {
                     Text("Privacy Policy")
                         .foregroundColor(.quordlePrimaryText)
