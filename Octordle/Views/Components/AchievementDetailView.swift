@@ -8,6 +8,7 @@ struct AchievementDetailView: View {
     let onDismiss: () -> Void
 
     @State private var appeared = false
+    @State private var animatedFraction: CGFloat = 0
 
     private var progressFraction: CGFloat {
         guard progress.required > 0 else { return 0 }
@@ -58,7 +59,7 @@ struct AchievementDetailView: View {
                             ZStack(alignment: .leading) {
                                 Capsule().fill(Color.quordleCardBorder)
                                 Capsule().fill(Color.quordlePrimary)
-                                    .frame(width: g.size.width * progressFraction)
+                                    .frame(width: g.size.width * animatedFraction)
                             }
                         }
                         .frame(height: 5)
@@ -84,6 +85,8 @@ struct AchievementDetailView: View {
         }
         .onAppear {
             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { appeared = true }
+            animatedFraction = 0
+            withAnimation(.easeOut(duration: 0.7).delay(0.2)) { animatedFraction = progressFraction }
         }
     }
 

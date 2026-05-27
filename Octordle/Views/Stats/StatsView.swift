@@ -25,6 +25,8 @@ struct StatsView: View {
             }
             .background(Color.quordleBackground.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
+            .onAppear { selectedAchievement = nil }
+            .onDisappear { selectedAchievement = nil }
             .overlay {
                 if let achievement = selectedAchievement {
                     AchievementDetailView(
