@@ -9,7 +9,7 @@ struct ThemePickerView: View {
     @State private var previewTheme: BoardTheme? = nil
     @State private var showSubscription = false
 
-    private var totalWins: Int { statsService.totalWins }
+    private var wordsSolved: Int { statsService.totalWordsSolved }
     private var maxStreak: Int { statsService.maxStreak }
     private var isPremium: Bool { subscriptionService.isPremium }
 
@@ -39,9 +39,9 @@ struct ThemePickerView: View {
                         themeCard(theme: theme)
                     }
 
-                    // Wins rewards
-                    sectionHeader("Wins Rewards", icon: "trophy.fill", color: .quordleGold)
-                    ForEach(BoardTheme.winsThemes) { theme in
+                    // Words-solved rewards
+                    sectionHeader("Words Solved", icon: "textformat.abc", color: .quordleGold)
+                    ForEach(BoardTheme.wordsThemes) { theme in
                         themeCard(theme: theme)
                     }
 
@@ -163,7 +163,7 @@ struct ThemePickerView: View {
     private var actionButton: some View {
         let theme = displayedTheme
         let isCurrentTheme = theme == themeService.selectedTheme
-        let unlocked = theme.isUnlocked(isPremium: isPremium, totalWins: totalWins, maxStreak: maxStreak)
+        let unlocked = theme.isUnlocked(isPremium: isPremium, wordsSolved: wordsSolved, maxStreak: maxStreak)
 
         if isCurrentTheme {
             // Currently applied
@@ -240,13 +240,13 @@ struct ThemePickerView: View {
     @ViewBuilder
     private func unlockProgressView(for theme: BoardTheme) -> some View {
         switch theme.unlockType {
-        case .wins(let required):
+        case .words(let required):
             VStack(spacing: 8) {
                 HStack(spacing: 6) {
-                    Image(systemName: "trophy.fill")
+                    Image(systemName: "textformat.abc")
                         .font(.system(size: 14))
                         .foregroundColor(.quordleGold)
-                    Text("Win \(required) games to unlock")
+                    Text("Solve \(required) words to unlock")
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundColor(.quordlePrimaryText)
                 }
@@ -263,13 +263,13 @@ struct ThemePickerView: View {
                                     endPoint: .trailing
                                 )
                             )
-                            .frame(width: geo.size.width * min(CGFloat(totalWins) / CGFloat(required), 1.0))
+                            .frame(width: geo.size.width * min(CGFloat(wordsSolved) / CGFloat(required), 1.0))
                     }
                 }
                 .frame(height: 8)
                 .clipShape(Capsule())
 
-                Text("\(totalWins) / \(required)")
+                Text("\(wordsSolved) / \(required)")
                     .font(.system(size: 13, weight: .medium, design: .rounded))
                     .foregroundColor(.quordleSecondaryText)
             }
@@ -330,7 +330,7 @@ struct ThemePickerView: View {
     private func themeCard(theme: BoardTheme) -> some View {
         let isSelected = themeService.selectedTheme == theme
         let isPreviewing = previewTheme == theme
-        let unlocked = theme.isUnlocked(isPremium: isPremium, totalWins: totalWins, maxStreak: maxStreak)
+        let unlocked = theme.isUnlocked(isPremium: isPremium, wordsSolved: wordsSolved, maxStreak: maxStreak)
 
         return Button {
             HapticManager.shared.selection()
@@ -407,13 +407,13 @@ struct ThemePickerView: View {
             Text("Default")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(.quordleSecondaryText)
-        case .wins(let required):
+        case .words(let required):
             if unlocked {
                 Label("Unlocked", systemImage: "checkmark")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.quordleSuccess)
             } else {
-                Text("\(totalWins)/\(required) wins")
+                Text("\(wordsSolved)/\(required) words")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.quordleSecondaryText)
             }
@@ -443,8 +443,8 @@ struct ThemePickerView: View {
     @ViewBuilder
     private func lockIcon(for theme: BoardTheme) -> some View {
         switch theme.unlockType {
-        case .wins:
-            Image(systemName: "trophy.fill")
+        case .words:
+            Image(systemName: "textformat.abc")
                 .font(.system(size: 15))
                 .foregroundColor(.quordleGold.opacity(0.5))
         case .streak:

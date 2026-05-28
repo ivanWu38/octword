@@ -271,7 +271,7 @@ class GameViewModel: ObservableObject {
         if !isDailyReplay {
             // Snapshot theme unlock state before recording result
             let previouslyUnlocked = Set(BoardTheme.allCases.filter {
-                $0.isUnlocked(isPremium: false, totalWins: statsService.totalWins, maxStreak: statsService.maxStreak)
+                $0.isUnlocked(isPremium: false, wordsSolved: statsService.totalWordsSolved, maxStreak: statsService.maxStreak)
             })
 
             // Record result (this updates wins/streaks) and capture any newly
@@ -281,7 +281,7 @@ class GameViewModel: ObservableObject {
 
             // Check for newly unlocked themes
             let nowUnlocked = Set(BoardTheme.allCases.filter {
-                $0.isUnlocked(isPremium: false, totalWins: statsService.totalWins, maxStreak: statsService.maxStreak)
+                $0.isUnlocked(isPremium: false, wordsSolved: statsService.totalWordsSolved, maxStreak: statsService.maxStreak)
             })
             let freshlyUnlocked = nowUnlocked.subtracting(previouslyUnlocked)
             if let theme = freshlyUnlocked.first {

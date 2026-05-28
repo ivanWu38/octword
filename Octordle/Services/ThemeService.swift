@@ -4,7 +4,7 @@ import UIKit
 /// How a theme is unlocked
 enum ThemeUnlockType: Equatable {
     case free
-    case wins(required: Int)
+    case words(required: Int)
     case streak(required: Int)
     case premium
 }
@@ -14,11 +14,11 @@ enum BoardTheme: String, CaseIterable, Identifiable, Codable {
     // Free
     case classic
 
-    // Wins-based unlocks
-    case mint       // 2 wins
-    case lavender   // 5 wins
-    case rose       // 10 wins
-    case amber      // 25 wins
+    // Words-solved unlocks (cumulative — counts boards solved even in losses)
+    case mint       // 10 words
+    case lavender   // 60 words
+    case rose       // 100 words
+    case amber      // 150 words
 
     // Streak-based unlocks
     case sky        // 3 day streak
@@ -36,10 +36,10 @@ enum BoardTheme: String, CaseIterable, Identifiable, Codable {
     var unlockType: ThemeUnlockType {
         switch self {
         case .classic: return .free
-        case .mint: return .wins(required: 2)
-        case .lavender: return .wins(required: 5)
-        case .rose: return .wins(required: 10)
-        case .amber: return .wins(required: 25)
+        case .mint: return .words(required: 10)
+        case .lavender: return .words(required: 60)
+        case .rose: return .words(required: 100)
+        case .amber: return .words(required: 150)
         case .sky: return .streak(required: 3)
         case .berry: return .streak(required: 7)
         case .copper: return .streak(required: 10)
@@ -55,10 +55,10 @@ enum BoardTheme: String, CaseIterable, Identifiable, Codable {
     }
 
     /// Check if theme is unlocked for given stats
-    func isUnlocked(isPremium: Bool, totalWins: Int, maxStreak: Int) -> Bool {
+    func isUnlocked(isPremium: Bool, wordsSolved: Int, maxStreak: Int) -> Bool {
         switch unlockType {
         case .free: return true
-        case .wins(let required): return totalWins >= required
+        case .words(let required): return wordsSolved >= required
         case .streak(let required): return maxStreak >= required
         case .premium: return isPremium
         }
@@ -84,7 +84,7 @@ enum BoardTheme: String, CaseIterable, Identifiable, Codable {
     var unlockDescription: String {
         switch unlockType {
         case .free: return "Default"
-        case .wins(let required): return "Win \(required) games"
+        case .words(let required): return "Solve \(required) words"
         case .streak(let required): return "\(required)-day streak"
         case .premium: return "Premium"
         }
@@ -240,7 +240,7 @@ enum BoardTheme: String, CaseIterable, Identifiable, Codable {
     // MARK: - Grouping
 
     static var freeThemes: [BoardTheme] { [.classic] }
-    static var winsThemes: [BoardTheme] { [.mint, .lavender, .rose, .amber] }
+    static var wordsThemes: [BoardTheme] { [.mint, .lavender, .rose, .amber] }
     static var streakThemes: [BoardTheme] { [.sky, .berry, .copper, .aurora] }
     static var premiumThemes: [BoardTheme] { [.ocean, .forest, .sunset] }
 }
@@ -306,8 +306,8 @@ class ThemeService: ObservableObject {
     }
 
     /// Get effective theme (fallback to classic if locked)
-    func effectiveTheme(isPremium: Bool, totalWins: Int, maxStreak: Int) -> BoardTheme {
-        if selectedTheme.isUnlocked(isPremium: isPremium, totalWins: totalWins, maxStreak: maxStreak) {
+    func effectiveTheme(isPremium: Bool, wordsSolved: Int, maxStreak: Int) -> BoardTheme {
+        if selectedTheme.isUnlocked(isPremium: isPremium, wordsSolved: wordsSolved, maxStreak: maxStreak) {
             return selectedTheme
         }
         return .classic
@@ -316,7 +316,7 @@ class ThemeService: ObservableObject {
     /// Legacy convenience (backward compatible)
     func effectiveTheme(isPremium: Bool) -> BoardTheme {
         let stats = StatsService.shared
-        return effectiveTheme(isPremium: isPremium, totalWins: stats.totalWins, maxStreak: stats.maxStreak)
+        return effectiveTheme(isPremium: isPremium, wordsSolved: stats.totalWordsSolved, maxStreak: stats.maxStreak)
     }
 
     private init() {
