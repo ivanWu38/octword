@@ -100,6 +100,38 @@ class DailyPuzzleService: ObservableObject {
         return streak
     }
 
+    /// The streak value that *will* hold once today's daily is recorded. Used at
+    /// game end to evaluate streak rewards (achievements / themes) on the correct
+    /// day, since `markTodayCompleted()` runs later (when the result sheet closes).
+    var streakIncludingToday: Int {
+        if isTodayCompleted { return currentStreak }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        var streak = 1 // today, about to be completed
+        var date = Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date()
+        while completedDates.contains(formatter.string(from: date)) {
+            streak += 1
+            guard let previousDay = Calendar.current.date(byAdding: .day, value: -1, to: date) else { break }
+            date = previousDay
+        }
+        return streak
+    }
+
+    #if DEBUG
+    /// TEMPORARY QA: pretend the player completed the `count` days immediately
+    /// before today, so finishing today's daily crosses a streak threshold.
+    func debugSeedConsecutiveDaysBeforeToday(_ count: Int) {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        for offset in 1...max(1, count) {
+            if let day = Calendar.current.date(byAdding: .day, value: -offset, to: Date()) {
+                completedDates.insert(formatter.string(from: day))
+            }
+        }
+        saveCompletedDates()
+    }
+    #endif
+
     // MARK: - Persistence
 
     private func loadCompletedDates() {

@@ -90,8 +90,10 @@ struct GameView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar) // 隐藏底部 Tab Bar
         .sheet(isPresented: $showResultSheet, onDismiss: {
-            // Mark daily as completed now (deferred from endGame to prevent premature view switch)
-            viewModel.markDailyCompletedIfNeeded()
+            // NOTE: the daily is marked completed at the very end, together with the
+            // pop (see proceedAfterResult / review onDismiss). Marking here would swap
+            // DailyView's root from start → completed while GameView is still pushed,
+            // which can make the navigationDestination rebuild a fresh GameView.
 
             // Show unlock cards in sequence: achievements → theme → review.
             if !viewModel.newlyUnlockedAchievements.isEmpty {
@@ -162,7 +164,8 @@ struct GameView: View {
             }
         }
         .sheet(isPresented: $shouldDismissAfterResult, onDismiss: {
-            // After review prompt is dismissed, pop GameView
+            // After the review prompt closes, mark completed and pop together.
+            viewModel.markDailyCompletedIfNeeded()
             dismiss()
         }) {
             ReviewPromptView(
@@ -541,8 +544,11 @@ struct GameView: View {
                 shouldDismissAfterResult = true
             }
         } else {
-            // Small delay to let markDailyCompleted propagate before navigation pops
+            // Mark completed and pop in the same update so DailyView swaps to its
+            // completed view exactly as GameView leaves the stack — no fresh board
+            // or start screen flashing in between.
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                viewModel.markDailyCompletedIfNeeded()
                 dismiss()
             }
         }

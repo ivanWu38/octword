@@ -220,12 +220,20 @@ class GameViewModel: ObservableObject {
     }
 
     #if DEBUG
-    /// TEMPORARY QA helper: solves the first 6 boards with their real answers, then
-    /// fills the remaining guesses so the game ends (6/8 solved). This unlocks
-    /// Sharp Eye → arms the review prompt, so the full review flow can be tested.
-    /// Remove this and its caller in GameView when done.
+    /// TEMPORARY QA helper: pretends the player already played the last 2 days, then
+    /// solves the first 6 boards with their real answers and finishes the game. This
+    /// makes today the 3rd consecutive day (unlocks On a Roll + the Sky streak theme
+    /// card) and solves 6 boards (First Word + Sharp Eye + review). Tests the full
+    /// achievement/theme/review flow in one go. Remove this and its caller when done.
+    /// Master switch for the QA auto-play. Flip to `true` to reactivate.
+    static var debugAutoPlayEnabled = false
+
     func debugAutoPlay() {
+        guard Self.debugAutoPlayEnabled else { return }
         guard gameState.guessCount == 0, !gameState.isGameOver else { return }
+        if gameState.mode == .daily {
+            dailyPuzzleService.debugSeedConsecutiveDaysBeforeToday(2)
+        }
         let answers = gameState.boards.prefix(6).map { $0.targetWord }
         let filler = gameState.boards.first?.targetWord ?? "HAPPY"
         var script = Array(answers)

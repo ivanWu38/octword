@@ -175,8 +175,13 @@ class StatsService: ObservableObject {
         let previousUnlockedSet = achievementProgress.unlockedAchievements
         var unlocked = achievementProgress.unlockedAchievements
 
-        // Day-based streak (consecutive days played, win or lose)
-        let dailyStreak = DailyPuzzleService.shared.currentStreak
+        // Day-based streak (consecutive days played, win or lose). For a daily we
+        // use the streak that *includes today* — today isn't marked completed until
+        // the result sheet closes, which is after this runs — so streak rewards fire
+        // on the correct day instead of one day late.
+        let dailyStreak = result.mode == .daily
+            ? DailyPuzzleService.shared.streakIncludingToday
+            : DailyPuzzleService.shared.currentStreak
         achievementProgress.maxStreak = max(achievementProgress.maxStreak, dailyStreak)
 
         // Words solved — cumulative, counts boards solved even in losing games

@@ -204,7 +204,7 @@ private struct ColorHintsPage: View {
                 HStack(spacing: 12) {
                     ExampleTile(letter: "A", state: .correct)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Blue")
+                        Text("Terracotta")
                             .font(.headline)
                             .foregroundColor(.quordleCorrect)
                         Text("Correct letter, correct position")
