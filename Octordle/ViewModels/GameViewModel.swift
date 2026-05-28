@@ -15,6 +15,7 @@ class GameViewModel: ObservableObject {
     @Published var isNotepadOpen = false
     @Published var notepadText = ""
     @Published var newlyUnlockedTheme: BoardTheme? = nil
+    @Published var newlyUnlockedAchievements: [Achievement] = []
 
     // MARK: - Services
 
@@ -218,6 +219,25 @@ class GameViewModel: ObservableObject {
         }
     }
 
+    #if DEBUG
+    /// TEMPORARY QA helper: solves the first 6 boards with their real answers, then
+    /// fills the remaining guesses so the game ends (6/8 solved). This unlocks
+    /// Sharp Eye → arms the review prompt, so the full review flow can be tested.
+    /// Remove this and its caller in GameView when done.
+    func debugAutoPlay() {
+        guard gameState.guessCount == 0, !gameState.isGameOver else { return }
+        let answers = gameState.boards.prefix(6).map { $0.targetWord }
+        let filler = gameState.boards.first?.targetWord ?? "HAPPY"
+        var script = Array(answers)
+        while script.count < gameState.difficulty.maxGuesses { script.append(filler) }
+        for word in script {
+            if gameState.isGameOver { break }
+            gameState.currentGuess = word
+            submitGuess()
+        }
+    }
+    #endif
+
     // MARK: - Game End
 
     private func endGame() {
@@ -254,9 +274,10 @@ class GameViewModel: ObservableObject {
                 $0.isUnlocked(isPremium: false, totalWins: statsService.totalWins, maxStreak: statsService.maxStreak)
             })
 
-            // Record result (this updates wins/streaks)
+            // Record result (this updates wins/streaks) and capture any newly
+            // unlocked achievements so the game screen can show unlock cards.
             let result = GameResult(from: gameState)
-            statsService.addResult(result)
+            newlyUnlockedAchievements = statsService.addResult(result)
 
             // Check for newly unlocked themes
             let nowUnlocked = Set(BoardTheme.allCases.filter {
@@ -281,10 +302,8 @@ class GameViewModel: ObservableObject {
             statsService.clearDailyState()
         }
 
-        // Record win for review prompt (two-stage filter)
-        if gameState.isWon {
-            ReviewManager.shared.recordLevelFinished()
-        }
+        // Ask for a review only at a positive milestone (see ReviewManager).
+        ReviewManager.shared.considerPrompt(forNewlyUnlocked: newlyUnlockedAchievements)
 
         // Show result sheet after delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in

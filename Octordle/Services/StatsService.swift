@@ -68,10 +68,13 @@ class StatsService: ObservableObject {
 
     // MARK: - Game Result Management
 
-    func addResult(_ result: GameResult) {
+    /// Records a result and returns any achievements unlocked by it
+    /// (sorted in display order), so the game screen can present unlock cards.
+    @discardableResult
+    func addResult(_ result: GameResult) -> [Achievement] {
         gameResults.insert(result, at: 0)
         saveResults()
-        updateAchievements(for: result)
+        return updateAchievements(for: result)
     }
 
     // MARK: - Daily State Management
@@ -164,114 +167,60 @@ class StatsService: ObservableObject {
 
     // MARK: - Achievement Updates
 
-    private func updateAchievements(for result: GameResult) {
-        // Track unlocked set before updates to detect new achievements
+    /// Evaluates achievements after a result and returns the ones newly unlocked
+    /// (in display order). The unlock card on the game screen fires the haptic now,
+    /// so we no longer buzz here for generic unlocks.
+    @discardableResult
+    private func updateAchievements(for result: GameResult) -> [Achievement] {
         let previousUnlockedSet = achievementProgress.unlockedAchievements
+        var unlocked = achievementProgress.unlockedAchievements
 
-        // Update max streak from daily puzzle service (streak is day-based, not per-game)
+        // Day-based streak (consecutive days played, win or lose)
         let dailyStreak = DailyPuzzleService.shared.currentStreak
         achievementProgress.maxStreak = max(achievementProgress.maxStreak, dailyStreak)
 
-        // Check first win
-        if result.isWon && !achievementProgress.unlockedAchievements.contains(.firstWin) {
-            achievementProgress.unlockedAchievements.insert(.firstWin)
+        // Words solved — cumulative, counts boards solved even in losing games
+        let words = totalWordsSolved
+        if words >= 1 { unlocked.insert(.firstWord) }
+        if words >= Achievement.wordCollector.requirement { unlocked.insert(.wordCollector) }
+        if words >= Achievement.wordWizard.requirement { unlocked.insert(.wordWizard) }
+        if words >= Achievement.lexiconMaster.requirement { unlocked.insert(.lexiconMaster) }
+
+        // Full win — all 8 boards in one game
+        if result.isWon { unlocked.insert(.fullHouse) }
+
+        // Standout round — solved most of the boards even if not a full win
+        let solvedThisGame = result.boardResults.filter { $0.isSolved }.count
+        if solvedThisGame >= Achievement.sharpEye.requirement { unlocked.insert(.sharpEye) }
+
+        // Clutch finish — won using the very last guess
+        if result.isWon && result.guessCount == result.difficulty.maxGuesses {
+            unlocked.insert(.downToTheWire)
         }
 
-        // Check streak achievements (based on daily consecutive days)
-        if dailyStreak >= 3 {
-            achievementProgress.unlockedAchievements.insert(.streak3)
-        }
-        if dailyStreak >= 7 {
-            achievementProgress.unlockedAchievements.insert(.streak7)
-        }
-        if dailyStreak >= 30 {
-            achievementProgress.unlockedAchievements.insert(.streak30)
-        }
+        // Flawless — a 3-star win
+        if result.isWon && result.starRating == 3 { unlocked.insert(.flawless) }
 
-        // Check perfect game (3 stars in Octordle)
-        if result.isWon && result.starRating == 3 && result.difficulty == .ultimate {
-            achievementProgress.perfectGamesCount += 1
-            achievementProgress.unlockedAchievements.insert(.perfectGame)
-            if achievementProgress.perfectGamesCount >= 5 {
-                achievementProgress.unlockedAchievements.insert(.sharpMind)
-            }
-        }
+        // Play streak milestones
+        if dailyStreak >= 3 { unlocked.insert(.streak3) }
+        if dailyStreak >= 7 { unlocked.insert(.streak7) }
+        if dailyStreak >= 30 { unlocked.insert(.streak30) }
 
-        // Check speed demon (under 6 minutes)
-        if result.isWon && result.elapsedSeconds < 360 {
-            achievementProgress.unlockedAchievements.insert(.speedDemon)
-        }
-
-        // Check quick draw (under 4 minutes)
-        if result.isWon && result.elapsedSeconds < 240 {
-            achievementProgress.unlockedAchievements.insert(.quickDraw)
-        }
-
-        // Check clutch player (won with only 1 guess remaining)
-        if result.isWon {
-            let maxGuesses = result.difficulty.maxGuesses
-            if result.guessCount == maxGuesses {
-                achievementProgress.clutchWinsCount += 1
-                achievementProgress.unlockedAchievements.insert(.clutchPlayer)
-            }
-        }
-
-        // Track wins by difficulty
-        if result.isWon {
-            switch result.difficulty {
-            case .relaxed:
-                achievementProgress.relaxedWins += 1
-            case .classic:
-                achievementProgress.classicWins += 1
-            case .challenge:
-                achievementProgress.challengeWinsTotal += 1
-            case .ultimate:
-                achievementProgress.ultimateWins += 1
-            }
-        }
-
-        // Check Octordle master
-        if result.isWon && result.difficulty == .ultimate {
-            achievementProgress.challengeWins += 1
-            if achievementProgress.challengeWins >= 10 {
-                achievementProgress.unlockedAchievements.insert(.challengeMaster)
-            }
-        }
-
-        // Check daily milestones (explorer = 10, dailyDedicated = 30)
+        // Daily dedication
         if result.mode == .daily {
-            achievementProgress.dailyPuzzlesCompleted += 1
-            if achievementProgress.dailyPuzzlesCompleted >= 10 {
-                achievementProgress.unlockedAchievements.insert(.explorer)
-            }
-            if achievementProgress.dailyPuzzlesCompleted >= 30 {
-                achievementProgress.unlockedAchievements.insert(.dailyDedicated)
-            }
+            let dailies = dailyChallengesCompleted
+            if dailies >= Achievement.explorer.requirement { unlocked.insert(.explorer) }
+            if dailies >= Achievement.dailyDevotee.requirement { unlocked.insert(.dailyDevotee) }
         }
 
-        // Check word wizard (100 words solved)
-        if totalWordsSolved >= 100 {
-            achievementProgress.unlockedAchievements.insert(.wordWizard)
+        achievementProgress.unlockedAchievements = unlocked
+
+        let newlyUnlocked = unlocked.subtracting(previousUnlockedSet)
+        for achievement in newlyUnlocked {
+            AnalyticsService.logAchievementUnlocked(achievement: achievement)
         }
 
-        // Check century club (100 games played)
-        if totalGamesPlayed >= 100 {
-            achievementProgress.unlockedAchievements.insert(.centuryClub)
-        }
-
-        // Trigger haptic and log analytics if new achievements were unlocked
-        let newlyUnlocked = achievementProgress.unlockedAchievements.subtracting(previousUnlockedSet)
-        if !newlyUnlocked.isEmpty {
-            for achievement in newlyUnlocked {
-                AnalyticsService.logAchievementUnlocked(achievement: achievement)
-            }
-            // Delay slightly so it doesn't conflict with game end haptics
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                HapticManager.shared.achievementUnlocked()
-            }
-        }
-
-        // Check for streak milestone haptics
+        // Streak milestone haptic (separate from the unlock card)
         if dailyStreak == 7 || dailyStreak == 30 {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 HapticManager.shared.streakMilestone()
@@ -279,6 +228,9 @@ class StatsService: ObservableObject {
         }
 
         saveAchievements()
+
+        // Return in display order so multiple cards appear in a sensible sequence
+        return Achievement.allCases.filter { newlyUnlocked.contains($0) }
     }
 
     // MARK: - Stats by Difficulty
@@ -432,33 +384,28 @@ class StatsService: ObservableObject {
         let current: Int
 
         switch achievement {
-        case .firstWin:
-            current = totalWins > 0 ? 1 : 0
-        case .wordWizard:
+        case .firstWord, .wordCollector, .wordWizard, .lexiconMaster:
             current = min(totalWordsSolved, required)
-        case .centuryClub:
-            current = min(totalGamesPlayed, required)
+        case .fullHouse:
+            current = totalWins > 0 ? 1 : 0
+        case .sharpEye:
+            current = min(bestBoardsSolvedInOneGame, required)
+        case .downToTheWire:
+            current = clutchWins > 0 ? 1 : 0
+        case .flawless:
+            current = perfectGames > 0 ? 1 : 0
         case .streak3, .streak7, .streak30:
             current = min(achievementProgress.maxStreak, required)
-        case .perfectGame:
-            current = achievementProgress.perfectGamesCount > 0 ? 1 : 0
-        case .speedDemon:
-            current = (fastestWin ?? Int.max) < 360 ? 1 : 0
-        case .quickDraw:
-            current = (fastestWin ?? Int.max) < 240 ? 1 : 0
-        case .clutchPlayer:
-            current = clutchWins > 0 ? 1 : 0
-        case .challengeMaster:
-            current = min(achievementProgress.challengeWins, required)
-        case .dailyDedicated:
-            current = min(achievementProgress.dailyPuzzlesCompleted, required)
-        case .explorer:
-            current = min(achievementProgress.dailyPuzzlesCompleted, required)
-        case .sharpMind:
-            current = min(achievementProgress.perfectGamesCount, required)
+        case .explorer, .dailyDevotee:
+            current = min(dailyChallengesCompleted, required)
         }
 
         return (current, required)
+    }
+
+    /// Most boards solved in any single game (for the "Sharp Eye" achievement)
+    var bestBoardsSolvedInOneGame: Int {
+        gameResults.map { $0.boardResults.filter { $0.isSolved }.count }.max() ?? 0
     }
 
     /// Unlocked achievements count

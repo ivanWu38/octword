@@ -1,126 +1,105 @@
 import Foundation
 
-/// Achievement definitions
+/// Achievement definitions — tuned for Octordle (8 boards, 13 guesses).
+/// Most are reachable without ever solving all 8: they reward words solved,
+/// coming back daily, and standout rounds. A couple stay aspirational.
+/// Enum order = display order in the Journey "Marks of Distinction" list.
 enum Achievement: String, CaseIterable, Codable, Identifiable {
-    // Getting Started
-    case firstWin           // Win first game
-    case wordWizard         // Solve 100 words
-    case centuryClub        // Play 100 games
+    // Getting started
+    case firstWord          // Solve your first board
+    case fullHouse          // Solve all 8 boards in one game
 
-    // Streak achievements
-    case streak3            // 3 wins in a row
-    case streak7            // 7 wins in a row
-    case streak30           // 30 wins in a row
+    // Words solved (cumulative — counts boards even in losses)
+    case wordCollector      // 25 words
+    case wordWizard         // 150 words
+    case lexiconMaster      // 600 words
 
-    // Skill achievements
-    case perfectGame        // 3 stars on Octordle
-    case speedDemon         // Win under 2 minutes
-    case clutchPlayer       // Win with only 1 guess remaining
+    // Daily streak (consecutive days played)
+    case streak3
+    case streak7
+    case streak30
 
-    // Mode achievements
-    case challengeMaster    // 10 Octordle wins
-    case dailyDedicated     // 30 daily puzzles
-    case explorer           // Complete 10 daily puzzles
+    // Daily dedication (total editions completed)
+    case explorer           // 10 editions
+    case dailyDevotee       // 30 editions
 
-    // Special achievements
-    case sharpMind          // 5 perfect games
-    case quickDraw          // Win under 1 minute
+    // Standout play
+    case sharpEye           // Solve 6+ boards in a single game
+    case downToTheWire      // Win on the final guess
+    case flawless           // 3-star win (aspirational)
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
-        case .firstWin: return "First Victory"
+        case .firstWord: return "First Word"
+        case .fullHouse: return "Full House"
+        case .wordCollector: return "Word Collector"
         case .wordWizard: return "Word Wizard"
-        case .centuryClub: return "Century Club"
+        case .lexiconMaster: return "Lexicon Master"
         case .streak3: return "On a Roll"
         case .streak7: return "Weekly Warrior"
         case .streak30: return "Monthly Master"
-        case .perfectGame: return "Perfect Game"
-        case .speedDemon: return "Speed Demon"
-        case .clutchPlayer: return "Clutch Player"
-        case .challengeMaster: return "Octordle Master"
-        case .dailyDedicated: return "Daily Dedicated"
         case .explorer: return "Explorer"
-        case .sharpMind: return "Sharp Mind"
-        case .quickDraw: return "Quick Draw"
+        case .dailyDevotee: return "Daily Devotee"
+        case .sharpEye: return "Sharp Eye"
+        case .downToTheWire: return "Down to the Wire"
+        case .flawless: return "Flawless"
         }
     }
 
     var description: String {
         switch self {
-        case .firstWin: return "Win your first game"
-        case .wordWizard: return "Solve 100 words total"
-        case .centuryClub: return "Play 100 games"
-        case .streak3: return "Win 3 games in a row"
-        case .streak7: return "Win 7 games in a row"
-        case .streak30: return "Win 30 games in a row"
-        case .perfectGame: return "Win with 3 stars in Octordle"
-        case .speedDemon: return "Win a game in under 6 minutes"
-        case .clutchPlayer: return "Win with only 1 guess remaining"
-        case .challengeMaster: return "Win 10 Octordle games"
-        case .dailyDedicated: return "Complete 30 daily puzzles"
-        case .explorer: return "Complete 10 daily puzzles"
-        case .sharpMind: return "Achieve 5 perfect games"
-        case .quickDraw: return "Win a game in under 4 minutes"
+        case .firstWord: return "Solve your first board"
+        case .fullHouse: return "Solve all 8 boards in one game"
+        case .wordCollector: return "Solve 25 words in total"
+        case .wordWizard: return "Solve 150 words in total"
+        case .lexiconMaster: return "Solve 600 words in total"
+        case .streak3: return "Play 3 days in a row"
+        case .streak7: return "Play 7 days in a row"
+        case .streak30: return "Play 30 days in a row"
+        case .explorer: return "Complete 10 daily editions"
+        case .dailyDevotee: return "Complete 30 daily editions"
+        case .sharpEye: return "Solve 6 or more boards in one game"
+        case .downToTheWire: return "Win on your very last guess"
+        case .flawless: return "Win an Octordle with 3 stars"
         }
     }
 
     var iconName: String {
         switch self {
-        case .firstWin: return "trophy.fill"
+        case .firstWord: return "checkmark.seal.fill"
+        case .fullHouse: return "trophy.fill"
+        case .wordCollector: return "square.grid.2x2.fill"
         case .wordWizard: return "wand.and.stars"
-        case .centuryClub: return "medal.fill"
+        case .lexiconMaster: return "books.vertical.fill"
         case .streak3: return "flame.fill"
         case .streak7: return "bolt.fill"
         case .streak30: return "crown.fill"
-        case .perfectGame: return "star.fill"
-        case .speedDemon: return "hare.fill"
-        case .clutchPlayer: return "exclamationmark.triangle.fill"
-        case .challengeMaster: return "mountain.2.fill"
-        case .dailyDedicated: return "calendar.badge.checkmark"
         case .explorer: return "map.fill"
-        case .sharpMind: return "brain.fill"
-        case .quickDraw: return "timer"
+        case .dailyDevotee: return "calendar.badge.checkmark"
+        case .sharpEye: return "eye.fill"
+        case .downToTheWire: return "exclamationmark.triangle.fill"
+        case .flawless: return "star.fill"
         }
     }
 
-    var iconColor: String {
-        switch self {
-        case .firstWin: return "gold"
-        case .wordWizard: return "purple"
-        case .centuryClub: return "blue"
-        case .streak3: return "orange"
-        case .streak7: return "orange"
-        case .streak30: return "gold"
-        case .perfectGame: return "gold"
-        case .speedDemon: return "green"
-        case .clutchPlayer: return "red"
-        case .challengeMaster: return "purple"
-        case .dailyDedicated: return "blue"
-        case .explorer: return "green"
-        case .sharpMind: return "pink"
-        case .quickDraw: return "cyan"
-        }
-    }
-
-    /// Progress requirement for this achievement
+    /// Progress requirement for this achievement.
     var requirement: Int {
         switch self {
-        case .firstWin: return 1
-        case .wordWizard: return 100
-        case .centuryClub: return 100
+        case .firstWord: return 1
+        case .fullHouse: return 1
+        case .wordCollector: return 25
+        case .wordWizard: return 150
+        case .lexiconMaster: return 600
         case .streak3: return 3
         case .streak7: return 7
         case .streak30: return 30
-        case .perfectGame: return 1
-        case .speedDemon: return 1
-        case .clutchPlayer: return 1
-        case .challengeMaster: return 10
-        case .dailyDedicated: return 30
         case .explorer: return 10
-        case .sharpMind: return 5
-        case .quickDraw: return 1
+        case .dailyDevotee: return 30
+        case .sharpEye: return 6
+        case .downToTheWire: return 1
+        case .flawless: return 1
         }
     }
 }
@@ -153,10 +132,16 @@ struct AchievementProgress: Codable {
         self.ultimateWins = 0
     }
 
-    // Safe decoding: missing or new fields won't break old data
+    // Safe decoding: missing or new fields won't break old data, and
+    // unknown achievement raw values (e.g. removed ones) are skipped rather
+    // than wiping the whole unlocked set.
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.unlockedAchievements = (try? container.decode(Set<Achievement>.self, forKey: .unlockedAchievements)) ?? []
+        if let raws = try? container.decode([String].self, forKey: .unlockedAchievements) {
+            self.unlockedAchievements = Set(raws.compactMap { Achievement(rawValue: $0) })
+        } else {
+            self.unlockedAchievements = (try? container.decode(Set<Achievement>.self, forKey: .unlockedAchievements)) ?? []
+        }
         self.currentStreak = (try? container.decode(Int.self, forKey: .currentStreak)) ?? 0
         self.maxStreak = (try? container.decode(Int.self, forKey: .maxStreak)) ?? 0
         self.challengeWins = (try? container.decode(Int.self, forKey: .challengeWins)) ?? 0

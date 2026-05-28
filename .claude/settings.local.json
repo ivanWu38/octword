@@ -58,7 +58,10 @@
       "Bash(sed -n '218,236p' /Users/wuyuping/Desktop/ios_apps/Quordle_3/Quordle/Services/StatsService.swift)",
       "Bash(sed -n '158,170p' /Users/wuyuping/Desktop/ios_apps/Quordle_3/Quordle/Views/Practice/PracticeView.swift)",
       "Bash(sed -n '435,448p' /Users/wuyuping/Desktop/ios_apps/Quordle_3/Quordle/Views/Stats/StatsView.swift)",
-      "Bash(swift --version)"
+      "Bash(swift --version)",
+      "Bash(grep -rn \"isWon = true\\\\|allSolved\\\\|filter { \\\\$0.isSolved }\" Octordle/ViewModels/GameViewModel.swift Octordle/Models/GameState.swift)",
+      "Bash(cat)",
+      "Bash(swift /tmp/daily.swift)"
     ]
   }
 }

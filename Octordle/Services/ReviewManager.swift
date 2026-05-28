@@ -12,7 +12,6 @@ class ReviewManager: ObservableObject {
 
     // MARK: - UserDefaults Keys
 
-    private let kTotalLevelsFinished = "octordle_totalLevelsFinished"
     private let kLastPromptDate = "octordle_lastPromptDate"
     private let kConsecutivePromptCount = "octordle_consecutivePromptCount"
     private let kRatedVersion = "octordle_ratedVersion"
@@ -31,10 +30,6 @@ class ReviewManager: ObservableObject {
         defaults.string(forKey: kRatedVersion) == currentAppVersion
     }
 
-    private var totalLevelsFinished: Int {
-        get { defaults.integer(forKey: kTotalLevelsFinished) }
-        set { defaults.set(newValue, forKey: kTotalLevelsFinished) }
-    }
 
     private var consecutivePromptCount: Int {
         get { defaults.integer(forKey: kConsecutivePromptCount) }
@@ -53,24 +48,27 @@ class ReviewManager: ObservableObject {
 
     // MARK: - Public API
 
-    /// Call when the player wins a game.
-    func recordLevelFinished() {
-        // Reset counts on new app version
+    /// Achievements whose first unlock is a good "peak happiness" moment to ask
+    /// for a review: a returning player (3-day streak), a strong single round
+    /// (6+ boards), or sustained progress (25 words). All are positive moments
+    /// and none fire on the player's very first game.
+    private static let triggerAchievements: Set<Achievement> = [.streak3, .sharpEye, .wordCollector]
+
+    /// Call at game end with the achievements newly unlocked by that game.
+    /// If one of them is a review-worthy milestone (and the guards pass), arm the
+    /// soft prompt — the game screen shows it after the achievement/theme cards.
+    func considerPrompt(forNewlyUnlocked achievements: [Achievement]) {
+        guard achievements.contains(where: { Self.triggerAchievements.contains($0) }) else { return }
+
+        // Reset the decline cycle on a new app version so users can be asked again.
         if let stored = defaults.string(forKey: kRatedVersion),
            stored != currentAppVersion,
            stored != "" {
-            // New version — reset so the user can be prompted again
             consecutivePromptCount = 0
         }
 
-        totalLevelsFinished += 1
-
         guard shouldPrompt() else { return }
-
-        // Small delay so the result sheet can appear first
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
-            self?.showReviewPrompt = true
-        }
+        showReviewPrompt = true
     }
 
     /// User tapped "OK" — trigger native review & mark rated.
@@ -96,9 +94,6 @@ class ReviewManager: ObservableObject {
     // MARK: - Trigger Logic
 
     private func shouldPrompt() -> Bool {
-        // Must have finished at least 3 levels total
-        guard totalLevelsFinished >= 2 else { return false }
-
         // Don't prompt if already rated this version
         guard !hasRatedCurrentVersion else { return false }
 

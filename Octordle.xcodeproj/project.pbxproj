@@ -40,6 +40,7 @@
 		7CF484A59F988231E0DD61DD /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 4DC5D52B1BC7DC7DFCDEEF44 /* GoogleMobileAds */; };
 		818A76DB74BDD9DBFC3F2966 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F3C069A4006688A7AFD7E10 /* Extensions.swift */; };
 		8967473597D7DEE4D1E78B6A /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 33A299EA3419C145E7D27FAC /* Products.storekit */; };
+		98B400F61E53AACE585B714F /* AchievementUnlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614DEAFE4AA8548911CD6AF8 /* AchievementUnlockView.swift */; };
 		9D385F6D76920542753D14E6 /* ConsentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 892507B5910BC1C321C06702 /* ConsentManager.swift */; };
 		A079179E9277EDCD3135F35C /* ThemeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 451F268654B082E140E4CFA4 /* ThemeService.swift */; };
 		A4BBFF8A554E00ACDA0096C3 /* GameResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B9F6FC36FA732848A27E4F /* GameResultView.swift */; };
@@ -90,6 +91,7 @@
 		589AA71BC7A1950FEB332012 /* Difficulty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Difficulty.swift; sourceTree = "<group>"; };
 		59C880C14E1BB16E660D4179 /* ShareCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCardView.swift; sourceTree = "<group>"; };
 		5AC7B2DC9E5608C1F0659BC7 /* SolveReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolveReportView.swift; sourceTree = "<group>"; };
+		614DEAFE4AA8548911CD6AF8 /* AchievementUnlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementUnlockView.swift; sourceTree = "<group>"; };
 		7494CB1E6520EB08318CD858 /* ThemePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePickerView.swift; sourceTree = "<group>"; };
 		753F8CD4AA215BE10EA11FC0 /* StreakAnimationOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakAnimationOverlay.swift; sourceTree = "<group>"; };
 		77E7AB328A1FF98F036378C5 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
@@ -227,6 +229,7 @@
 			isa = PBXGroup;
 			children = (
 				D05BBC82B8C4FB9BA01BC701 /* AchievementDetailView.swift */,
+				614DEAFE4AA8548911CD6AF8 /* AchievementUnlockView.swift */,
 				F47EC0C50C5D02F82C24A238 /* ATTPrePromptView.swift */,
 				B0E38A023CE77EBB840871AA /* ConfettiView.swift */,
 				DAD06AA7C774DF2460256AAE /* MainTabView.swift */,
@@ -417,6 +420,7 @@
 				2ABD17E0CF82D70781FE35A6 /* ATTService.swift in Sources */,
 				6CC86E16282A57724482975F /* Achievement.swift in Sources */,
 				09F1BC555C73F5151874869F /* AchievementDetailView.swift in Sources */,
+				98B400F61E53AACE585B714F /* AchievementUnlockView.swift in Sources */,
 				0F38436B7500A1F1ABA00EB5 /* AdMobManager.swift in Sources */,
 				3A023A458617E44FEF8714DA /* AnalyticsService.swift in Sources */,
 				DFCE39F19A46979F081FA28F /* BannerAdView.swift in Sources */,

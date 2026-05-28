@@ -16,6 +16,7 @@ struct GameView: View {
     @FocusState private var isNotepadFocused: Bool
     @State private var showNotepadIntro = false
     @State private var showThemeUnlock = false
+    @State private var showAchievementUnlock = false
     @State private var showStreakOverlay = false
     @State private var streakSnapPrev: Int = 0
     @State private var streakSnapNew: Int = 0
@@ -92,7 +93,14 @@ struct GameView: View {
             // Mark daily as completed now (deferred from endGame to prevent premature view switch)
             viewModel.markDailyCompletedIfNeeded()
 
-            // If a theme was unlocked, show it now (after result sheet is gone)
+            // Show unlock cards in sequence: achievements → theme → review.
+            if !viewModel.newlyUnlockedAchievements.isEmpty {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    showAchievementUnlock = true
+                }
+                return
+            }
+
             if viewModel.newlyUnlockedTheme != nil {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     showThemeUnlock = true
@@ -131,6 +139,16 @@ struct GameView: View {
             if showNotepadIntro {
                 NotepadIntroView {
                     showNotepadIntro = false
+                }
+            }
+        }
+        .overlay {
+            if showAchievementUnlock, let achievement = viewModel.newlyUnlockedAchievements.first {
+                AchievementUnlockView(achievement: achievement) {
+                    if !viewModel.newlyUnlockedAchievements.isEmpty {
+                        viewModel.newlyUnlockedAchievements.removeFirst()
+                    }
+                    advanceAfterAchievement()
                 }
             }
         }
@@ -200,6 +218,13 @@ struct GameView: View {
                     UserDefaults.standard.set(true, forKey: Constants.UserDefaultsKeys.hasSeenNotepadIntro)
                 }
             }
+
+            #if DEBUG
+            // TEMPORARY QA: auto-finish the game to test achievement cards. Remove later.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
+                viewModel.debugAutoPlay()
+            }
+            #endif
         }
         .onDisappear {
             if !viewModel.isGameOver && viewModel.guessCount > 0 {
@@ -485,6 +510,30 @@ struct GameView: View {
     }
 
     // MARK: - Post-Result Flow
+
+    /// Called after each achievement card is dismissed: show the next queued
+    /// achievement, then fall through to the theme unlock / review flow.
+    private func advanceAfterAchievement() {
+        if !viewModel.newlyUnlockedAchievements.isEmpty {
+            // Re-trigger the overlay so the next card animates in fresh
+            showAchievementUnlock = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                showAchievementUnlock = true
+            }
+            return
+        }
+
+        showAchievementUnlock = false
+
+        if viewModel.newlyUnlockedTheme != nil {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                showThemeUnlock = true
+            }
+            return
+        }
+
+        proceedAfterResult()
+    }
 
     private func proceedAfterResult() {
         if reviewManager.showReviewPrompt {
