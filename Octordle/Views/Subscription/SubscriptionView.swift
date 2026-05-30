@@ -184,10 +184,20 @@ struct SubscriptionView: View {
     // MARK: - Terms
 
     private var termsSection: some View {
-        Text("Subscriptions auto-renew unless cancelled at least 24 hours before the end of the current period. Manage subscriptions in Settings.")
+        VStack(spacing: 8) {
+            Text("Subscriptions auto-renew unless cancelled at least 24 hours before the end of the current period. Manage subscriptions in Settings. Payment is charged to your Apple ID account at confirmation of purchase.")
+                .font(.system(size: 12, design: .serif))
+                .foregroundColor(.quordleSecondaryText)
+                .multilineTextAlignment(.center)
+
+            HStack(spacing: 16) {
+                Link("Terms of Use", destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
+                Text("·")
+                Link("Privacy Policy", destination: URL(string: "https://ikuheikure.xyz/apps/octordle-word-puzzle/")!)
+            }
             .font(.system(size: 12, design: .serif))
-            .foregroundColor(.quordleSecondaryText)
-            .multilineTextAlignment(.center)
+            .foregroundColor(.quordlePrimary)
+        }
     }
 
     // MARK: - Purchase

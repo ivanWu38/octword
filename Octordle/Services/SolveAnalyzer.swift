@@ -88,6 +88,103 @@ enum SolveAnalyzer {
         return log2(Double(n)) - log2(expected)
     }
 
+    /// Find the highest-information word among `unionIdxs`, scored as the sum of
+    /// information gained across each active board's candidate set.
+    /// The search is independent per word, so it is fanned out across cores via
+    /// `concurrentPerform`. Ties are broken by lowest pool index for a stable,
+    /// reproducible result regardless of how work is scheduled.
+    private static func bestPlay(unionIdxs: [Int],
+                                 activeCandidates: [[Int]],
+                                 pool: [[UInt8]]) -> (idx: Int?, info: Double) {
+        let count = unionIdxs.count
+        if count == 0 { return (nil, 0.0) }
+
+        // Split work into chunks; each core computes a local best, then we reduce.
+        let chunkCount = min(count, max(1, ProcessInfo.processInfo.activeProcessorCount))
+        let chunkSize = (count + chunkCount - 1) / chunkCount
+
+        var localBestInfo = [Double](repeating: -1.0, count: chunkCount)
+        var localBestIdx = [Int](repeating: -1, count: chunkCount)
+
+        localBestInfo.withUnsafeMutableBufferPointer { infoBuf in
+            localBestIdx.withUnsafeMutableBufferPointer { idxBuf in
+                DispatchQueue.concurrentPerform(iterations: chunkCount) { chunk in
+                    let start = chunk * chunkSize
+                    let end = min(start + chunkSize, count)
+                    if start >= end { return }
+
+                    // Thread-local scratch buffers — reused across this chunk's words
+                    // to avoid per-call allocation in the hot loop.
+                    var counts = [Int](repeating: 0, count: 26)
+                    var buckets = [Int](repeating: 0, count: 243)
+
+                    var bestInfo = -1.0
+                    var bestIdx = -1
+                    for u in start..<end {
+                        let gIdx = unionIdxs[u]
+                        let g = pool[gIdx]
+                        var info = 0.0
+                        for cand in activeCandidates {
+                            info += infoBits(g, cand, pool, &counts, &buckets)
+                        }
+                        // Lowest pool index wins ties for determinism.
+                        if info > bestInfo || (info == bestInfo && gIdx < bestIdx) {
+                            bestInfo = info
+                            bestIdx = gIdx
+                        }
+                    }
+                    infoBuf[chunk] = bestInfo
+                    idxBuf[chunk] = bestIdx
+                }
+            }
+        }
+
+        var bestInfo = 0.0
+        var bestIdx: Int? = nil
+        for c in 0..<chunkCount where localBestIdx[c] >= 0 {
+            let info = localBestInfo[c]
+            let idx = localBestIdx[c]
+            if info > bestInfo || (bestIdx != nil && info == bestInfo && idx < bestIdx!) {
+                bestInfo = info
+                bestIdx = idx
+            }
+        }
+        return (bestIdx, bestInfo)
+    }
+
+    /// Buffer-reusing variant of `infoBits` for the hot parallel search path.
+    /// `counts`/`buckets` are caller-owned scratch space, zeroed on each call.
+    private static func infoBits(_ guess: [UInt8], _ candidateIdxs: [Int], _ pool: [[UInt8]],
+                                 _ counts: inout [Int], _ buckets: inout [Int]) -> Double {
+        let n = candidateIdxs.count
+        if n <= 1 { return 0 }
+        for i in 0..<243 { buckets[i] = 0 }
+        for idx in candidateIdxs {
+            let t = pool[idx]
+            for i in 0..<26 { counts[i] = 0 }
+            for c in t { counts[Int(c) - 65] += 1 }
+            var r0 = 0, r1 = 0, r2 = 0, r3 = 0, r4 = 0
+            // correct (2)
+            if guess[0] == t[0] { r0 = 2; counts[Int(guess[0]) - 65] -= 1 }
+            if guess[1] == t[1] { r1 = 2; counts[Int(guess[1]) - 65] -= 1 }
+            if guess[2] == t[2] { r2 = 2; counts[Int(guess[2]) - 65] -= 1 }
+            if guess[3] == t[3] { r3 = 2; counts[Int(guess[3]) - 65] -= 1 }
+            if guess[4] == t[4] { r4 = 2; counts[Int(guess[4]) - 65] -= 1 }
+            // present (1)
+            if r0 != 2 { let x = Int(guess[0]) - 65; if counts[x] > 0 { r0 = 1; counts[x] -= 1 } }
+            if r1 != 2 { let x = Int(guess[1]) - 65; if counts[x] > 0 { r1 = 1; counts[x] -= 1 } }
+            if r2 != 2 { let x = Int(guess[2]) - 65; if counts[x] > 0 { r2 = 1; counts[x] -= 1 } }
+            if r3 != 2 { let x = Int(guess[3]) - 65; if counts[x] > 0 { r3 = 1; counts[x] -= 1 } }
+            if r4 != 2 { let x = Int(guess[4]) - 65; if counts[x] > 0 { r4 = 1; counts[x] -= 1 } }
+            let pattern = (((r0 * 3 + r1) * 3 + r2) * 3 + r3) * 3 + r4
+            buckets[pattern] += 1
+        }
+        var expected = 0.0
+        for b in buckets where b > 0 { expected += Double(b) * Double(b) }
+        expected /= Double(n)
+        return log2(Double(n)) - log2(expected)
+    }
+
     static func analyze(gameState: GameState, pool rawPool: [String]) -> SolveReport {
         let boards = gameState.boards
         let boardCount = boards.count
@@ -127,15 +224,15 @@ enum SolveAnalyzer {
                 // Search the words that could still be answers (union of candidates).
                 var unionSet = Set<Int>()
                 for b in activeBoards { unionSet.formUnion(candidates[b]) }
-                for gIdx in unionSet {
-                    let g = pool[gIdx]
-                    var info = 0.0
-                    for b in activeBoards { info += infoBits(g, candidates[b], pool) }
-                    if info > bestInfo {
-                        bestInfo = info
-                        bestWord = String(decoding: g, as: UTF8.self)
-                    }
-                }
+                let unionIdxs = Array(unionSet)
+                let activeCandidates = activeBoards.map { candidates[$0] }
+
+                // Each union word's score is independent — fan out across cores.
+                let (idx, info) = bestPlay(unionIdxs: unionIdxs,
+                                           activeCandidates: activeCandidates,
+                                           pool: pool)
+                bestInfo = info
+                if let idx { bestWord = String(decoding: pool[idx], as: UTF8.self) }
             }
 
             let ratio: Double = bestInfo > 0.0001 ? min(1.0, playerInfo / bestInfo) : 1.0
