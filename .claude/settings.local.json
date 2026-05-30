@@ -62,7 +62,8 @@
       "Bash(grep -rn \"isWon = true\\\\|allSolved\\\\|filter { \\\\$0.isSolved }\" Octordle/ViewModels/GameViewModel.swift Octordle/Models/GameState.swift)",
       "Bash(cat)",
       "Bash(swift /tmp/daily.swift)",
-      "Bash(xargs -I{} sh -c 'echo \"{}: $\\(grep -o \"\\\\\"\" {} | wc -l\\) quotes\"')"
+      "Bash(xargs -I{} sh -c 'echo \"{}: $\\(grep -o \"\\\\\"\" {} | wc -l\\) quotes\"')",
+      "Bash(/usr/libexec/PlistBuddy *)"
     ]
   }
 }
