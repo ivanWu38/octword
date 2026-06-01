@@ -212,8 +212,11 @@ struct SubscriptionView: View {
                 dismiss()
             }
         } catch {
+            // Log the real underlying error for diagnostics, but never surface a
+            // raw StoreKit string (e.g. "Item Unavailable") to the user — show a
+            // calm, actionable message instead.
             AnalyticsService.logPurchaseFail(productId: product.id, error: error.localizedDescription)
-            errorMessage = error.localizedDescription
+            errorMessage = "Purchases are temporarily unavailable. Please try again later."
             showError = true
             HapticManager.shared.error()
         }

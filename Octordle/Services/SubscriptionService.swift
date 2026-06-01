@@ -40,11 +40,21 @@ class SubscriptionService: ObservableObject {
         isLoading = true
         defer { isLoading = false }
 
-        do {
-            let products = try await Product.products(for: productIds)
-            self.products = products.sorted { $0.price < $1.price }
-        } catch {
-            print("Failed to load products: \(error)")
+        // Retry a few times: App Review / sandbox environments occasionally fail
+        // to return products on the first attempt due to propagation delays.
+        for attempt in 1...3 {
+            do {
+                let products = try await Product.products(for: productIds)
+                if !products.isEmpty {
+                    self.products = products.sorted { $0.price < $1.price }
+                    return
+                }
+            } catch {
+                print("Failed to load products (attempt \(attempt)): \(error)")
+            }
+            if attempt < 3 {
+                try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5s backoff
+            }
         }
     }
 
