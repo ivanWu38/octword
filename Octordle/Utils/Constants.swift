@@ -64,7 +64,7 @@ enum Constants {
         static let appId = "ca-app-pub-5654617376526903~1673065543"
 
         // Production Ad Unit IDs
-        static let prodBannerAdUnitId = "ca-app-pub-5654617376526903/4152574987"
+        static let prodBannerAdUnitId = "ca-app-pub-5654617376526903/4751930117"
 
         // Google's official test Ad Unit IDs (always return test ads)
         static let testBannerAdUnitId = "ca-app-pub-3940256099942544/2934735716"
