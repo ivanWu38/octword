@@ -1,0 +1,137 @@
+import SwiftUI
+
+/// Unlimited practice hub — pick a difficulty and play as many games as you like.
+/// Mirrors the daily edition's masthead styling, but every game is a fresh random
+/// puzzle that leaves no trace on The Record.
+struct UnlimitedView: View {
+    @EnvironmentObject var themeService: ThemeService
+    @EnvironmentObject var subscriptionService: SubscriptionService
+
+    @State private var showGame = false
+    @State private var selectedDifficulty: Difficulty = .unlimitedNormal
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                masthead
+
+                Spacer(minLength: 12)
+
+                VStack(spacing: 18) {
+                    Text("Choose your challenge")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(3)
+                        .textCase(.uppercase)
+                        .foregroundColor(.quordleSecondaryText)
+
+                    VStack(spacing: 14) {
+                        ForEach(Difficulty.unlimitedCases) { difficulty in
+                            difficultyCard(difficulty)
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                }
+
+                Spacer(minLength: 12)
+
+                Text("Practice freely — results are not recorded.")
+                    .font(.system(size: 12, design: .serif))
+                    .italic()
+                    .foregroundColor(.quordleSecondaryText)
+                    .padding(.bottom, 24)
+            }
+            .padding(.bottom, 100)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.quordleBackground.ignoresSafeArea())
+            .toolbar(.hidden, for: .navigationBar)
+            .iPadReadableWidth()
+            .navigationDestination(isPresented: $showGame) {
+                GameView(mode: .unlimited, difficulty: selectedDifficulty)
+            }
+        }
+    }
+
+    // MARK: - Masthead
+
+    private var masthead: some View {
+        VStack(spacing: 0) {
+            Text("No Limits · Play On")
+                .font(.system(size: 11, weight: .medium))
+                .tracking(2)
+                .textCase(.uppercase)
+                .foregroundColor(.quordleSecondaryText)
+                .padding(.bottom, 8)
+
+            Rectangle().fill(Color.quordlePrimaryText).frame(height: 1)
+
+            Text("Unlimited")
+                .font(.system(size: 38, weight: .bold, design: .serif))
+                .foregroundColor(.quordlePrimaryText)
+                .padding(.vertical, 8)
+
+            Rectangle().fill(Color.quordlePrimaryText).frame(height: 1)
+
+            Text("Eight Words  ·  Three Modes")
+                .font(.system(size: 10.5, weight: .medium))
+                .tracking(2)
+                .textCase(.uppercase)
+                .foregroundColor(.quordleSecondaryText)
+                .padding(.top, 8)
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 8)
+    }
+
+    // MARK: - Difficulty Card
+
+    private func difficultyCard(_ difficulty: Difficulty) -> some View {
+        Button {
+            HapticManager.shared.gameStart()
+            selectedDifficulty = difficulty
+            showGame = true
+        } label: {
+            HStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(Color.quordlePrimary.opacity(0.12))
+                        .frame(width: 46, height: 46)
+                    Image(systemName: difficulty.iconName)
+                        .font(.system(size: 19, weight: .semibold))
+                        .foregroundColor(.quordlePrimary)
+                }
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(difficulty.displayName)
+                        .font(.system(size: 20, weight: .bold, design: .serif))
+                        .foregroundColor(.quordlePrimaryText)
+                    Text(difficulty.description)
+                        .font(.system(size: 13, design: .serif))
+                        .foregroundColor(.quordleSecondaryText)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.quordleSecondaryText.opacity(0.6))
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color.quordleCardBackground)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(Color.quordleCardBorder, lineWidth: 1)
+                    )
+            )
+        }
+        .buttonStyle(ScaleButtonStyle(scale: 0.97))
+    }
+}
+
+#Preview {
+    UnlimitedView()
+        .environmentObject(ThemeService.shared)
+        .environmentObject(SubscriptionService.shared)
+}

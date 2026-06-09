@@ -4,6 +4,7 @@ import Foundation
 enum GameMode: String, Codable {
     case daily
     case practice
+    case unlimited
 }
 
 /// Complete game state

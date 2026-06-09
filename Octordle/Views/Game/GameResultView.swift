@@ -177,32 +177,44 @@ struct GameResultView: View {
     // MARK: - Action Buttons
 
     private var actionButtons: some View {
-        VStack(spacing: 12) {
-            Button {
-                HapticManager.shared.buttonTap()
-                HapticManager.shared.playSound(.click)
-                AnalyticsService.logShareResult(gameState: gameState)
-                generateAndShare()
-            } label: {
-                HStack {
-                    Image(systemName: "square.and.arrow.up")
-                    Text("Share Result")
-                }
-                .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(PrimaryButtonStyle())
-
-            Button {
-                HapticManager.shared.buttonTap()
-                HapticManager.shared.playSound(.click)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                    dismiss()
-                }
-            } label: {
-                Text("Done")
+        // Sharing is a daily-edition feature only — Unlimited just shows results.
+        let canShare = gameState.mode == .daily
+        return VStack(spacing: 12) {
+            if canShare {
+                Button {
+                    HapticManager.shared.buttonTap()
+                    HapticManager.shared.playSound(.click)
+                    AnalyticsService.logShareResult(gameState: gameState)
+                    generateAndShare()
+                } label: {
+                    HStack {
+                        Image(systemName: "square.and.arrow.up")
+                        Text("Share Result")
+                    }
                     .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(PrimaryButtonStyle())
             }
-            .buttonStyle(SecondaryButtonStyle())
+
+            // When sharing is hidden, promote Done to the primary button.
+            if canShare {
+                doneButton.buttonStyle(SecondaryButtonStyle())
+            } else {
+                doneButton.buttonStyle(PrimaryButtonStyle())
+            }
+        }
+    }
+
+    private var doneButton: some View {
+        Button {
+            HapticManager.shared.buttonTap()
+            HapticManager.shared.playSound(.click)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                dismiss()
+            }
+        } label: {
+            Text("Done")
+                .frame(maxWidth: .infinity)
         }
     }
 

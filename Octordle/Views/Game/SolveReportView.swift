@@ -286,7 +286,11 @@ struct PostGameFlowView: View {
 
     var body: some View {
         ZStack {
-            if showResult {
+            if gameState.mode != .daily {
+                // Unlimited practice: go straight to results & answers — the Solve
+                // Report is a daily-edition feature.
+                GameResultView(gameState: gameState)
+            } else if showResult {
                 GameResultView(gameState: gameState)
             } else {
                 NavigationStack {

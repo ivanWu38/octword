@@ -273,10 +273,12 @@ class GameViewModel: ObservableObject {
             HapticManager.shared.gameLost()
         }
 
-        // Don't record daily replays as new results (prevents inflating wins/streaks)
-        let isDailyReplay = gameState.mode == .daily && dailyPuzzleService.isTodayCompleted
+        // Only the daily challenge feeds stats, achievements, themes, and reviews.
+        // Unlimited is pure practice and leaves no trace on The Record.
+        // (Daily replays are also excluded to avoid inflating wins/streaks.)
+        let shouldRecord = gameState.mode == .daily && !dailyPuzzleService.isTodayCompleted
 
-        if !isDailyReplay {
+        if shouldRecord {
             // Snapshot theme unlock state before recording result
             let previouslyUnlocked = Set(BoardTheme.allCases.filter {
                 $0.isUnlocked(isPremium: false, wordsSolved: statsService.totalWordsSolved, maxStreak: statsService.maxStreak)

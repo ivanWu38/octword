@@ -6,11 +6,20 @@ enum Difficulty: String, CaseIterable, Codable, Identifiable {
     case classic
     case challenge
     case ultimate
+    // Unlimited mode — 8 words, differing only by how many guesses you get.
+    case unlimitedEasy
+    case unlimitedNormal
+    case unlimitedHard
 
     var id: String { rawValue }
 
     static var allCases: [Difficulty] {
         [.ultimate]
+    }
+
+    /// The three Unlimited difficulties, ordered for the selection menu.
+    static var unlimitedCases: [Difficulty] {
+        [.unlimitedEasy, .unlimitedNormal, .unlimitedHard]
     }
 
     /// Number of boards to solve
@@ -20,6 +29,7 @@ enum Difficulty: String, CaseIterable, Codable, Identifiable {
         case .classic: return 4
         case .challenge: return 4
         case .ultimate: return 8
+        case .unlimitedEasy, .unlimitedNormal, .unlimitedHard: return 8
         }
     }
 
@@ -30,6 +40,9 @@ enum Difficulty: String, CaseIterable, Codable, Identifiable {
         case .classic: return 9
         case .challenge: return 7
         case .ultimate: return 13
+        case .unlimitedEasy: return 15
+        case .unlimitedNormal: return 13
+        case .unlimitedHard: return 12
         }
     }
 
@@ -40,6 +53,9 @@ enum Difficulty: String, CaseIterable, Codable, Identifiable {
         case .classic: return "Classic"
         case .challenge: return "Challenge"
         case .ultimate: return "Octordle"
+        case .unlimitedEasy: return "Easy"
+        case .unlimitedNormal: return "Normal"
+        case .unlimitedHard: return "Hard"
         }
     }
 
@@ -50,6 +66,9 @@ enum Difficulty: String, CaseIterable, Codable, Identifiable {
         case .classic: return "4 boards, 9 guesses"
         case .challenge: return "4 boards, 7 guesses"
         case .ultimate: return "8 words, 13 guesses"
+        case .unlimitedEasy: return "8 words · 15 guesses"
+        case .unlimitedNormal: return "8 words · 13 guesses"
+        case .unlimitedHard: return "8 words · 12 guesses"
         }
     }
 
@@ -60,6 +79,9 @@ enum Difficulty: String, CaseIterable, Codable, Identifiable {
         case .classic: return "star.fill"
         case .challenge: return "flame.fill"
         case .ultimate: return "bolt.shield.fill"
+        case .unlimitedEasy: return "leaf.fill"
+        case .unlimitedNormal: return "star.fill"
+        case .unlimitedHard: return "flame.fill"
         }
     }
 

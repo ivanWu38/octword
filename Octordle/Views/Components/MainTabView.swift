@@ -1,14 +1,16 @@
 import SwiftUI
 
-/// Tab enumeration for 3-tab structure
+/// Tab enumeration for 4-tab structure
 enum Tab: String, CaseIterable {
     case today          // Daily Challenge
+    case unlimited      // Unlimited practice
     case journey        // Stats/Journey
     case settings       // Settings
 
     var title: String {
         switch self {
         case .today: return "Today"
+        case .unlimited: return "Unlimited"
         case .journey: return "Journey"
         case .settings: return "Settings"
         }
@@ -17,6 +19,7 @@ enum Tab: String, CaseIterable {
     var icon: String {
         switch self {
         case .today: return "calendar"
+        case .unlimited: return "infinity"
         case .journey: return "chart.line.uptrend.xyaxis"
         case .settings: return "gearshape.fill"
         }
@@ -25,8 +28,9 @@ enum Tab: String, CaseIterable {
     var index: Int {
         switch self {
         case .today: return 0
-        case .journey: return 1
-        case .settings: return 2
+        case .unlimited: return 1
+        case .journey: return 2
+        case .settings: return 3
         }
     }
 }
@@ -50,6 +54,9 @@ struct MainTabView: View {
             TabView(selection: $selectedTab) {
                 DailyView()
                     .tag(Tab.today)
+
+                UnlimitedView()
+                    .tag(Tab.unlimited)
 
                 StatsView()
                     .tag(Tab.journey)

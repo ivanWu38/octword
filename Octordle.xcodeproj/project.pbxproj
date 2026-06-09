@@ -62,6 +62,7 @@
 		F1E79B15C9C1FCFB3B887B83 /* GameResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82E486539944EF3E129083A3 /* GameResult.swift */; };
 		F7A30C9CB7B3B0EBCD6AB0D6 /* words.json in Resources */ = {isa = PBXBuildFile; fileRef = 55FC38C16F7E6EBCE666E10B /* words.json */; };
 		F993BEBC5F090AB38C07377F /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526CCEC7E276CD9610A211BB /* SettingsView.swift */; };
+		FACE0001FACE0001FACE0001 /* UnlimitedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE0002FACE0002FACE0002 /* UnlimitedView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -118,6 +119,7 @@
 		F47EC0C50C5D02F82C24A238 /* ATTPrePromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ATTPrePromptView.swift; sourceTree = "<group>"; };
 		F4A60CA8B3CB8DB61CE0A0BB /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
 		F69156BE12974880E1864B65 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		FACE0002FACE0002FACE0002 /* UnlimitedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnlimitedView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -316,11 +318,20 @@
 			);
 			sourceTree = "<group>";
 		};
+		FACE0003FACE0003FACE0003 /* Unlimited */ = {
+			isa = PBXGroup;
+			children = (
+				FACE0002FACE0002FACE0002 /* UnlimitedView.swift */,
+			);
+			path = Unlimited;
+			sourceTree = "<group>";
+		};
 		FE54110C7FB1CA3F566D8EF7 /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				82EA444A752E8EA4E3F7A193 /* Components */,
 				305DFB60EB437C050829B5BB /* Daily */,
+				FACE0003FACE0003FACE0003 /* Unlimited */,
 				3B15BC82E0861A4293C234C7 /* Game */,
 				86B54EB0B6FD03E5E28C416F /* Onboarding */,
 				44160BEE0BD281DAE49C366D /* Settings */,
@@ -430,6 +441,7 @@
 				C6CD8FF1C384136F67B2DFB0 /* Constants.swift in Sources */,
 				7B600A03670D8500CCBFC770 /* DailyPuzzleService.swift in Sources */,
 				4155059632E8F6764DFA6579 /* DailyView.swift in Sources */,
+				FACE0001FACE0001FACE0001 /* UnlimitedView.swift in Sources */,
 				428CD7301C3D5FBF9822C50E /* Difficulty.swift in Sources */,
 				818A76DB74BDD9DBFC3F2966 /* Extensions.swift in Sources */,
 				F1E79B15C9C1FCFB3B887B83 /* GameResult.swift in Sources */,
@@ -487,7 +499,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.01;
+				MARKETING_VERSION = 1.02;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ikuhei.octordle;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -583,7 +595,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.01;
+				MARKETING_VERSION = 1.02;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ikuhei.octordle;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
