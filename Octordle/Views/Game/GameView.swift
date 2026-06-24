@@ -31,6 +31,10 @@ struct GameView: View {
         _viewModel = StateObject(wrappedValue: GameViewModel(resuming: state))
     }
 
+    init(archiveDate: Date) {
+        _viewModel = StateObject(wrappedValue: GameViewModel(archiveDate: archiveDate))
+    }
+
     var body: some View {
         GeometryReader { geometry in
             let maxContentWidth: CGFloat = 600

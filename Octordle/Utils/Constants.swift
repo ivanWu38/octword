@@ -17,6 +17,14 @@ enum Constants {
         static let defaultDifficulty = Difficulty.ultimate
     }
 
+    /// Archive (past daily puzzles)
+    enum Archive {
+        /// Puzzle #1 — the app's launch day. Earliest playable archive date.
+        static let firstPuzzleComponents = DateComponents(year: 2026, month: 5, day: 20)
+        /// Today + previous (freeDays - 1) days are free to play; older days need unlocking.
+        static let freeDays = 3
+    }
+
     /// Animation durations
     enum Animation {
         static let tileFlipDuration = 0.3
@@ -57,6 +65,7 @@ enum Constants {
         static let dailyState = "octordle_dailyState"
         static let completedDailyDates = "octordle_completedDailyDates"
         static let hasSeenNotepadIntro = "octordle_hasSeenNotepadIntro"
+        static let archiveUnlockedDates = "octordle_archiveUnlockedDates"
     }
 
     /// AdMob IDs
@@ -65,14 +74,18 @@ enum Constants {
 
         // Production Ad Unit IDs
         static let prodBannerAdUnitId = "ca-app-pub-5654617376526903/4751930117"
+        static let prodRewardedAdUnitId = "ca-app-pub-5654617376526903/7584303513"
 
         // Google's official test Ad Unit IDs (always return test ads)
         static let testBannerAdUnitId = "ca-app-pub-3940256099942544/2934735716"
+        static let testRewardedAdUnitId = "ca-app-pub-3940256099942544/1712485313"
 
         #if DEBUG
         static let bannerAdUnitId = testBannerAdUnitId
+        static let rewardedAdUnitId = testRewardedAdUnitId
         #else
         static let bannerAdUnitId = prodBannerAdUnitId
+        static let rewardedAdUnitId = prodRewardedAdUnitId
         #endif
     }
 }

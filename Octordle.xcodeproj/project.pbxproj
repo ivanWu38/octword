@@ -30,6 +30,7 @@
 		428CD7301C3D5FBF9822C50E /* Difficulty.swift in Sources */ = {isa = PBXBuildFile; fileRef = 589AA71BC7A1950FEB332012 /* Difficulty.swift */; };
 		5D62CDEADDC596B6BD310551 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 362E9DEF721E073A739B429F /* Assets.xcassets */; };
 		5E9FA2AB6E8B564D909DB467 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DE89D9329F1D517A5695783 /* HapticManager.swift */; };
+		5F6D622C079A974EA755643D /* UnlimitedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E854120399DB325DBFEB410 /* UnlimitedView.swift */; };
 		61A89E3712A80D82A907B443 /* TileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1BA9531D869AB674B443789 /* TileView.swift */; };
 		69EF8364106AC15C0FF94E53 /* ReviewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0E6FC45B2F7C4B2ED18872E /* ReviewManager.swift */; };
 		6CC86E16282A57724482975F /* Achievement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F096B96DB20B71D8AB235AF /* Achievement.swift */; };
@@ -45,6 +46,7 @@
 		A079179E9277EDCD3135F35C /* ThemeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 451F268654B082E140E4CFA4 /* ThemeService.swift */; };
 		A4BBFF8A554E00ACDA0096C3 /* GameResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B9F6FC36FA732848A27E4F /* GameResultView.swift */; };
 		A72593ADF1BD482984BEFB84 /* ThemeUnlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F2A61B566865E6F22D78D9 /* ThemeUnlockView.swift */; };
+		AD27623C05901D19A430EF6A /* ArchiveCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CEC0E65B8464862ABFE0A4 /* ArchiveCalendarView.swift */; };
 		AF5384DD9A16B622A683422E /* SubscriptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E03879B1F2CCE9CBFBB2DD /* SubscriptionView.swift */; };
 		B9552898B33495A91B8A0B3B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1174C51E0EB64BE618381FBF /* PrivacyInfo.xcprivacy */; };
 		BA63B5474961D1AD2830E86B /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED7F2D0447A48C336889865 /* StatsView.swift */; };
@@ -52,6 +54,7 @@
 		C17217387E271511DD866B26 /* OctordleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42A61E61D07C282FB5E8CAB1 /* OctordleApp.swift */; };
 		C3ABB314C4D3E4F115A8BE44 /* KeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07535EE500F74799CB1606FC /* KeyboardView.swift */; };
 		C4EBF9BAA8682DB05FD84B38 /* BoardData.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBD21DF948838FD8715DB29E /* BoardData.swift */; };
+		C4EC26E39C2EF8A7F27FD8D3 /* RewardedAdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1BE45FE8F9D43B399AF7DA /* RewardedAdManager.swift */; };
 		C69E52763452DEB31975BA26 /* SolveReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AC7B2DC9E5608C1F0659BC7 /* SolveReportView.swift */; };
 		C6CD8FF1C384136F67B2DFB0 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D0FBAA63E58663BABF08E2 /* Constants.swift */; };
 		D6A36CB71BAF539DCFEA3A2D /* StatsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F54408581B1D6647B968487 /* StatsService.swift */; };
@@ -62,7 +65,6 @@
 		F1E79B15C9C1FCFB3B887B83 /* GameResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82E486539944EF3E129083A3 /* GameResult.swift */; };
 		F7A30C9CB7B3B0EBCD6AB0D6 /* words.json in Resources */ = {isa = PBXBuildFile; fileRef = 55FC38C16F7E6EBCE666E10B /* words.json */; };
 		F993BEBC5F090AB38C07377F /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526CCEC7E276CD9610A211BB /* SettingsView.swift */; };
-		FACE0001FACE0001FACE0001 /* UnlimitedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE0002FACE0002FACE0002 /* UnlimitedView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -87,10 +89,12 @@
 		50E03879B1F2CCE9CBFBB2DD /* SubscriptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionView.swift; sourceTree = "<group>"; };
 		510411AA9DF51A36684E6718 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		526CCEC7E276CD9610A211BB /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		54CEC0E65B8464862ABFE0A4 /* ArchiveCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveCalendarView.swift; sourceTree = "<group>"; };
 		55FC38C16F7E6EBCE666E10B /* words.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = words.json; sourceTree = "<group>"; };
 		5859D80C1518D574771FFA15 /* AdMobManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdMobManager.swift; sourceTree = "<group>"; };
 		589AA71BC7A1950FEB332012 /* Difficulty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Difficulty.swift; sourceTree = "<group>"; };
 		59C880C14E1BB16E660D4179 /* ShareCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCardView.swift; sourceTree = "<group>"; };
+		5A1BE45FE8F9D43B399AF7DA /* RewardedAdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardedAdManager.swift; sourceTree = "<group>"; };
 		5AC7B2DC9E5608C1F0659BC7 /* SolveReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolveReportView.swift; sourceTree = "<group>"; };
 		614DEAFE4AA8548911CD6AF8 /* AchievementUnlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementUnlockView.swift; sourceTree = "<group>"; };
 		7494CB1E6520EB08318CD858 /* ThemePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePickerView.swift; sourceTree = "<group>"; };
@@ -102,6 +106,7 @@
 		80B9F6FC36FA732848A27E4F /* GameResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameResultView.swift; sourceTree = "<group>"; };
 		82E486539944EF3E129083A3 /* GameResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameResult.swift; sourceTree = "<group>"; };
 		892507B5910BC1C321C06702 /* ConsentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentManager.swift; sourceTree = "<group>"; };
+		8E854120399DB325DBFEB410 /* UnlimitedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnlimitedView.swift; sourceTree = "<group>"; };
 		8F096B96DB20B71D8AB235AF /* Achievement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Achievement.swift; sourceTree = "<group>"; };
 		B0E38A023CE77EBB840871AA /* ConfettiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiView.swift; sourceTree = "<group>"; };
 		B64ABA569D2976B678F378A0 /* NotepadIntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotepadIntroView.swift; sourceTree = "<group>"; };
@@ -119,7 +124,6 @@
 		F47EC0C50C5D02F82C24A238 /* ATTPrePromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ATTPrePromptView.swift; sourceTree = "<group>"; };
 		F4A60CA8B3CB8DB61CE0A0BB /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
 		F69156BE12974880E1864B65 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
-		FACE0002FACE0002FACE0002 /* UnlimitedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnlimitedView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -165,12 +169,28 @@
 			path = Octordle;
 			sourceTree = "<group>";
 		};
+		24F06D58120689291927C382 /* Unlimited */ = {
+			isa = PBXGroup;
+			children = (
+				8E854120399DB325DBFEB410 /* UnlimitedView.swift */,
+			);
+			path = Unlimited;
+			sourceTree = "<group>";
+		};
 		28D7462102A71908524D7622 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
 				CBF7EEDFBDC1C048A3F148AC /* GameViewModel.swift */,
 			);
 			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		2A1D10F8C9B69D6DCC8B0787 /* Archive */ = {
+			isa = PBXGroup;
+			children = (
+				54CEC0E65B8464862ABFE0A4 /* ArchiveCalendarView.swift */,
+			);
+			path = Archive;
 			sourceTree = "<group>";
 		};
 		2D3A5C3EC364BF48F5A9D390 /* Stats */ = {
@@ -271,6 +291,7 @@
 			children = (
 				5859D80C1518D574771FFA15 /* AdMobManager.swift */,
 				C8A7CDCC246F11FAC64B9FEA /* BannerAdView.swift */,
+				5A1BE45FE8F9D43B399AF7DA /* RewardedAdManager.swift */,
 			);
 			path = Ads;
 			sourceTree = "<group>";
@@ -318,25 +339,18 @@
 			);
 			sourceTree = "<group>";
 		};
-		FACE0003FACE0003FACE0003 /* Unlimited */ = {
-			isa = PBXGroup;
-			children = (
-				FACE0002FACE0002FACE0002 /* UnlimitedView.swift */,
-			);
-			path = Unlimited;
-			sourceTree = "<group>";
-		};
 		FE54110C7FB1CA3F566D8EF7 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				2A1D10F8C9B69D6DCC8B0787 /* Archive */,
 				82EA444A752E8EA4E3F7A193 /* Components */,
 				305DFB60EB437C050829B5BB /* Daily */,
-				FACE0003FACE0003FACE0003 /* Unlimited */,
 				3B15BC82E0861A4293C234C7 /* Game */,
 				86B54EB0B6FD03E5E28C416F /* Onboarding */,
 				44160BEE0BD281DAE49C366D /* Settings */,
 				2D3A5C3EC364BF48F5A9D390 /* Stats */,
 				848C12F6314047F912BA421D /* Subscription */,
+				24F06D58120689291927C382 /* Unlimited */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -433,6 +447,7 @@
 				98B400F61E53AACE585B714F /* AchievementUnlockView.swift in Sources */,
 				0F38436B7500A1F1ABA00EB5 /* AdMobManager.swift in Sources */,
 				3A023A458617E44FEF8714DA /* AnalyticsService.swift in Sources */,
+				AD27623C05901D19A430EF6A /* ArchiveCalendarView.swift in Sources */,
 				DFCE39F19A46979F081FA28F /* BannerAdView.swift in Sources */,
 				C4EBF9BAA8682DB05FD84B38 /* BoardData.swift in Sources */,
 				3D0A4493DF10A88F1AA5B520 /* BoardView.swift in Sources */,
@@ -441,7 +456,6 @@
 				C6CD8FF1C384136F67B2DFB0 /* Constants.swift in Sources */,
 				7B600A03670D8500CCBFC770 /* DailyPuzzleService.swift in Sources */,
 				4155059632E8F6764DFA6579 /* DailyView.swift in Sources */,
-				FACE0001FACE0001FACE0001 /* UnlimitedView.swift in Sources */,
 				428CD7301C3D5FBF9822C50E /* Difficulty.swift in Sources */,
 				818A76DB74BDD9DBFC3F2966 /* Extensions.swift in Sources */,
 				F1E79B15C9C1FCFB3B887B83 /* GameResult.swift in Sources */,
@@ -458,6 +472,7 @@
 				34D6C3627608F428B09B626B /* OnboardingView.swift in Sources */,
 				69EF8364106AC15C0FF94E53 /* ReviewManager.swift in Sources */,
 				349945BD2E68FFA385CB45FA /* ReviewPromptView.swift in Sources */,
+				C4EC26E39C2EF8A7F27FD8D3 /* RewardedAdManager.swift in Sources */,
 				F993BEBC5F090AB38C07377F /* SettingsView.swift in Sources */,
 				0CFFD1F8ED1365805C62D645 /* ShareCardView.swift in Sources */,
 				0E694114BB35D655B9047D66 /* SolveAnalyzer.swift in Sources */,
@@ -472,6 +487,7 @@
 				A72593ADF1BD482984BEFB84 /* ThemeUnlockView.swift in Sources */,
 				0DB729463A8D75C3A52C7C23 /* TileData.swift in Sources */,
 				61A89E3712A80D82A907B443 /* TileView.swift in Sources */,
+				5F6D622C079A974EA755643D /* UnlimitedView.swift in Sources */,
 				BC295A9922053DE9A0DB9FE9 /* WordService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -485,7 +501,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = Octordle/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Octordle;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.word-games";
@@ -499,7 +514,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.02;
+				MARKETING_VERSION = 1.07;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ikuhei.octordle;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -581,7 +596,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = Octordle/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Octordle;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.word-games";
@@ -595,7 +609,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.02;
+				MARKETING_VERSION = 1.07;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ikuhei.octordle;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

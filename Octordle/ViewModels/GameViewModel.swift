@@ -72,6 +72,15 @@ class GameViewModel: ObservableObject {
         gameState.difficulty.boardCount
     }
 
+    /// The day string this puzzle belongs to (daily/archive); nil for practice/unlimited.
+    private var playedDay: String? { gameState.dailyDate }
+
+    /// Whether this daily/archive puzzle's day was already completed before this session.
+    private var isPlayedDayCompleted: Bool {
+        guard let day = playedDay else { return false }
+        return dailyPuzzleService.completedDates.contains(day)
+    }
+
     // MARK: - Initialization
 
     /// Create a new game
@@ -90,6 +99,20 @@ class GameViewModel: ObservableObject {
 
         #if DEBUG
         print("🟡 [DEBUG] Answers: \(words.enumerated().map { "Board \($0.offset + 1): \($0.element)" }.joined(separator: ", "))")
+        #endif
+    }
+
+    /// Create a new archive game for a past daily date
+    init(archiveDate: Date, difficulty: Difficulty = Constants.Game.defaultDifficulty) {
+        let boardCount = difficulty.boardCount
+        let words = wordService.getDailyWords(for: archiveDate, count: boardCount)
+
+        self.gameState = GameState(mode: .daily, difficulty: difficulty, words: words, date: archiveDate)
+        startTimer()
+        AnalyticsService.logGameStart(mode: .daily, difficulty: difficulty)
+
+        #if DEBUG
+        print("🟡 [DEBUG] Archive \(GameState.dateString(for: archiveDate)) — Answers: \(words.enumerated().map { "Board \($0.offset + 1): \($0.element)" }.joined(separator: ", "))")
         #endif
     }
 
@@ -276,7 +299,7 @@ class GameViewModel: ObservableObject {
         // Only the daily challenge feeds stats, achievements, themes, and reviews.
         // Unlimited is pure practice and leaves no trace on The Record.
         // (Daily replays are also excluded to avoid inflating wins/streaks.)
-        let shouldRecord = gameState.mode == .daily && !dailyPuzzleService.isTodayCompleted
+        let shouldRecord = gameState.mode == .daily && !isPlayedDayCompleted
 
         if shouldRecord {
             // Snapshot theme unlock state before recording result
@@ -306,10 +329,12 @@ class GameViewModel: ObservableObject {
         // DailyView to switch views and dismiss GameView before result sheet appears)
         if gameState.mode == .daily {
             // Save completed result for review (only first attempt, not replays)
-            if !dailyPuzzleService.isTodayCompleted {
+            if !isPlayedDayCompleted {
                 statsService.saveCompletedDailyResult(gameState)
             }
-            statsService.clearDailyState()
+            if let day = playedDay {
+                statsService.clearDailyState(for: day)
+            }
         }
 
         // Ask for a review only at a positive milestone (see ReviewManager).
@@ -345,10 +370,10 @@ class GameViewModel: ObservableObject {
         }
     }
 
-    /// Mark daily as completed (call after result sheet is dismissed)
+    /// Mark daily/archive as completed (call after result sheet is dismissed)
     func markDailyCompletedIfNeeded() {
-        if gameState.mode == .daily {
-            dailyPuzzleService.markTodayCompleted()
+        if gameState.mode == .daily, let day = playedDay {
+            dailyPuzzleService.markCompleted(day)
         }
     }
 

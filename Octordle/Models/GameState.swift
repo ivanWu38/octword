@@ -35,6 +35,12 @@ struct GameState: Codable, Equatable {
         self.accumulatedTime = 0
     }
 
+    /// Create a daily/archive game state tied to a specific date.
+    init(mode: GameMode, difficulty: Difficulty, words: [String], date: Date) {
+        self.init(mode: mode, difficulty: difficulty, words: words)
+        self.dailyDate = Self.dateString(for: date)
+    }
+
     // Custom Codable to handle backward compatibility (old saves without accumulatedTime)
     enum CodingKeys: String, CodingKey {
         case mode, difficulty, boards, currentGuess, guessCount
@@ -129,9 +135,14 @@ struct GameState: Codable, Equatable {
 
     /// Today's date string
     static func todayString() -> String {
+        dateString(for: Date())
+    }
+
+    /// Day string ("yyyy-MM-dd") for an arbitrary date.
+    static func dateString(for date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: Date())
+        return formatter.string(from: date)
     }
 
     /// Reconstruct a GameState from a GameResult (for reviewing completed games)

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unlimited Mode — Preview Mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,400;1,500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F4F0E6;
+    --paper-2:#FBF8F1;
+    --ink:#26221C;
+    --ink-soft:#8A8275;
+    --rust:#AE4124;
+    --rust-tint:rgba(174,65,36,.12);
+    --border:#D8D0BF;
+    --gold:#D89C28;
+    --orange:#D8692B;
+    --stage:#E4DDCC;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'DM Sans',system-ui,sans-serif;
+    background:var(--stage);
+    color:var(--ink);
+    padding:48px 24px 80px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .page-head{max-width:1180px;margin:0 auto 44px;text-align:center}
+  .page-head .kicker{
+    font-size:12px;letter-spacing:.32em;text-transform:uppercase;
+    color:var(--rust);font-weight:700;margin-bottom:14px
+  }
+  .page-head h1{
+    font-family:'Playfair Display',serif;font-weight:900;
+    font-size:40px;line-height:1.1;color:var(--ink);letter-spacing:-.01em
+  }
+  .page-head p{
+    margin-top:14px;color:var(--ink-soft);font-size:15px;max-width:640px;
+    margin-left:auto;margin-right:auto;line-height:1.55
+  }
+  .grid{
+    max-width:1180px;margin:0 auto;
+    display:grid;grid-template-columns:repeat(3,1fr);gap:40px;align-items:start
+  }
+  @media(max-width:1040px){.grid{grid-template-columns:1fr;max-width:380px}}
+
+  .col-label{
+    text-align:center;margin-bottom:18px
+  }
+  .col-label .tag{
+    display:inline-block;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    font-weight:700;color:#fff;background:var(--rust);padding:5px 12px;border-radius:20px
+  }
+  .col-label .name{
+    margin-top:10px;font-size:14px;color:var(--ink-soft);font-weight:500
+  }
+  .col-label .name b{color:var(--ink);font-weight:700}
+
+  /* ---- phone screenshot ---- */
+  .phone{
+    position:relative;width:100%;aspect-ratio:9/19.5;
+    background:var(--paper);border-radius:40px;overflow:hidden;
+    box-shadow:0 24px 60px -18px rgba(38,34,28,.45),0 0 0 1px rgba(38,34,28,.06);
+    display:flex;flex-direction:column;
+  }
+  .status{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:16px 26px 6px;font-size:13px;font-weight:700;color:var(--ink)
+  }
+  .status .dots{letter-spacing:2px;font-size:11px}
+
+  /* ---- marketing copy block ---- */
+  .copy{padding:18px 26px 14px;text-align:center}
+  .copy .eyebrow{
+    font-size:10px;letter-spacing:.26em;text-transform:uppercase;
+    color:var(--ink-soft);font-weight:700;margin-bottom:12px
+  }
+  .rule{height:1.5px;background:var(--ink);opacity:.85}
+  .copy h2{
+    font-family:'Playfair Display',serif;font-weight:900;
+    font-size:30px;line-height:1.08;letter-spacing:-.015em;
+    padding:14px 4px;color:var(--ink)
+  }
+  .copy .sub{
+    font-family:'Playfair Display',serif;font-style:italic;font-weight:400;
+    font-size:14.5px;line-height:1.45;color:var(--ink-soft);padding:12px 6px 2px
+  }
+
+  /* ---- difficulty cards ---- */
+  .cards{padding:14px 22px 6px;display:flex;flex-direction:column;gap:11px;flex:1;justify-content:center}
+  .menu-label{
+    text-align:center;font-size:10px;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--ink-soft);font-weight:700;margin-bottom:4px
+  }
+  .card{
+    display:flex;align-items:center;gap:13px;
+    background:var(--paper-2);border:1px solid var(--border);border-radius:14px;
+    padding:13px 15px
+  }
+  .card .ic{
+    width:42px;height:42px;border-radius:50%;background:var(--rust-tint);
+    display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0
+  }
+  .card .txt{display:flex;flex-direction:column;gap:2px}
+  .card .txt .t{font-family:'Playfair Display',serif;font-weight:700;font-size:18px;color:var(--ink)}
+  .card .txt .d{font-family:'Playfair Display',serif;font-size:12px;color:var(--ink-soft)}
+  .card .chev{margin-left:auto;color:var(--ink-soft);opacity:.55;font-size:15px}
+
+  /* ---- bullets ---- */
+  .bullets{padding:10px 24px 6px;display:flex;flex-direction:column;gap:9px}
+  .bul{display:flex;align-items:center;gap:11px;font-size:12.5px;color:var(--ink)}
+  .bul .bi{width:22px;text-align:center;font-size:15px;flex-shrink:0}
+  .bul b{font-weight:700}
+  .bul span{color:var(--ink-soft)}
+
+  /* ---- tab bar ---- */
+  .tabbar{
+    margin-top:6px;border-top:1px solid var(--border);background:var(--paper-2);
+    display:flex;padding:9px 0 16px
+  }
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9px;color:var(--ink-soft);font-weight:600}
+  .tab .ti{font-size:17px}
+  .tab.active{color:var(--rust)}
+
+  .legend{
+    max-width:1180px;margin:46px auto 0;background:var(--paper);
+    border:1px solid var(--border);border-radius:16px;padding:24px 28px
+  }
+  .legend h3{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:12px}
+  .legend table{width:100%;border-collapse:collapse;font-size:13.5px}
+  .legend td{padding:9px 8px;border-bottom:1px solid var(--border);vertical-align:top}
+  .legend td:first-child{font-weight:700;white-space:nowrap;color:var(--rust);width:130px}
+  .legend tr:last-child td{border-bottom:none}
+</style>
+</head>
+<body>
+
+  <div class="page-head">
+    <div class="kicker">Octordle · Unlimited Mode</div>
+    <h1>Three voices, one feature</h1>
+    <p>Same screenshot layout, three tones. The headline carries the emotion; the cards and bullets carry the facts. Pick the voice that fits — I'll polish from there.</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- ===== A: Editorial ===== -->
+    <div>
+      <div class="col-label">
+        <span class="tag">Voice A</span>
+        <div class="name"><b>Editorial</b> · matches your masthead</div>
+      </div>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span class="dots">●●● ▮</span></div>
+        <div class="copy">
+          <div class="eyebrow">The Unlimited Edition · No. ∞</div>
+          <div class="rule"></div>
+          <h2>Eight words.<br>Endless play.</h2>
+          <div class="rule"></div>
+          <div class="sub">The special edition that never<br>goes to print.</div>
+        </div>
+        <div class="cards">
+          <div class="menu-label">Choose your challenge</div>
+          <div class="card"><div class="ic">🍃</div><div class="txt"><div class="t">Easy</div><div class="d">8 words · 15 guesses</div></div><div class="chev">›</div></div>
+          <div class="card"><div class="ic">⭐</div><div class="txt"><div class="t">Normal</div><div class="d">8 words · 13 guesses</div></div><div class="chev">›</div></div>
+          <div class="card"><div class="ic">🔥</div><div class="txt"><div class="t">Hard</div><div class="d">8 words · 12 guesses</div></div><div class="chev">›</div></div>
+        </div>
+        <div class="bullets">
+          <div class="bul"><span class="bi">∞</span><b>Play without limits</b></div>
+          <div class="bul"><span class="bi">🎚</span><b>Three modes</b><span>&nbsp;— 15 · 13 · 12</span></div>
+          <div class="bul"><span class="bi">😌</span><b>No streak on the line</b></div>
+        </div>
+        <div class="tabbar">
+          <div class="tab"><span class="ti">🗓</span>Today</div>
+          <div class="tab active"><span class="ti">∞</span>Unlimited</div>
+          <div class="tab"><span class="ti">📈</span>Journey</div>
+          <div class="tab"><span class="ti">⚙️</span>Settings</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== B: Pain-point ===== -->
+    <div>
+      <div class="col-label">
+        <span class="tag">Voice B</span>
+        <div class="name"><b>Pain-point</b> · strongest for acquisition</div>
+      </div>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span class="dots">●●● ▮</span></div>
+        <div class="copy">
+          <div class="eyebrow">Unlimited Octordle</div>
+          <div class="rule"></div>
+          <h2>Why wait for<br>tomorrow?</h2>
+          <div class="rule"></div>
+          <div class="sub">Fresh boards on demand.<br>Play all day.</div>
+        </div>
+        <div class="cards">
+          <div class="menu-label">Choose your challenge</div>
+          <div class="card"><div class="ic">🍃</div><div class="txt"><div class="t">Easy</div><div class="d">8 words · 15 guesses</div></div><div class="chev">›</div></div>
+          <div class="card"><div class="ic">⭐</div><div class="txt"><div class="t">Normal</div><div class="d">8 words · 13 guesses</div></div><div class="chev">›</div></div>
+          <div class="card"><div class="ic">🔥</div><div class="txt"><div class="t">Hard</div><div class="d">8 words · 12 guesses</div></div><div class="chev">›</div></div>
+        </div>
+        <div class="bullets">
+          <div class="bul"><span class="bi">∞</span><b>Play without limits</b></div>
+          <div class="bul"><span class="bi">🎚</span><b>Three modes</b><span>&nbsp;— 15 · 13 · 12</span></div>
+          <div class="bul"><span class="bi">😌</span><b>No streak on the line</b></div>
+        </div>
+        <div class="tabbar">
+          <div class="tab"><span class="ti">🗓</span>Today</div>
+          <div class="tab active"><span class="ti">∞</span>Unlimited</div>
+          <div class="tab"><span class="ti">📈</span>Journey</div>
+          <div class="tab"><span class="ti">⚙️</span>Settings</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== C: Control ===== -->
+    <div>
+      <div class="col-label">
+        <span class="tag">Voice C</span>
+        <div class="name"><b>Control</b> · sells the choice of difficulty</div>
+      </div>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span class="dots">●●● ▮</span></div>
+        <div class="copy">
+          <div class="eyebrow">Choose your challenge</div>
+          <div class="rule"></div>
+          <h2>Your puzzle.<br>Your pace.</h2>
+          <div class="rule"></div>
+          <div class="sub">From a gentle 15 down<br>to a ruthless 12.</div>
+        </div>
+        <div class="cards">
+          <div class="menu-label">Three modes</div>
+          <div class="card"><div class="ic">🍃</div><div class="txt"><div class="t">Easy</div><div class="d">8 words · 15 guesses</div></div><div class="chev">›</div></div>
+          <div class="card"><div class="ic">⭐</div><div class="txt"><div class="t">Normal</div><div class="d">8 words · 13 guesses</div></div><div class="chev">›</div></div>
+          <div class="card"><div class="ic">🔥</div><div class="txt"><div class="t">Hard</div><div class="d">8 words · 12 guesses</div></div><div class="chev">›</div></div>
+        </div>
+        <div class="bullets">
+          <div class="bul"><span class="bi">∞</span><b>Play without limits</b></div>
+          <div class="bul"><span class="bi">🎚</span><b>Three modes</b><span>&nbsp;— 15 · 13 · 12</span></div>
+          <div class="bul"><span class="bi">😌</span><b>No streak on the line</b></div>
+        </div>
+        <div class="tabbar">
+          <div class="tab"><span class="ti">🗓</span>Today</div>
+          <div class="tab active"><span class="ti">∞</span>Unlimited</div>
+          <div class="tab"><span class="ti">📈</span>Journey</div>
+          <div class="tab"><span class="ti">⚙️</span>Settings</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="legend">
+    <h3>What each voice optimises for</h3>
+    <table>
+      <tr><td>Voice A · Editorial</td><td>Brand consistency. Reads as the same “newspaper” as your Daily masthead (<i>Eight words. Thirteen guesses.</i>) → strongest for existing players, in-app intro card.</td></tr>
+      <tr><td>Voice B · Pain-point</td><td>Emotion &amp; conversion. Hits the “I finished today's puzzle and want more” itch head-on → best as the hero App Store screenshot for acquiring new users.</td></tr>
+      <tr><td>Voice C · Control</td><td>Perceived value. Foregrounds picking your own difficulty → good as a secondary screenshot right after the hero shot.</td></tr>
+    </table>
+  </div>
+
+</body>
+</html>

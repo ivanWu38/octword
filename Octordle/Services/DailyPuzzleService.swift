@@ -7,14 +7,25 @@ class DailyPuzzleService: ObservableObject {
 
     private let defaults = UserDefaults.standard
     private let completedDatesKey = "octordle_completedDailyDates"
+    private let unlockedDatesKey = Constants.UserDefaultsKeys.archiveUnlockedDates
 
     @Published private(set) var completedDates: Set<String> = []
+    /// Archive days the player has unlocked by watching a rewarded ad.
+    @Published private(set) var unlockedArchiveDates: Set<String> = []
     @Published private(set) var countdownString: String = "--:--:--"
 
     private var countdownTimer: Timer?
 
+    /// Shared formatter for "yyyy-MM-dd" day strings.
+    static let dateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        return f
+    }()
+
     private init() {
         loadCompletedDates()
+        loadUnlockedDates()
         updateCountdown()
         startCountdownTimer()
     }
@@ -26,17 +37,79 @@ class DailyPuzzleService: ObservableObject {
 
     /// Today's date string
     var todayString: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: Date())
+        Self.dateFormatter.string(from: Date())
+    }
+
+    /// Day string for an arbitrary date.
+    func dateString(for date: Date) -> String {
+        Self.dateFormatter.string(from: date)
     }
 
     /// Get puzzle number (days since launch). Puzzle #1 is the launch day.
     var puzzleNumber: Int {
+        puzzleNumber(for: Date())
+    }
+
+    /// Puzzle number for an arbitrary date (Puzzle #1 == firstPuzzleDate).
+    func puzzleNumber(for date: Date) -> Int {
         let calendar = Calendar.current
-        let launchDate = calendar.date(from: DateComponents(year: 2026, month: 5, day: 20))!
-        let days = calendar.dateComponents([.day], from: launchDate, to: Date()).day ?? 0
+        let days = calendar.dateComponents([.day], from: firstPuzzleDate, to: calendar.startOfDay(for: date)).day ?? 0
         return max(1, days + 1)
+    }
+
+    // MARK: - Archive
+
+    /// The earliest playable day (Puzzle #1), start of day.
+    var firstPuzzleDate: Date {
+        let calendar = Calendar.current
+        let date = calendar.date(from: Constants.Archive.firstPuzzleComponents) ?? Date()
+        return calendar.startOfDay(for: date)
+    }
+
+    /// Today, normalized to start of day.
+    var todayStart: Date {
+        Calendar.current.startOfDay(for: Date())
+    }
+
+    /// Whether a date is within the playable archive range [firstPuzzleDate ... today].
+    func isInArchiveRange(_ date: Date) -> Bool {
+        let day = Calendar.current.startOfDay(for: date)
+        return day >= firstPuzzleDate && day <= todayStart
+    }
+
+    /// Whether a date falls inside the free window (today + previous freeDays-1 days).
+    func isFree(_ date: Date) -> Bool {
+        let day = Calendar.current.startOfDay(for: date)
+        let diff = Calendar.current.dateComponents([.day], from: day, to: todayStart).day ?? Int.max
+        return diff >= 0 && diff < Constants.Archive.freeDays
+    }
+
+    /// Whether the puzzle for a date has been completed.
+    func isCompleted(_ date: Date) -> Bool {
+        completedDates.contains(dateString(for: date))
+    }
+
+    /// Whether an archive day was unlocked via rewarded ad.
+    func isAdUnlocked(_ date: Date) -> Bool {
+        unlockedArchiveDates.contains(dateString(for: date))
+    }
+
+    /// Whether the player can start/resume the puzzle for a date.
+    func isPlayable(_ date: Date, isPremium: Bool) -> Bool {
+        guard isInArchiveRange(date) else { return false }
+        return isFree(date) || isPremium || isAdUnlocked(date)
+    }
+
+    /// Whether a date needs unlocking (in range, not free, not premium, not yet unlocked).
+    func isLocked(_ date: Date, isPremium: Bool) -> Bool {
+        guard isInArchiveRange(date) else { return false }
+        return !isFree(date) && !isPremium && !isAdUnlocked(date)
+    }
+
+    /// Unlock an archive day after a rewarded ad was watched.
+    func unlockArchiveDate(_ date: Date) {
+        unlockedArchiveDates.insert(dateString(for: date))
+        saveUnlockedDates()
     }
 
     /// Time until next puzzle (next local midnight)
@@ -70,7 +143,12 @@ class DailyPuzzleService: ObservableObject {
 
     /// Mark today as completed
     func markTodayCompleted() {
-        completedDates.insert(todayString)
+        markCompleted(todayString)
+    }
+
+    /// Mark an arbitrary day's puzzle as completed (used by archive).
+    func markCompleted(_ dayString: String) {
+        completedDates.insert(dayString)
         saveCompletedDates()
     }
 
@@ -142,5 +220,15 @@ class DailyPuzzleService: ObservableObject {
 
     private func saveCompletedDates() {
         defaults.set(Array(completedDates), forKey: completedDatesKey)
+    }
+
+    private func loadUnlockedDates() {
+        if let dates = defaults.stringArray(forKey: unlockedDatesKey) {
+            self.unlockedArchiveDates = Set(dates)
+        }
+    }
+
+    private func saveUnlockedDates() {
+        defaults.set(Array(unlockedArchiveDates), forKey: unlockedDatesKey)
     }
 }

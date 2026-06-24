@@ -8,6 +8,7 @@ struct DailyView: View {
 
     @StateObject private var dailyPuzzleService = DailyPuzzleService.shared
     @State private var showGame = false
+    @State private var showArchive = false
     @State private var isReplaying = false
     @State private var savedState: GameState?
     @State private var showSolveReport = false
@@ -40,6 +41,12 @@ struct DailyView: View {
                 } else {
                     GameView(mode: .daily, difficulty: Constants.Game.defaultDifficulty)
                 }
+            }
+            .navigationDestination(isPresented: $showArchive) {
+                ArchiveCalendarView()
+                    .environmentObject(themeService)
+                    .environmentObject(statsService)
+                    .environmentObject(subscriptionService)
             }
             .onChange(of: showGame) { newValue in
                 if !newValue {
@@ -102,6 +109,30 @@ struct DailyView: View {
     private var countdownFooter: some View {
         VStack(spacing: 14) {
             Rectangle().fill(Color.quordleCardBorder).frame(height: 1).padding(.horizontal, 24)
+
+            Button {
+                HapticManager.shared.buttonTap()
+                showArchive = true
+            } label: {
+                HStack(spacing: 9) {
+                    Image(systemName: "calendar")
+                        .font(.system(size: 17, weight: .semibold))
+                    Text("Past Editions")
+                        .font(.system(size: 18, weight: .semibold, design: .serif))
+                        .tracking(0.5)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                }
+                .foregroundColor(.quordlePrimary)
+                .padding(.horizontal, 26)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.quordlePrimary.opacity(0.45), lineWidth: 1.5)
+                )
+            }
+            .buttonStyle(ScaleButtonStyle())
+
             VStack(spacing: 4) {
                 Text("Next Edition In")
                     .font(.system(size: 10, weight: .medium))

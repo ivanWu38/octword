@@ -78,54 +78,88 @@ class StatsService: ObservableObject {
     }
 
     // MARK: - Daily State Management
+    //
+    // Daily *and* archive games are mode == .daily; they're disambiguated by their
+    // `dailyDate`. State and completed results are therefore keyed per day so an
+    // in-progress archive game never overwrites today's puzzle. The original
+    // single-slot keys are kept in sync for *today* for backward compatibility.
+
+    private func stateKey(for day: String) -> String { "\(dailyStateKey)_\(day)" }
+    private func resultKey(for day: String) -> String { "\(completedDailyResultKey)_\(day)" }
 
     func saveDailyState(_ state: GameState) {
-        guard state.mode == .daily else { return }
+        guard state.mode == .daily, let day = state.dailyDate else { return }
         if let encoded = try? JSONEncoder().encode(state) {
-            defaults.set(encoded, forKey: dailyStateKey)
+            defaults.set(encoded, forKey: stateKey(for: day))
+            if day == GameState.todayString() {
+                defaults.set(encoded, forKey: dailyStateKey) // legacy
+            }
         }
     }
 
     func loadDailyState() -> GameState? {
-        guard let data = defaults.data(forKey: dailyStateKey),
-              let state = try? JSONDecoder().decode(GameState.self, from: data) else {
+        loadDailyState(for: GameState.todayString())
+    }
+
+    func loadDailyState(for day: String) -> GameState? {
+        // Prefer the per-day key; fall back to the legacy single slot for today.
+        let data = defaults.data(forKey: stateKey(for: day))
+            ?? (day == GameState.todayString() ? defaults.data(forKey: dailyStateKey) : nil)
+        guard let data,
+              let state = try? JSONDecoder().decode(GameState.self, from: data),
+              state.dailyDate == day else {
+            clearDailyState(for: day)
             return nil
         }
-
-        // Check if it's today's puzzle
-        if state.dailyDate == GameState.todayString() {
-            return state
-        }
-
-        // Clear old daily state
-        defaults.removeObject(forKey: dailyStateKey)
-        return nil
+        return state
     }
 
     func clearDailyState() {
-        defaults.removeObject(forKey: dailyStateKey)
+        clearDailyState(for: GameState.todayString())
+    }
+
+    func clearDailyState(for day: String) {
+        defaults.removeObject(forKey: stateKey(for: day))
+        if day == GameState.todayString() {
+            defaults.removeObject(forKey: dailyStateKey) // legacy
+        }
     }
 
     // MARK: - Completed Daily Result (for review)
 
     func saveCompletedDailyResult(_ state: GameState) {
-        guard state.mode == .daily else { return }
+        guard state.mode == .daily, let day = state.dailyDate else { return }
         if let encoded = try? JSONEncoder().encode(state) {
-            defaults.set(encoded, forKey: completedDailyResultKey)
+            defaults.set(encoded, forKey: resultKey(for: day))
+            if day == GameState.todayString() {
+                defaults.set(encoded, forKey: completedDailyResultKey) // legacy
+            }
         }
     }
 
     func loadCompletedDailyResult() -> GameState? {
-        // Try full saved GameState first
-        if let data = defaults.data(forKey: completedDailyResultKey),
-           let state = try? JSONDecoder().decode(GameState.self, from: data),
-           state.dailyDate == GameState.todayString() {
+        if let state = loadCompletedDailyResult(for: GameState.todayString()) {
             return state
         }
-        // Fallback: reconstruct from GameResult summary
+        // Fallback: reconstruct today's result from the GameResult summary.
         let today = Calendar.current.startOfDay(for: Date())
         if let result = gameResults.first(where: { $0.mode == .daily && Calendar.current.isDate($0.date, inSameDayAs: today) }) {
             return GameState(from: result)
+        }
+        return nil
+    }
+
+    func loadCompletedDailyResult(for day: String) -> GameState? {
+        if let data = defaults.data(forKey: resultKey(for: day)),
+           let state = try? JSONDecoder().decode(GameState.self, from: data) {
+            return state
+        }
+        // Legacy single-slot key (kept in sync for today only).
+        if day == GameState.todayString(),
+           let data = defaults.data(forKey: completedDailyResultKey),
+           let state = try? JSONDecoder().decode(GameState.self, from: data),
+           state.dailyDate == day {
+            return state
         }
         return nil
     }
