@@ -70,10 +70,11 @@ class RewardedAdManager: NSObject, ObservableObject {
     /// Show the ad, waiting briefly for it to load if needed.
     /// Returns `true` if the user earned the reward.
     func showAd() async -> Bool {
-        // If the ad isn't ready, wait up to 3 seconds for it to load
+        // If the ad isn't ready, wait up to 8 seconds for it to load (a cold load on
+        // first open can take a few seconds, so give it room before giving up).
         if !isAdReady {
             preloadIfNeeded()
-            for _ in 0..<30 {
+            for _ in 0..<80 {
                 try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
                 if isAdReady { break }
             }

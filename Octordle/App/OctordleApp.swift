@@ -43,18 +43,9 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         let clarityConfig = ClarityConfig(projectId: "wxg3m4aogx")
         ClaritySDK.initialize(config: clarityConfig)
 
-        #if DEBUG
-        // TEMP DIAGNOSTIC: verify rewarded ad loads + presents on this build. Remove after.
-        Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 2_000_000_000)
-            print("[AdMob][DIAG] preloading rewarded…")
-            RewardedAdManager.shared.preloadIfNeeded()
-            try? await Task.sleep(nanoseconds: 4_000_000_000)
-            print("[AdMob][DIAG] isAdReady=\(RewardedAdManager.shared.isAdReady) — calling showAd")
-            let earned = await RewardedAdManager.shared.showAd()
-            print("[AdMob][DIAG] showAd returned earned=\(earned)")
-        }
-        #endif
+        // Warm up the rewarded ad (used to unlock archive puzzles) so it's ready
+        // the moment the player opens the Archive.
+        RewardedAdManager.shared.preloadIfNeeded()
     }
 }
 
