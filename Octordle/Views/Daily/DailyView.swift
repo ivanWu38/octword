@@ -57,7 +57,7 @@ struct DailyView: View {
             .sheet(isPresented: $showSolveReport) {
                 if let completed = statsService.loadCompletedDailyResult() {
                     NavigationStack {
-                        SolveReportView(gameState: completed, puzzleNumber: dailyPuzzleService.puzzleNumber)
+                        StandaloneSolveReportView(gameState: completed, puzzleNumber: dailyPuzzleService.puzzleNumber)
                     }
                 }
             }

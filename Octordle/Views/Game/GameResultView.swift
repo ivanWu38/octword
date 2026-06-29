@@ -3,6 +3,10 @@ import SwiftUI
 /// Game result view shown after game ends
 struct GameResultView: View {
     let gameState: GameState
+    /// Provides the cached Solve Report (daily/archive). Optional so previews and any
+    /// non-report callers still work.
+    var viewModel: GameViewModel? = nil
+    var puzzleNumber: Int? = nil
     /// Called when the player taps "View Board" — keep the game on screen so they
     /// can review the board, instead of leaving the game.
     var onReviewBoard: (() -> Void)? = nil
@@ -15,6 +19,7 @@ struct GameResultView: View {
     @EnvironmentObject var themeService: ThemeService
     @EnvironmentObject var statsService: StatsService
     @State private var answersHidden = false
+    @State private var showSolveReport = false
 
     var body: some View {
         NavigationStack {
@@ -52,6 +57,23 @@ struct GameResultView: View {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(.quordleSecondaryText)
                     }
+                }
+            }
+        }
+        .sheet(isPresented: $showSolveReport) {
+            if let viewModel {
+                NavigationStack {
+                    SolveReportView(viewModel: viewModel, puzzleNumber: puzzleNumber)
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                Button {
+                                    showSolveReport = false
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.quordleSecondaryText)
+                                }
+                            }
+                        }
                 }
             }
         }
@@ -200,6 +222,22 @@ struct GameResultView: View {
                     .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(PrimaryButtonStyle())
+            }
+
+            // The Solve Report is a daily-edition feature. It's computed lazily and
+            // cached, so opening it here (and re-opening) never recomputes.
+            if canShare && viewModel != nil {
+                Button {
+                    HapticManager.shared.buttonTap()
+                    showSolveReport = true
+                } label: {
+                    HStack {
+                        Image(systemName: "chart.bar.doc.horizontal")
+                        Text("View Solve Report")
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(SecondaryButtonStyle())
             }
 
             // Let the player go back and study their board for as long as they like.

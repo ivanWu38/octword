@@ -61,6 +61,33 @@ enum SolveAnalyzer {
     private static let bestOpenerInfoBits = 5.3191
     private static let bestOpenerWord = "RAISE"
 
+    // Speed caps for the heavy best-play search. The early turns can have thousands
+    // of still-possible answers per board; evaluating every word against every
+    // candidate is what made the report slow. We subsample large sets to bound the
+    // work — the Skill score becomes a close approximation, which players don't
+    // perceive, in exchange for a near-instant report.
+    //   candCap  — max candidates kept per board when *estimating* information.
+    //   unionCap — max distinct words tried as the "best play" each turn.
+    // Sets at or below the cap are used in full (no approximation).
+    private static let candCap = 256
+    private static let unionCap = 512
+
+    /// Deterministically thin `idxs` down to at most `cap` entries by even striding,
+    /// so the estimate stays stable and reproducible run to run.
+    private static func capped(_ idxs: [Int], _ cap: Int) -> [Int] {
+        let n = idxs.count
+        if n <= cap { return idxs }
+        let step = Double(n) / Double(cap)
+        var out = [Int]()
+        out.reserveCapacity(cap)
+        var pos = 0.0
+        for _ in 0..<cap {
+            out.append(idxs[min(n - 1, Int(pos))])
+            pos += step
+        }
+        return out
+    }
+
     /// Standard Wordle feedback as a base-3 code (0 absent, 1 present, 2 correct).
     private static func code(_ g: [UInt8], _ t: [UInt8]) -> Int {
         var counts = [Int](repeating: 0, count: 26)
@@ -208,9 +235,15 @@ enum SolveAnalyzer {
             let guessBytes = Array(word.uppercased().utf8)
             let activeBoards = (0..<boardCount).filter { solvedAt[$0] == nil || solvedAt[$0]! >= number }
 
+            // Subsampled candidate sets used for *estimating* information. Both the
+            // player's score and the best-play score use these, so the ratio between
+            // them stays consistent. The full sets (below) still drive the exact
+            // post-guess filtering, so later turns remain correct.
+            let scoringCandidates = activeBoards.map { capped(candidates[$0], candCap) }
+
             // Player info this turn = sum across active boards.
             var playerInfo = 0.0
-            for b in activeBoards { playerInfo += infoBits(guessBytes, candidates[b], pool) }
+            for cand in scoringCandidates { playerInfo += infoBits(guessBytes, cand, pool) }
 
             // Best info available this turn.
             var bestInfo = 0.0
@@ -221,15 +254,15 @@ enum SolveAnalyzer {
                 bestInfo = Double(activeBoards.count) * bestOpenerInfoBits
                 bestWord = bestOpenerWord
             } else {
-                // Search the words that could still be answers (union of candidates).
+                // Search the words that could still be answers (union of candidates),
+                // capped for speed.
                 var unionSet = Set<Int>()
-                for b in activeBoards { unionSet.formUnion(candidates[b]) }
-                let unionIdxs = Array(unionSet)
-                let activeCandidates = activeBoards.map { candidates[$0] }
+                for cand in scoringCandidates { unionSet.formUnion(cand) }
+                let unionIdxs = capped(unionSet.sorted(), unionCap)
 
                 // Each union word's score is independent — fan out across cores.
                 let (idx, info) = bestPlay(unionIdxs: unionIdxs,
-                                           activeCandidates: activeCandidates,
+                                           activeCandidates: scoringCandidates,
                                            pool: pool)
                 bestInfo = info
                 if let idx { bestWord = String(decoding: pool[idx], as: UTF8.self) }

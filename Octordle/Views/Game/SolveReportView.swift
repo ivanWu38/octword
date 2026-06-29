@@ -3,14 +3,12 @@ import SwiftUI
 /// Post-game analysis screen. Shows two scores (Efficiency + Skill), the smartest
 /// guess, a guess-by-guess quality breakdown, and a per-board summary.
 struct SolveReportView: View {
-    let gameState: GameState
+    @ObservedObject var viewModel: GameViewModel
     let puzzleNumber: Int?
-
-    @State private var report: SolveReport?
 
     var body: some View {
         ScrollView {
-            if let report = report {
+            if let report = viewModel.solveReport {
                 VStack(spacing: 0) {
                     scoresHeader(report)
                     sectionDivider
@@ -31,17 +29,7 @@ struct SolveReportView: View {
         .background(Color.quordleBackground.ignoresSafeArea())
         .navigationTitle("Solve Report")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear(perform: computeIfNeeded)
-    }
-
-    private func computeIfNeeded() {
-        guard report == nil else { return }
-        let pool = WordService.shared.solutionPool()
-        let state = gameState
-        DispatchQueue.global(qos: .userInitiated).async {
-            let result = SolveAnalyzer.analyze(gameState: state, pool: pool)
-            DispatchQueue.main.async { report = result }
-        }
+        .onAppear { viewModel.ensureSolveReport() }
     }
 
     private var loadingView: some View {
@@ -275,49 +263,39 @@ struct SolveReportView: View {
     }
 }
 
-/// Post-game flow shown in the result sheet: the Solve Report comes first, then a
-/// "See Result" button reveals the standard result card. This makes the report
-/// impossible to miss while keeping the result card design unchanged.
+/// Shows a Solve Report for a finished game that has no live view model — e.g. the
+/// daily "completed" screen, which loads a saved result from disk. Wraps it in a
+/// view model held for this view's lifetime so the analysis is computed once.
+struct StandaloneSolveReportView: View {
+    @StateObject private var viewModel: GameViewModel
+    let puzzleNumber: Int?
+
+    init(gameState: GameState, puzzleNumber: Int?) {
+        _viewModel = StateObject(wrappedValue: GameViewModel(resuming: gameState))
+        self.puzzleNumber = puzzleNumber
+    }
+
+    var body: some View {
+        SolveReportView(viewModel: viewModel, puzzleNumber: puzzleNumber)
+    }
+}
+
+/// Post-game flow shown in the result sheet. The result card comes first (instant,
+/// no computation); the Solve Report is reachable from a button on that card and
+/// is computed lazily + cached, so opening/closing it never recomputes.
 struct PostGameFlowView: View {
-    let gameState: GameState
+    @ObservedObject var viewModel: GameViewModel
     let puzzleNumber: Int?
     var onReviewBoard: (() -> Void)? = nil
     var onDone: (() -> Void)? = nil
 
-    @State private var showResult = false
-
     var body: some View {
-        ZStack {
-            if gameState.mode != .daily {
-                // Unlimited practice: go straight to results & answers — the Solve
-                // Report is a daily-edition feature.
-                GameResultView(gameState: gameState, onReviewBoard: onReviewBoard, onDone: onDone)
-            } else if showResult {
-                GameResultView(gameState: gameState, onReviewBoard: onReviewBoard, onDone: onDone)
-            } else {
-                NavigationStack {
-                    SolveReportView(gameState: gameState, puzzleNumber: puzzleNumber)
-                        .safeAreaInset(edge: .bottom) { seeResultButton }
-                }
-            }
-        }
-    }
-
-    private var seeResultButton: some View {
-        Button {
-            HapticManager.shared.buttonTap()
-            withAnimation(.easeInOut(duration: 0.25)) { showResult = true }
-        } label: {
-            HStack(spacing: 8) {
-                Text("See Result")
-                Image(systemName: "arrow.right")
-            }
-            .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(PrimaryButtonStyle())
-        .padding(.horizontal, 20)
-        .padding(.top, 10)
-        .padding(.bottom, 8)
-        .background(.ultraThinMaterial)
+        GameResultView(
+            gameState: viewModel.gameState,
+            viewModel: viewModel,
+            puzzleNumber: puzzleNumber,
+            onReviewBoard: onReviewBoard,
+            onDone: onDone
+        )
     }
 }

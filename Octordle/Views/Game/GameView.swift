@@ -132,7 +132,7 @@ struct GameView: View {
             proceedAfterResult()
         }) {
             PostGameFlowView(
-                gameState: viewModel.gameState,
+                viewModel: viewModel,
                 puzzleNumber: viewModel.gameState.mode == .daily ? DailyPuzzleService.shared.puzzleNumber : nil,
                 onReviewBoard: {
                     // Keep the game on screen; just slide the result card away.

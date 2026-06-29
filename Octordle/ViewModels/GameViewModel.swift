@@ -16,6 +16,10 @@ class GameViewModel: ObservableObject {
     @Published var notepadText = ""
     @Published var newlyUnlockedTheme: BoardTheme? = nil
     @Published var newlyUnlockedAchievements: [Achievement] = []
+    /// Cached post-game analysis. Computed once (see `ensureSolveReport`) so flipping
+    /// between the board and the result card never recomputes it.
+    @Published var solveReport: SolveReport? = nil
+    private var isComputingSolveReport = false
 
     // MARK: - Services
 
@@ -340,9 +344,33 @@ class GameViewModel: ObservableObject {
         // Ask for a review only at a positive milestone (see ReviewManager).
         ReviewManager.shared.considerPrompt(forNewlyUnlocked: newlyUnlockedAchievements)
 
+        // Pre-compute the solve report in the background so it's ready the moment the
+        // player opens it. Daily/archive only — Unlimited has no report.
+        if gameState.mode == .daily {
+            ensureSolveReport()
+        }
+
         // Show result sheet after delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.showGameCompleteSheet = true
+        }
+    }
+
+    // MARK: - Solve Report
+
+    /// Compute the post-game analysis once and cache it on `solveReport`.
+    /// Subsequent calls are no-ops, so the heavy analysis runs at most once per game.
+    func ensureSolveReport() {
+        guard solveReport == nil, !isComputingSolveReport, gameState.isGameOver else { return }
+        isComputingSolveReport = true
+        let pool = WordService.shared.solutionPool()
+        let state = gameState
+        Task.detached(priority: .userInitiated) {
+            let result = SolveAnalyzer.analyze(gameState: state, pool: pool)
+            await MainActor.run {
+                self.solveReport = result
+                self.isComputingSolveReport = false
+            }
         }
     }
 
