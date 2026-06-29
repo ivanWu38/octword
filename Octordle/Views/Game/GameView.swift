@@ -23,6 +23,9 @@ struct GameView: View {
     /// True while the player is studying the board after finishing (they tapped
     /// "View Board"). Keeps the game on screen and shows the re-open Results button.
     @State private var reviewingBoard = false
+    /// Set once the player has reached the result card. After that, re-opening the
+    /// results goes straight to the card and skips the report-first reveal.
+    @State private var hasReachedResultCard = false
     @Environment(\.scenePhase) private var scenePhase
     @ObservedObject private var reviewManager = ReviewManager.shared
 
@@ -134,9 +137,13 @@ struct GameView: View {
             PostGameFlowView(
                 viewModel: viewModel,
                 puzzleNumber: viewModel.gameState.mode == .daily ? DailyPuzzleService.shared.puzzleNumber : nil,
+                startAtResult: hasReachedResultCard,
                 onReviewBoard: {
                     // Keep the game on screen; just slide the result card away.
+                    // The player has now seen the result card, so future re-opens
+                    // go straight back to it (skipping the report-first reveal).
                     reviewingBoard = true
+                    hasReachedResultCard = true
                     showResultSheet = false
                 },
                 onDone: {

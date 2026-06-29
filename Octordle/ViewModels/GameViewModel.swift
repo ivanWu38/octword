@@ -358,10 +358,20 @@ class GameViewModel: ObservableObject {
 
     // MARK: - Solve Report
 
-    /// Compute the post-game analysis once and cache it on `solveReport`.
-    /// Subsequent calls are no-ops, so the heavy analysis runs at most once per game.
+    /// Make sure `solveReport` is populated. Computed at most once per puzzle:
+    ///  1. in-memory cache (`solveReport`) — same game session;
+    ///  2. on-disk cache keyed by day (daily/archive) — survives leaving the game,
+    ///     re-opening from the result card, and app restarts.
+    /// Daily puzzles are one-per-day with no replay, so the day key is unambiguous.
     func ensureSolveReport() {
         guard solveReport == nil, !isComputingSolveReport, gameState.isGameOver else { return }
+
+        let day = gameState.mode == .daily ? gameState.dailyDate : nil
+        if let day, let cached = statsService.loadSolveReport(for: day) {
+            solveReport = cached
+            return
+        }
+
         isComputingSolveReport = true
         let pool = WordService.shared.solutionPool()
         let state = gameState
@@ -370,6 +380,7 @@ class GameViewModel: ObservableObject {
             await MainActor.run {
                 self.solveReport = result
                 self.isComputingSolveReport = false
+                if let day { self.statsService.saveSolveReport(result, for: day) }
             }
         }
     }

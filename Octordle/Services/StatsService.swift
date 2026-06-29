@@ -164,6 +164,21 @@ class StatsService: ObservableObject {
         return nil
     }
 
+    // MARK: - Solve Report (cached per day so it's computed only once)
+
+    private func solveReportKey(for day: String) -> String { "octordle_solveReport_\(day)" }
+
+    func saveSolveReport(_ report: SolveReport, for day: String) {
+        if let encoded = try? JSONEncoder().encode(report) {
+            defaults.set(encoded, forKey: solveReportKey(for: day))
+        }
+    }
+
+    func loadSolveReport(for day: String) -> SolveReport? {
+        guard let data = defaults.data(forKey: solveReportKey(for: day)) else { return nil }
+        return try? JSONDecoder().decode(SolveReport.self, from: data)
+    }
+
     // MARK: - Persistence
 
     private func loadResults() {

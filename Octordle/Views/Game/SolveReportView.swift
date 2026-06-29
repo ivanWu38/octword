@@ -280,16 +280,38 @@ struct StandaloneSolveReportView: View {
     }
 }
 
-/// Post-game flow shown in the result sheet. The result card comes first (instant,
-/// no computation); the Solve Report is reachable from a button on that card and
-/// is computed lazily + cached, so opening/closing it never recomputes.
+/// Post-game flow shown in the result sheet: the Solve Report appears first (daily),
+/// then "See Result" reveals the result card. The report is computed once and cached
+/// on the view model (and persisted), so this never recomputes — not here, not when
+/// re-opened from the result card, not when re-opened later from the daily screen.
 struct PostGameFlowView: View {
     @ObservedObject var viewModel: GameViewModel
     let puzzleNumber: Int?
+    /// When true, skip the Solve Report and open straight at the result card. Used
+    /// when re-opening the result after "View Board" — the player already passed the
+    /// report on the first reveal, and the result card itself links to it.
+    var startAtResult: Bool = false
     var onReviewBoard: (() -> Void)? = nil
     var onDone: (() -> Void)? = nil
 
+    @State private var showResult = false
+
     var body: some View {
+        ZStack {
+            // Unlimited has no report; the report-first reveal only happens on the
+            // very first daily result (startAtResult == false).
+            if viewModel.gameState.mode != .daily || showResult || startAtResult {
+                resultCard
+            } else {
+                NavigationStack {
+                    SolveReportView(viewModel: viewModel, puzzleNumber: puzzleNumber)
+                        .safeAreaInset(edge: .bottom) { seeResultButton }
+                }
+            }
+        }
+    }
+
+    private var resultCard: some View {
         GameResultView(
             gameState: viewModel.gameState,
             viewModel: viewModel,
@@ -297,5 +319,23 @@ struct PostGameFlowView: View {
             onReviewBoard: onReviewBoard,
             onDone: onDone
         )
+    }
+
+    private var seeResultButton: some View {
+        Button {
+            HapticManager.shared.buttonTap()
+            withAnimation(.easeInOut(duration: 0.25)) { showResult = true }
+        } label: {
+            HStack(spacing: 8) {
+                Text("See Result")
+                Image(systemName: "arrow.right")
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(PrimaryButtonStyle())
+        .padding(.horizontal, 20)
+        .padding(.top, 10)
+        .padding(.bottom, 8)
+        .background(.ultraThinMaterial)
     }
 }

@@ -1,7 +1,7 @@
 import Foundation
 
 /// How good a single guess was, relative to the best play available at that moment.
-enum GuessRating: Int {
+enum GuessRating: Int, Codable {
     case soft = 1, fair, good, great, brilliant
 
     /// Filled dots out of 5.
@@ -19,19 +19,24 @@ enum GuessRating: Int {
 }
 
 /// Analysis of one guess.
-struct GuessAnalysis: Identifiable {
+struct GuessAnalysis: Identifiable, Codable {
     let id = UUID()
     let number: Int            // 1-based
     let word: String
     let ratio: Double          // 0...1, how close to the best available play
     let rating: GuessRating
     let betterAlternative: String?  // a sharper word that was available, if this guess was weak
+
+    // `id` is a fresh local identity, not persisted.
+    private enum CodingKeys: String, CodingKey {
+        case number, word, ratio, rating, betterAlternative
+    }
 }
 
 /// The full post-game report. Two scores:
 /// - efficiency: how few guesses you used (8 boards solved in 8 = perfect).
 /// - skill: how smart your word choices were (information gained vs the best play each turn).
-struct SolveReport {
+struct SolveReport: Codable {
     let isWon: Bool
     let solvedCount: Int
     let totalBoards: Int
