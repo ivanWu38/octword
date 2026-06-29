@@ -20,6 +20,9 @@ struct GameView: View {
     @State private var showStreakOverlay = false
     @State private var streakSnapPrev: Int = 0
     @State private var streakSnapNew: Int = 0
+    /// True while the player is studying the board after finishing (they tapped
+    /// "View Board"). Keeps the game on screen and shows the re-open Results button.
+    @State private var reviewingBoard = false
     @Environment(\.scenePhase) private var scenePhase
     @ObservedObject private var reviewManager = ReviewManager.shared
 
@@ -91,9 +94,21 @@ struct GameView: View {
             .background(Color.quordleBackground.ignoresSafeArea())
         }
         .ignoresSafeArea(.keyboard)
+        .overlay(alignment: .bottom) {
+            if reviewingBoard && !showResultSheet {
+                reopenResultButton
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.easeInOut(duration: 0.25), value: reviewingBoard)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar) // 隐藏底部 Tab Bar
         .sheet(isPresented: $showResultSheet, onDismiss: {
+            // Player tapped "View Board": keep the game on screen so they can study
+            // their guesses for as long as they like. Don't run the leave flow — the
+            // floating "View Results" button lets them re-open this card anytime.
+            if reviewingBoard { return }
+
             // NOTE: the daily is marked completed at the very end, together with the
             // pop (see proceedAfterResult / review onDismiss). Marking here would swap
             // DailyView's root from start → completed while GameView is still pushed,
@@ -118,8 +133,20 @@ struct GameView: View {
         }) {
             PostGameFlowView(
                 gameState: viewModel.gameState,
-                puzzleNumber: viewModel.gameState.mode == .daily ? DailyPuzzleService.shared.puzzleNumber : nil
+                puzzleNumber: viewModel.gameState.mode == .daily ? DailyPuzzleService.shared.puzzleNumber : nil,
+                onReviewBoard: {
+                    // Keep the game on screen; just slide the result card away.
+                    reviewingBoard = true
+                    showResultSheet = false
+                },
+                onDone: {
+                    // Explicit "leave" — clear the review flag so onDismiss runs the
+                    // unlock/exit flow.
+                    reviewingBoard = false
+                    showResultSheet = false
+                }
             )
+            .interactiveDismissDisabled()
         }
         .overlay {
             if showConfetti {
@@ -540,6 +567,26 @@ struct GameView: View {
         }
 
         proceedAfterResult()
+    }
+
+    // Floating button shown while reviewing the board, to bring the result card back.
+    private var reopenResultButton: some View {
+        Button {
+            HapticManager.shared.buttonTap()
+            showResultSheet = true
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "list.bullet.rectangle.portrait")
+                Text("View Results")
+            }
+            .font(.system(size: 15, weight: .bold))
+            .foregroundColor(.white)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 28)
+            .background(Capsule().fill(Color.quordlePrimary))
+            .shadow(color: Color.quordlePrimary.opacity(0.45), radius: 10, y: 4)
+        }
+        .padding(.bottom, subscriptionService.isPremium ? 28 : 84)
     }
 
     private func proceedAfterResult() {

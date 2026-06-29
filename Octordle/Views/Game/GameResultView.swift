@@ -3,6 +3,12 @@ import SwiftUI
 /// Game result view shown after game ends
 struct GameResultView: View {
     let gameState: GameState
+    /// Called when the player taps "View Board" — keep the game on screen so they
+    /// can review the board, instead of leaving the game.
+    var onReviewBoard: (() -> Void)? = nil
+    /// Called when the player taps "Done" / the close button — leave the game.
+    /// Falls back to the environment dismiss when not provided.
+    var onDone: (() -> Void)? = nil
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
@@ -41,7 +47,7 @@ struct GameResultView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        dismiss()
+                        (onDone ?? { dismiss() })()
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(.quordleSecondaryText)
@@ -196,8 +202,20 @@ struct GameResultView: View {
                 .buttonStyle(PrimaryButtonStyle())
             }
 
-            // When sharing is hidden, promote Done to the primary button.
-            if canShare {
+            // Let the player go back and study their board for as long as they like.
+            // They can re-open this result card anytime from the board.
+            if onReviewBoard != nil {
+                // Share already owns "primary" for the daily; promote View Board to
+                // primary only when there's no Share button above it (Unlimited).
+                if canShare {
+                    viewBoardButton.buttonStyle(SecondaryButtonStyle())
+                } else {
+                    viewBoardButton.buttonStyle(PrimaryButtonStyle())
+                }
+            }
+
+            // Done is primary only when nothing above it already claimed that role.
+            if canShare || onReviewBoard != nil {
                 doneButton.buttonStyle(SecondaryButtonStyle())
             } else {
                 doneButton.buttonStyle(PrimaryButtonStyle())
@@ -205,12 +223,26 @@ struct GameResultView: View {
         }
     }
 
+    private var viewBoardButton: some View {
+        Button {
+            HapticManager.shared.buttonTap()
+            onReviewBoard?()
+        } label: {
+            HStack {
+                Image(systemName: "square.grid.2x2")
+                Text("View Board")
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+
     private var doneButton: some View {
         Button {
             HapticManager.shared.buttonTap()
             HapticManager.shared.playSound(.click)
+            let leave = onDone ?? { dismiss() }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                dismiss()
+                leave()
             }
         } label: {
             Text("Done")

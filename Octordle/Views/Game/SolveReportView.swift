@@ -281,6 +281,8 @@ struct SolveReportView: View {
 struct PostGameFlowView: View {
     let gameState: GameState
     let puzzleNumber: Int?
+    var onReviewBoard: (() -> Void)? = nil
+    var onDone: (() -> Void)? = nil
 
     @State private var showResult = false
 
@@ -289,9 +291,9 @@ struct PostGameFlowView: View {
             if gameState.mode != .daily {
                 // Unlimited practice: go straight to results & answers — the Solve
                 // Report is a daily-edition feature.
-                GameResultView(gameState: gameState)
+                GameResultView(gameState: gameState, onReviewBoard: onReviewBoard, onDone: onDone)
             } else if showResult {
-                GameResultView(gameState: gameState)
+                GameResultView(gameState: gameState, onReviewBoard: onReviewBoard, onDone: onDone)
             } else {
                 NavigationStack {
                     SolveReportView(gameState: gameState, puzzleNumber: puzzleNumber)
