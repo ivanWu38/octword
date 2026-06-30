@@ -27,6 +27,12 @@ class GameViewModel: ObservableObject {
     private let statsService = StatsService.shared
     private let dailyPuzzleService = DailyPuzzleService.shared
 
+    // Builds the Solve Report incrementally as the player guesses, so the report is
+    // (almost) ready by game-over. Daily/archive only. Calls are serialised on
+    // `reporterQueue` and made in guess order.
+    private var liveReporter: IncrementalSolveReporter?
+    private let reporterQueue = DispatchQueue(label: "com.octordle.solveReporter", qos: .utility)
+
     // MARK: - Timer
 
     private var timer: Timer?
@@ -104,6 +110,8 @@ class GameViewModel: ObservableObject {
         #if DEBUG
         print("🟡 [DEBUG] Answers: \(words.enumerated().map { "Board \($0.offset + 1): \($0.element)" }.joined(separator: ", "))")
         #endif
+
+        startLiveReporterIfNeeded()
     }
 
     /// Create a new archive game for a past daily date
@@ -118,6 +126,8 @@ class GameViewModel: ObservableObject {
         #if DEBUG
         print("🟡 [DEBUG] Archive \(GameState.dateString(for: archiveDate)) — Answers: \(words.enumerated().map { "Board \($0.offset + 1): \($0.element)" }.joined(separator: ", "))")
         #endif
+
+        startLiveReporterIfNeeded()
     }
 
     /// Resume an existing game
@@ -133,6 +143,8 @@ class GameViewModel: ObservableObject {
         let words = state.boards.map { $0.targetWord }
         print("🟡 [DEBUG] Resumed — Answers: \(words.enumerated().map { "Board \($0.offset + 1): \($0.element)" }.joined(separator: ", "))")
         #endif
+
+        startLiveReporterIfNeeded()
     }
 
     deinit {
@@ -231,6 +243,12 @@ class GameViewModel: ObservableObject {
         // Update game state
         gameState.guessCount += 1
         gameState.currentGuess = ""
+
+        // Feed this completed guess to the live Solve Report builder, in order, so
+        // most of the analysis is done by the time the game ends.
+        if let reporter = liveReporter {
+            reporterQueue.async { reporter.ingest(guess: guess) }
+        }
 
         // Check for game over
         if gameState.shouldEndGame {
@@ -358,6 +376,22 @@ class GameViewModel: ObservableObject {
 
     // MARK: - Solve Report
 
+    /// Start the incremental Solve Report builder for a live daily/archive game, and
+    /// replay any guesses already made (resumed game) so it's caught up.
+    private func startLiveReporterIfNeeded() {
+        guard liveReporter == nil, gameState.mode == .daily, !gameState.isGameOver else { return }
+        let targets = gameState.boards.map { $0.targetWord }
+        let pool = wordService.solutionPool()
+        let reporter = IncrementalSolveReporter(boardTargets: targets, pool: pool)
+        liveReporter = reporter
+
+        let existingRows = (gameState.boards.max(by: { $0.guesses.count < $1.guesses.count })?.guesses ?? [])
+            .map { row in row.map { $0.letter }.joined() }
+        if !existingRows.isEmpty {
+            reporterQueue.async { existingRows.forEach { reporter.ingest(guess: $0) } }
+        }
+    }
+
     /// Make sure `solveReport` is populated. Computed at most once per puzzle:
     ///  1. in-memory cache (`solveReport`) — same game session;
     ///  2. on-disk cache keyed by day (daily/archive) — survives leaving the game,
@@ -373,14 +407,29 @@ class GameViewModel: ObservableObject {
         }
 
         isComputingSolveReport = true
-        let pool = WordService.shared.solutionPool()
         let state = gameState
-        Task.detached(priority: .userInitiated) {
-            let result = SolveAnalyzer.analyze(gameState: state, pool: pool)
-            await MainActor.run {
-                self.solveReport = result
-                self.isComputingSolveReport = false
-                if let day { self.statsService.saveSolveReport(result, for: day) }
+
+        if let reporter = liveReporter {
+            // Incremental path: turns were analysed during play. The finish() runs on
+            // the same serial queue, so it lands after every ingest() — near-instant.
+            reporterQueue.async { [weak self] in
+                let result = reporter.finish(gameState: state)
+                DispatchQueue.main.async {
+                    self?.solveReport = result
+                    self?.isComputingSolveReport = false
+                    if let day { self?.statsService.saveSolveReport(result, for: day) }
+                }
+            }
+        } else {
+            // Fallback: one-shot analysis (standalone viewer / cache miss).
+            let pool = WordService.shared.solutionPool()
+            Task.detached(priority: .userInitiated) {
+                let result = SolveAnalyzer.analyze(gameState: state, pool: pool)
+                await MainActor.run {
+                    self.solveReport = result
+                    self.isComputingSolveReport = false
+                    if let day { self.statsService.saveSolveReport(result, for: day) }
+                }
             }
         }
     }

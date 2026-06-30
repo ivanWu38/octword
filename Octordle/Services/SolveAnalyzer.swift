@@ -237,63 +237,90 @@ enum SolveAnalyzer {
 
         for (idx, word) in guessWords.enumerated() {
             let number = idx + 1
-            let guessBytes = Array(word.uppercased().utf8)
             let activeBoards = (0..<boardCount).filter { solvedAt[$0] == nil || solvedAt[$0]! >= number }
-
-            // Subsampled candidate sets used for *estimating* information. Both the
-            // player's score and the best-play score use these, so the ratio between
-            // them stays consistent. The full sets (below) still drive the exact
-            // post-guess filtering, so later turns remain correct.
-            let scoringCandidates = activeBoards.map { capped(candidates[$0], candCap) }
-
-            // Player info this turn = sum across active boards.
-            var playerInfo = 0.0
-            for cand in scoringCandidates { playerInfo += infoBits(guessBytes, cand, pool) }
-
-            // Best info available this turn.
-            var bestInfo = 0.0
-            var bestWord: String? = nil
-
-            if number == 1 {
-                // All boards start from the full pool; best opener is precomputed.
-                bestInfo = Double(activeBoards.count) * bestOpenerInfoBits
-                bestWord = bestOpenerWord
-            } else {
-                // Search the words that could still be answers (union of candidates),
-                // capped for speed.
-                var unionSet = Set<Int>()
-                for cand in scoringCandidates { unionSet.formUnion(cand) }
-                let unionIdxs = capped(unionSet.sorted(), unionCap)
-
-                // Each union word's score is independent — fan out across cores.
-                let (idx, info) = bestPlay(unionIdxs: unionIdxs,
-                                           activeCandidates: scoringCandidates,
-                                           pool: pool)
-                bestInfo = info
-                if let idx { bestWord = String(decoding: pool[idx], as: UTF8.self) }
-            }
-
-            let ratio: Double = bestInfo > 0.0001 ? min(1.0, playerInfo / bestInfo) : 1.0
-            let rating = ratingFor(ratio)
-            // Suggest a sharper word only when the guess was clearly suboptimal.
-            let alt: String? = (rating.rawValue <= GuessRating.fair.rawValue
-                                && bestWord != nil
-                                && bestWord! != word) ? bestWord : nil
-
-            analyses.append(GuessAnalysis(number: number, word: word, ratio: ratio, rating: rating, betterAlternative: alt))
-
-            if bestInfo > 0.0001 {
-                totalPlayerInfo += playerInfo
-                totalBestInfo += bestInfo
-            }
-
-            // Apply the actual guess: filter each active board's candidates.
-            for b in activeBoards {
-                let actual = code(guessBytes, targets[b])
-                candidates[b] = candidates[b].filter { code(guessBytes, pool[$0]) == actual }
+            let turn = analyzeTurn(number: number, guess: word, activeBoards: activeBoards,
+                                   candidates: &candidates, pool: pool, targets: targets)
+            analyses.append(turn.analysis)
+            if turn.counted {
+                totalPlayerInfo += turn.playerInfo
+                totalBestInfo += turn.bestInfo
             }
         }
 
+        return assemble(gameState: gameState, analyses: analyses,
+                        totalPlayerInfo: totalPlayerInfo, totalBestInfo: totalBestInfo,
+                        boardSolvedAt: solvedAt)
+    }
+
+    /// Result of analysing a single guess.
+    struct TurnAnalysis {
+        let analysis: GuessAnalysis
+        let counted: Bool        // whether this turn contributes to the skill ratio
+        let playerInfo: Double
+        let bestInfo: Double
+    }
+
+    /// Analyse one guess against the current candidate sets, then filter those sets
+    /// by the guess's real feedback (mutating `candidates` in place for the next turn).
+    /// Shared by the one-shot `analyze` and the incremental reporter so both produce
+    /// identical numbers. The heavy best-play search is per-turn and independent of
+    /// later guesses, which is what makes incremental (play-as-you-go) analysis valid.
+    static func analyzeTurn(number: Int, guess word: String, activeBoards: [Int],
+                            candidates: inout [[Int]], pool: [[UInt8]], targets: [[UInt8]]) -> TurnAnalysis {
+        let guessBytes = Array(word.uppercased().utf8)
+
+        // Subsampled candidate sets used for *estimating* information. Both the player's
+        // score and the best-play score use these, so the ratio between them stays
+        // consistent. The full sets (below) still drive the exact post-guess filtering.
+        let scoringCandidates = activeBoards.map { capped(candidates[$0], candCap) }
+
+        // Player info this turn = sum across active boards.
+        var playerInfo = 0.0
+        for cand in scoringCandidates { playerInfo += infoBits(guessBytes, cand, pool) }
+
+        // Best info available this turn.
+        var bestInfo = 0.0
+        var bestWord: String? = nil
+        if number == 1 {
+            // All boards start from the full pool; best opener is precomputed.
+            bestInfo = Double(activeBoards.count) * bestOpenerInfoBits
+            bestWord = bestOpenerWord
+        } else {
+            // Search the words that could still be answers (union of candidates), capped.
+            var unionSet = Set<Int>()
+            for cand in scoringCandidates { unionSet.formUnion(cand) }
+            let unionIdxs = capped(unionSet.sorted(), unionCap)
+            let (idx, info) = bestPlay(unionIdxs: unionIdxs,
+                                       activeCandidates: scoringCandidates,
+                                       pool: pool)
+            bestInfo = info
+            if let idx { bestWord = String(decoding: pool[idx], as: UTF8.self) }
+        }
+
+        let ratio: Double = bestInfo > 0.0001 ? min(1.0, playerInfo / bestInfo) : 1.0
+        let rating = ratingFor(ratio)
+        // Suggest a sharper word only when the guess was clearly suboptimal.
+        let alt: String? = (rating.rawValue <= GuessRating.fair.rawValue
+                            && bestWord != nil
+                            && bestWord! != word) ? bestWord : nil
+        let analysis = GuessAnalysis(number: number, word: word, ratio: ratio, rating: rating, betterAlternative: alt)
+
+        // Apply the actual guess: filter each active board's candidates.
+        for b in activeBoards {
+            let actual = code(guessBytes, targets[b])
+            candidates[b] = candidates[b].filter { code(guessBytes, pool[$0]) == actual }
+        }
+
+        return TurnAnalysis(analysis: analysis, counted: bestInfo > 0.0001,
+                            playerInfo: playerInfo, bestInfo: bestInfo)
+    }
+
+    /// Combine the per-turn analyses into the final report (scores, headline, etc.).
+    static func assemble(gameState: GameState, analyses: [GuessAnalysis],
+                         totalPlayerInfo: Double, totalBestInfo: Double,
+                         boardSolvedAt: [Int?]) -> SolveReport {
+        let boards = gameState.boards
+        let boardCount = boards.count
         let skill = totalBestInfo > 0 ? Int((100.0 * totalPlayerInfo / totalBestInfo).rounded()) : 100
         let solvedCount = boards.filter { $0.isSolved }.count
         let efficiency = efficiencyScore(isWon: gameState.isWon, solvedCount: solvedCount,
@@ -320,7 +347,7 @@ enum SolveAnalyzer {
             detail: detail,
             guesses: analyses,
             smartestNumber: smartestNumber,
-            boardSolvedAt: solvedAt
+            boardSolvedAt: boardSolvedAt
         )
     }
 
@@ -369,5 +396,62 @@ enum SolveAnalyzer {
         default: headline = "Got the win. Plenty of room to sharpen up."
         }
         return (headline, detail)
+    }
+}
+
+/// Builds a `SolveReport` incrementally — one guess at a time, as the player plays —
+/// so almost all the work is done before the game ends and the report appears nearly
+/// instantly. Each turn's analysis depends only on the board state up to that turn,
+/// never on later guesses, which makes this equivalent to the one-shot `analyze`.
+///
+/// Not thread-safe on its own: the owner must serialise `ingest`/`finish` calls
+/// (e.g. on a serial dispatch queue), and they must run in guess order.
+final class IncrementalSolveReporter {
+    private let pool: [[UInt8]]
+    private let targets: [[UInt8]]
+    private let targetStrings: [String]
+    private let boardCount: Int
+
+    private var candidates: [[Int]]
+    private var solvedTurn: [Int?]
+    private var analyses: [GuessAnalysis] = []
+    private var totalPlayerInfo = 0.0
+    private var totalBestInfo = 0.0
+    private var turn = 0
+
+    init(boardTargets: [String], pool rawPool: [String]) {
+        let p = rawPool.map { Array($0.uppercased().utf8) }
+        self.pool = p
+        self.targetStrings = boardTargets.map { $0.uppercased() }
+        self.targets = boardTargets.map { Array($0.uppercased().utf8) }
+        self.boardCount = boardTargets.count
+        self.candidates = Array(repeating: Array(p.indices), count: boardTargets.count)
+        self.solvedTurn = Array(repeating: nil, count: boardTargets.count)
+    }
+
+    /// Feed one guess, in submission order. Analyses the turn for boards still unsolved.
+    func ingest(guess rawWord: String) {
+        let word = rawWord.uppercased()
+        turn += 1
+        let number = turn
+        let activeBoards = (0..<boardCount).filter { solvedTurn[$0] == nil }
+        guard !activeBoards.isEmpty else { return }
+
+        let result = SolveAnalyzer.analyzeTurn(number: number, guess: word, activeBoards: activeBoards,
+                                               candidates: &candidates, pool: pool, targets: targets)
+        analyses.append(result.analysis)
+        if result.counted {
+            totalPlayerInfo += result.playerInfo
+            totalBestInfo += result.bestInfo
+        }
+        // Mark boards this guess solved so they drop out of later turns.
+        for b in activeBoards where targetStrings[b] == word { solvedTurn[b] = number }
+    }
+
+    /// Assemble the final report once the last guess has been ingested.
+    func finish(gameState: GameState) -> SolveReport {
+        SolveAnalyzer.assemble(gameState: gameState, analyses: analyses,
+                               totalPlayerInfo: totalPlayerInfo, totalBestInfo: totalBestInfo,
+                               boardSolvedAt: gameState.boards.map { $0.solvedAtGuess })
     }
 }
