@@ -437,8 +437,14 @@ final class IncrementalSolveReporter {
         let activeBoards = (0..<boardCount).filter { solvedTurn[$0] == nil }
         guard !activeBoards.isEmpty else { return }
 
+        #if DEBUG
+        let t0 = Date()
+        #endif
         let result = SolveAnalyzer.analyzeTurn(number: number, guess: word, activeBoards: activeBoards,
                                                candidates: &candidates, pool: pool, targets: targets)
+        #if DEBUG
+        print("⏱️ [SolveReport] turn \(number) (\(activeBoards.count) active) analysed in \(Int(Date().timeIntervalSince(t0) * 1000))ms")
+        #endif
         analyses.append(result.analysis)
         if result.counted {
             totalPlayerInfo += result.playerInfo
@@ -450,8 +456,12 @@ final class IncrementalSolveReporter {
 
     /// Assemble the final report once the last guess has been ingested.
     func finish(gameState: GameState) -> SolveReport {
-        SolveAnalyzer.assemble(gameState: gameState, analyses: analyses,
-                               totalPlayerInfo: totalPlayerInfo, totalBestInfo: totalBestInfo,
-                               boardSolvedAt: gameState.boards.map { $0.solvedAtGuess })
+        #if DEBUG
+        let t0 = Date()
+        defer { print("⏱️ [SolveReport] finish/assemble in \(Int(Date().timeIntervalSince(t0) * 1000))ms (\(turn) turns ingested)") }
+        #endif
+        return SolveAnalyzer.assemble(gameState: gameState, analyses: analyses,
+                                      totalPlayerInfo: totalPlayerInfo, totalBestInfo: totalBestInfo,
+                                      boardSolvedAt: gameState.boards.map { $0.solvedAtGuess })
     }
 }

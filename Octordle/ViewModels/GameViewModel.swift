@@ -31,7 +31,7 @@ class GameViewModel: ObservableObject {
     // (almost) ready by game-over. Daily/archive only. Calls are serialised on
     // `reporterQueue` and made in guess order.
     private var liveReporter: IncrementalSolveReporter?
-    private let reporterQueue = DispatchQueue(label: "com.octordle.solveReporter", qos: .utility)
+    private let reporterQueue = DispatchQueue(label: "com.octordle.solveReporter", qos: .userInitiated)
 
     // MARK: - Timer
 
