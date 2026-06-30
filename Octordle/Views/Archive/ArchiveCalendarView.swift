@@ -56,7 +56,13 @@ struct ArchiveCalendarView: View {
         .background(LinearGradient.quordleBackground.ignoresSafeArea())
         .navigationTitle("Archive")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear { RewardedAdManager.shared.preloadIfNeeded() }
+        .onAppear {
+            RewardedAdManager.shared.preloadIfNeeded()
+            // Open on the month of the newest unplayed puzzle so its highlight is visible.
+            if let latest = latestUnplayedDate {
+                displayedMonth = calendar.startOfDay(for: latest)
+            }
+        }
         .sheet(item: $selectedDay) { day in
             ArchiveDaySheet(
                 date: day.date,
@@ -216,7 +222,7 @@ struct ArchiveCalendarView: View {
                 RoundedRectangle(cornerRadius: 4)
                     .stroke(Color.quordlePrimary, lineWidth: 2)
                     .frame(width: 14, height: 14)
-                Text("Today")
+                Text("Latest")
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.quordleSecondaryText)
             }
@@ -244,8 +250,10 @@ struct ArchiveCalendarView: View {
     // MARK: - Progress line
 
     private var progressLine: some View {
-        let total = dailyPuzzleService.puzzleNumber // puzzles available up to today
-        let played = dailyPuzzleService.completedDates.count
+        // Past puzzles only — today isn't part of the archive.
+        let total = max(0, dailyPuzzleService.puzzleNumber - 1)
+        let today = GameState.todayString()
+        let played = dailyPuzzleService.completedDates.filter { $0 < today }.count
         return Text("\(played) of \(total) puzzles played")
             .font(.system(size: 11.5, weight: .semibold))
             .foregroundColor(.quordleSecondaryText.opacity(0.7))
@@ -343,12 +351,24 @@ struct ArchiveCalendarView: View {
 
     // MARK: - Day info
 
+    /// The most recent archive day the player hasn't completed — highlighted to point
+    /// them at the newest puzzle to try. nil if everything in range is done.
+    private var latestUnplayedDate: Date? {
+        var day = calendar.date(byAdding: .day, value: -1, to: dailyPuzzleService.todayStart)
+        while let d = day, d >= dailyPuzzleService.firstPuzzleDate {
+            if !dailyPuzzleService.isCompleted(d) { return d }
+            day = calendar.date(byAdding: .day, value: -1, to: d)
+        }
+        return nil
+    }
+
     private func dayInfo(for date: Date) -> DayCellInfo {
-        let isToday = calendar.isDateInToday(date)
         let inRange = dailyPuzzleService.isInArchiveRange(date)
-        let isFuture = calendar.startOfDay(for: date) > dailyPuzzleService.todayStart
+        // Today and beyond aren't playable in the archive (today lives on the Daily tab).
+        let isFuture = calendar.startOfDay(for: date) >= dailyPuzzleService.todayStart
         let completed = dailyPuzzleService.isCompleted(date)
         let locked = dailyPuzzleService.isLocked(date, isPremium: subscriptionService.isPremium)
+        let isLatest = latestUnplayedDate.map { calendar.isDate(date, inSameDayAs: $0) } ?? false
 
         var won = false
         if completed,
@@ -357,7 +377,7 @@ struct ArchiveCalendarView: View {
         }
 
         return DayCellInfo(
-            isToday: isToday,
+            isLatest: isLatest,
             inRange: inRange,
             isFuture: isFuture,
             completed: completed,
@@ -370,7 +390,7 @@ struct ArchiveCalendarView: View {
 // MARK: - Day cell visual info
 
 private struct DayCellInfo {
-    let isToday: Bool
+    let isLatest: Bool
     let inRange: Bool
     let isFuture: Bool
     let completed: Bool
@@ -381,26 +401,26 @@ private struct DayCellInfo {
         if !inRange { return .clear }
         if won { return Color.quordleSuccess.opacity(0.18) }
         if completed { return Color.quordlePresent.opacity(0.14) }
-        if isToday { return Color.quordlePrimary.opacity(0.12) }
+        if isLatest { return Color.quordlePrimary.opacity(0.12) }
         if locked { return Color.white.opacity(0.03) }
         return Color.white.opacity(0.05)
     }
 
     var borderColor: Color {
-        if isToday { return .quordlePrimary }
+        if isLatest { return .quordlePrimary }
         if won { return Color.quordleSuccess.opacity(0.5) }
         if completed { return Color.quordlePresent.opacity(0.45) }
         return .clear
     }
 
     var borderWidth: CGFloat {
-        isToday ? 2 : 1
+        isLatest ? 2 : 1
     }
 
     var textColor: Color {
         if isFuture || !inRange { return .quordleSecondaryText.opacity(0.25) }
         if locked { return .quordleSecondaryText }
-        if won || completed || isToday { return .quordlePrimaryText }
+        if won || completed || isLatest { return .quordlePrimaryText }
         return .quordleSecondaryText
     }
 

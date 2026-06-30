@@ -71,17 +71,19 @@ class DailyPuzzleService: ObservableObject {
         Calendar.current.startOfDay(for: Date())
     }
 
-    /// Whether a date is within the playable archive range [firstPuzzleDate ... today].
+    /// Whether a date is within the playable archive range [firstPuzzleDate ... yesterday].
+    /// Today is excluded — it's the live daily, played on the Daily tab.
     func isInArchiveRange(_ date: Date) -> Bool {
         let day = Calendar.current.startOfDay(for: date)
-        return day >= firstPuzzleDate && day <= todayStart
+        return day >= firstPuzzleDate && day < todayStart
     }
 
-    /// Whether a date falls inside the free window (today + previous freeDays-1 days).
+    /// Whether a date falls inside the free window — the most recent `freeDays` archive
+    /// days (i.e. yesterday and back, excluding today).
     func isFree(_ date: Date) -> Bool {
         let day = Calendar.current.startOfDay(for: date)
         let diff = Calendar.current.dateComponents([.day], from: day, to: todayStart).day ?? Int.max
-        return diff >= 0 && diff < Constants.Archive.freeDays
+        return diff >= 1 && diff <= Constants.Archive.freeDays
     }
 
     /// Whether the puzzle for a date has been completed.
