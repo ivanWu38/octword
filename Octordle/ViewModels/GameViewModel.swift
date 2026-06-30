@@ -60,6 +60,12 @@ class GameViewModel: ObservableObject {
         gameState.isGameOver
     }
 
+    /// True when replaying a daily that was already completed earlier today. Used to
+    /// hide Share and to keep the first play's result/report as the canonical one.
+    var isDailyReplay: Bool {
+        gameState.mode == .daily && isPlayedDayCompleted
+    }
+
     var boards: [BoardData] {
         gameState.boards
     }
@@ -401,7 +407,11 @@ class GameViewModel: ObservableObject {
         guard solveReport == nil, !isComputingSolveReport, gameState.isGameOver else { return }
 
         let day = gameState.mode == .daily ? gameState.dailyDate : nil
-        if let day, let cached = statsService.loadSolveReport(for: day) {
+
+        // Standalone viewer (no live game, e.g. the daily screen): show the cached
+        // first-play report. Live games always use their own result (below), so a
+        // replay shows the replay's analysis, not the original day's.
+        if liveReporter == nil, let day, let cached = statsService.loadSolveReport(for: day) {
             solveReport = cached
             return
         }
@@ -410,18 +420,20 @@ class GameViewModel: ObservableObject {
         let state = gameState
 
         if let reporter = liveReporter {
-            // Incremental path: turns were analysed during play. The finish() runs on
-            // the same serial queue, so it lands after every ingest() — near-instant.
+            // Incremental path: turns were analysed during play. finish() runs on the
+            // same serial queue, so it lands after every ingest() — near-instant.
+            // Persist only the first play so the daily screen keeps showing the original.
+            let persist = (day != nil) && !isPlayedDayCompleted
             reporterQueue.async { [weak self] in
                 let result = reporter.finish(gameState: state)
                 DispatchQueue.main.async {
                     self?.solveReport = result
                     self?.isComputingSolveReport = false
-                    if let day { self?.statsService.saveSolveReport(result, for: day) }
+                    if persist, let day { self?.statsService.saveSolveReport(result, for: day) }
                 }
             }
         } else {
-            // Fallback: one-shot analysis (standalone viewer / cache miss).
+            // Standalone cache miss: one-shot analysis of the saved result.
             let pool = WordService.shared.solutionPool()
             Task.detached(priority: .userInitiated) {
                 let result = SolveAnalyzer.analyze(gameState: state, pool: pool)

@@ -205,47 +205,30 @@ struct GameResultView: View {
     // MARK: - Action Buttons
 
     private var actionButtons: some View {
-        // Sharing is a daily-edition feature only — Unlimited just shows results.
-        let canShare = gameState.mode == .daily
+        // Share is a daily-edition feature, hidden on a replay — only the day's first
+        // play can be shared. The Solve Report stays available on replays (it shows
+        // this replay's analysis). Unlimited has neither.
+        let isReplay = viewModel?.isDailyReplay ?? false
+        let canShare = gameState.mode == .daily && !isReplay
+        let canReport = gameState.mode == .daily && viewModel != nil
         return VStack(spacing: 12) {
             if canShare {
-                Button {
-                    HapticManager.shared.buttonTap()
-                    HapticManager.shared.playSound(.click)
-                    AnalyticsService.logShareResult(gameState: gameState)
-                    generateAndShare()
-                } label: {
-                    HStack {
-                        Image(systemName: "square.and.arrow.up")
-                        Text("Share Result")
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(PrimaryButtonStyle())
+                shareButton.buttonStyle(PrimaryButtonStyle())
             }
 
-            // The Solve Report is a daily-edition feature. It's computed lazily and
-            // cached, so opening it here (and re-opening) never recomputes.
-            if canShare && viewModel != nil {
-                Button {
-                    HapticManager.shared.buttonTap()
-                    showSolveReport = true
-                } label: {
-                    HStack {
-                        Image(systemName: "chart.bar.doc.horizontal")
-                        Text("View Solve Report")
-                    }
-                    .frame(maxWidth: .infinity)
+            // Solve Report is computed lazily and cached, so opening/re-opening it
+            // never recomputes. Promote it to primary when there's no Share (replay).
+            if canReport {
+                if canShare {
+                    viewSolveReportButton.buttonStyle(SecondaryButtonStyle())
+                } else {
+                    viewSolveReportButton.buttonStyle(PrimaryButtonStyle())
                 }
-                .buttonStyle(SecondaryButtonStyle())
             }
 
             // Let the player go back and study their board for as long as they like.
-            // They can re-open this result card anytime from the board.
             if onReviewBoard != nil {
-                // Share already owns "primary" for the daily; promote View Board to
-                // primary only when there's no Share button above it (Unlimited).
-                if canShare {
+                if canShare || canReport {
                     viewBoardButton.buttonStyle(SecondaryButtonStyle())
                 } else {
                     viewBoardButton.buttonStyle(PrimaryButtonStyle())
@@ -253,11 +236,39 @@ struct GameResultView: View {
             }
 
             // Done is primary only when nothing above it already claimed that role.
-            if canShare || onReviewBoard != nil {
+            if canShare || canReport || onReviewBoard != nil {
                 doneButton.buttonStyle(SecondaryButtonStyle())
             } else {
                 doneButton.buttonStyle(PrimaryButtonStyle())
             }
+        }
+    }
+
+    private var shareButton: some View {
+        Button {
+            HapticManager.shared.buttonTap()
+            HapticManager.shared.playSound(.click)
+            AnalyticsService.logShareResult(gameState: gameState)
+            generateAndShare()
+        } label: {
+            HStack {
+                Image(systemName: "square.and.arrow.up")
+                Text("Share Result")
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    private var viewSolveReportButton: some View {
+        Button {
+            HapticManager.shared.buttonTap()
+            showSolveReport = true
+        } label: {
+            HStack {
+                Image(systemName: "chart.bar.doc.horizontal")
+                Text("View Solve Report")
+            }
+            .frame(maxWidth: .infinity)
         }
     }
 
