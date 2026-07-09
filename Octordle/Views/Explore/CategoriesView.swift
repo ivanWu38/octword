@@ -84,12 +84,12 @@ struct CategoriesView: View {
     // MARK: - Rows
 
     private func categoryRow(_ category: WordCategory) -> some View {
-        let unlocked = categoryService.isUnlocked(category, isPremium: subscriptionService.isPremium)
+        let canEnter = categoryService.canEnter(category, isPremium: subscriptionService.isPremium)
         let done = categoryService.completedCount(categoryId: category.id)
 
         return Button {
             HapticManager.shared.buttonTap()
-            if unlocked {
+            if canEnter {
                 openedCategory = category
                 showDetail = true
             } else {
@@ -99,7 +99,7 @@ struct CategoriesView: View {
             HStack(spacing: 14) {
                 Image(systemName: category.symbol)
                     .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(unlocked ? .quordlePrimary : .quordleSecondaryText)
+                    .foregroundColor(canEnter ? .quordlePrimary : .quordleSecondaryText)
                     .frame(width: 42, height: 42)
                     .background(
                         RoundedRectangle(cornerRadius: 10)
@@ -117,7 +117,7 @@ struct CategoriesView: View {
 
                 Spacer()
 
-                if unlocked {
+                if canEnter {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(.quordleSecondaryText)
@@ -151,6 +151,7 @@ struct CategoriesView: View {
             let rewarded = await rewardedAd.showAd()
             isShowingAd = false
             if rewarded {
+                categoryService.markPackEntered(categoryId: category.id)
                 categoryService.grantAdUnlock(categoryId: category.id, puzzleIndex: index)
                 openedCategory = category
                 showDetail = true

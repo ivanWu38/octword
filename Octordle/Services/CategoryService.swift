@@ -2,23 +2,32 @@ import Foundation
 
 /// Loads the themed word packs and tracks per-category puzzle completion.
 /// Unlock rules: free categories are always playable; everything is playable for
-/// premium users; one paid category rotates in as "free today"; and a rewarded ad
-/// can unlock a single puzzle for the current session.
+/// premium users; a rewarded ad permanently unlocks a single puzzle, and the
+/// first ad also permanently "enters" the pack so its level list opens directly.
 @MainActor
 final class CategoryService: ObservableObject {
     static let shared = CategoryService()
 
     @Published private(set) var categories: [WordCategory] = []
     @Published private(set) var completedByCategory: [String: Set<Int>] = [:]
-    /// Session-only rewarded-ad unlocks, keyed "categoryId#puzzleIndex".
+    /// Rewarded-ad unlocks, keyed "categoryId#puzzleIndex". Persisted — an ad
+    /// buys the level for good, even across app restarts.
     @Published private(set) var adUnlockedPuzzles: Set<String> = []
+    /// Locked packs the player has entered via a rewarded ad — they can re-open
+    /// the pack's level list without watching another ad (individual levels
+    /// inside still cost their own ad). Persisted across restarts.
+    @Published private(set) var enteredPacks: Set<String> = []
 
     private let kProgress = "octordle_categoryProgress"
+    private let kAdUnlocked = "octordle_adUnlockedPuzzles"
+    private let kEnteredPacks = "octordle_enteredPacks"
     private let defaults = UserDefaults.standard
 
     private init() {
         loadCategories()
         loadProgress()
+        adUnlockedPuzzles = Set(defaults.stringArray(forKey: kAdUnlocked) ?? [])
+        enteredPacks = Set(defaults.stringArray(forKey: kEnteredPacks) ?? [])
     }
 
     // MARK: - Loading
@@ -58,9 +67,24 @@ final class CategoryService: ObservableObject {
             || adUnlockedPuzzles.contains(adKey(category.id, puzzleIndex))
     }
 
-    /// Grant a one-session unlock for a single puzzle after a rewarded ad.
+    /// Whether the player can open a pack's level list directly (no entry ad):
+    /// free/premium packs, or a locked pack already entered via a rewarded ad.
+    func canEnter(_ category: WordCategory, isPremium: Bool) -> Bool {
+        isUnlocked(category, isPremium: isPremium) || enteredPacks.contains(category.id)
+    }
+
+    /// Permanently unlock a single puzzle after a rewarded ad.
     func grantAdUnlock(categoryId: String, puzzleIndex: Int) {
         adUnlockedPuzzles.insert(adKey(categoryId, puzzleIndex))
+        defaults.set(Array(adUnlockedPuzzles), forKey: kAdUnlocked)
+    }
+
+    /// Mark a locked pack as entered (first rewarded ad) so it opens directly next
+    /// time. Individual levels inside still require their own ad.
+    func markPackEntered(categoryId: String) {
+        guard !enteredPacks.contains(categoryId) else { return }
+        enteredPacks.insert(categoryId)
+        defaults.set(Array(enteredPacks), forKey: kEnteredPacks)
     }
 
     private func adKey(_ categoryId: String, _ index: Int) -> String {
