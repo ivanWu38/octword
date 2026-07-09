@@ -25,6 +25,10 @@ struct ChallengeType: Identifiable, Equatable {
     /// Number of games to complete within the clock (`.timed` only; 0 for `.run`).
     let gameTarget: Int
 
+    /// Guesses per round in Run mode — tighter than the standard budget so failing
+    /// a board (and losing a life) is a genuine risk, otherwise runs never end.
+    static let runGuessesPerRound = 10
+
     // MARK: Timed — complete N games before the clock runs out
 
     static let timedQuick = ChallengeType(

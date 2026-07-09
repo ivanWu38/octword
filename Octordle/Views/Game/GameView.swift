@@ -369,7 +369,7 @@ struct GameView: View {
     private func boardGrid(availableWidth: CGFloat, availableHeight: CGFloat) -> some View {
         let spacing: CGFloat = 6
         let boardCount = viewModel.gameState.difficulty.boardCount
-        let maxGuesses = viewModel.gameState.difficulty.maxGuesses
+        let maxGuesses = viewModel.gameState.maxGuesses
         let tileSpacing: CGFloat = 2
 
         // 根據棋盤數量計算佈局

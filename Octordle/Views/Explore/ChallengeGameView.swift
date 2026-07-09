@@ -16,6 +16,7 @@ struct ChallengeGameView: View {
     @State private var roundEpoch = 0
     @State private var toastText: String?
     @State private var lastReportedTotal = 0
+    @State private var showReview = false
 
     init(preset: ChallengeType) {
         _session = StateObject(wrappedValue: ChallengeSession(preset: preset))
@@ -41,16 +42,36 @@ struct ChallengeGameView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar)
         .overlay {
+            // Run mode pauses on a per-round result card until the player continues.
+            if let card = session.pendingRoundCard, !session.isOver {
+                RunRoundCard(
+                    result: card,
+                    livesLeft: session.livesLeft,
+                    onContinue: {
+                        HapticManager.shared.buttonTap()
+                        session.clearPendingRoundCard()
+                        roundEpoch += 1   // deal the next round
+                    }
+                )
+                .transition(.opacity)
+            }
+        }
+        .overlay {
             if session.isOver {
                 endOverlay
             }
         }
         .animation(.easeInOut(duration: 0.3), value: session.isOver)
+        .animation(.easeInOut(duration: 0.25), value: session.pendingRoundCard?.id)
+        .sheet(isPresented: $showReview) {
+            ChallengeReviewView(rounds: session.rounds)
+        }
         .onAppear {
             session.start()
         }
         .onChange(of: session.gamesCompleted) { _ in
-            showRoundToast()
+            // Timed flows continuously with a quick toast; Run shows a full card.
+            if session.preset.family == .timed { showRoundToast() }
         }
     }
 
@@ -76,6 +97,10 @@ struct ChallengeGameView: View {
                         .monospacedDigit()
                 } else {
                     livesView
+
+                    Text("· Round \(session.gamesCompleted + 1)")
+                        .font(.system(size: 12, weight: .semibold, design: .serif))
+                        .foregroundColor(.quordleSecondaryText)
                 }
             }
 
@@ -150,6 +175,17 @@ struct ChallengeGameView: View {
         return session.didCompleteGoal ? "Challenge Complete" : "Time's Up"
     }
 
+    private func endStat(_ value: String, _ label: String) -> some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(.system(size: 18, weight: .bold, design: .serif))
+                .foregroundColor(.quordlePrimaryText)
+            Text(label)
+                .font(.system(size: 12))
+                .foregroundColor(.quordleSecondaryText)
+        }
+    }
+
     private var endOverlay: some View {
         ZStack {
             Color.black.opacity(0.45).ignoresSafeArea()
@@ -190,21 +226,12 @@ struct ChallengeGameView: View {
 
                 Rectangle().fill(Color.quordleCardBorder).frame(height: 1).padding(.top, 20)
 
-                HStack(spacing: 6) {
+                HStack(spacing: 22) {
                     if session.preset.family == .timed {
-                        Text("\(session.gamesCompleted) / \(session.preset.gameTarget)")
-                            .font(.system(size: 15, weight: .bold, design: .serif))
-                            .foregroundColor(.quordlePrimaryText)
-                        Text("games")
-                            .font(.system(size: 13))
-                            .foregroundColor(.quordleSecondaryText)
+                        endStat("\(session.gamesCompleted)/\(session.preset.gameTarget)", "games")
                     } else {
-                        Text("\(session.gamesCompleted)")
-                            .font(.system(size: 15, weight: .bold, design: .serif))
-                            .foregroundColor(.quordlePrimaryText)
-                        Text(session.gamesCompleted == 1 ? "game played" : "games played")
-                            .font(.system(size: 13))
-                            .foregroundColor(.quordleSecondaryText)
+                        endStat("\(session.gamesCompleted)", "rounds")
+                        endStat("\(session.flawlessRounds)", "flawless")
                     }
                 }
                 .padding(.top, 16)
@@ -221,6 +248,17 @@ struct ChallengeGameView: View {
                     }
                     .buttonStyle(PrimaryButtonStyle())
 
+                    if !session.rounds.isEmpty {
+                        Button {
+                            HapticManager.shared.buttonTap()
+                            showReview = true
+                        } label: {
+                            Text("Review answers")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(SecondaryButtonStyle())
+                    }
+
                     Button {
                         HapticManager.shared.buttonTap()
                         dismiss()
@@ -228,7 +266,9 @@ struct ChallengeGameView: View {
                         Text("Done")
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(SecondaryButtonStyle())
+                    .buttonStyle(.plain)
+                    .foregroundColor(.quordleSecondaryText)
+                    .padding(.top, 2)
                 }
                 .padding(.top, 22)
                 .padding(.horizontal, 24)
@@ -246,6 +286,208 @@ struct ChallengeGameView: View {
             .padding(.horizontal, 32)
         }
         .transition(.opacity)
+    }
+}
+
+// MARK: - Run per-round result card
+
+/// Shown between rounds in Run mode: reveals this round's answers (missed words
+/// in red), an encouraging line, remaining lives, and a Continue button. A
+/// flawless round (all solved) gets confetti and gold styling.
+private struct RunRoundCard: View {
+    let result: ChallengeSession.RoundResult
+    let livesLeft: Int
+    let onContinue: () -> Void
+
+    private var flawless: Bool { result.isFlawless }
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.5).ignoresSafeArea()
+
+            if flawless {
+                ConfettiView().ignoresSafeArea()
+            }
+
+            VStack(spacing: 0) {
+                if flawless {
+                    HStack(spacing: 6) {
+                        Image(systemName: "sparkles").font(.system(size: 12, weight: .bold))
+                        Text("Flawless")
+                            .font(.system(size: 12, weight: .heavy)).tracking(1).textCase(.uppercase)
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 14).padding(.vertical, 6)
+                    .background(Capsule().fill(Color.quordleGold))
+                    .padding(.top, 22)
+                } else {
+                    Text("Round \(result.id) complete")
+                        .font(.system(size: 11, weight: .semibold)).tracking(2).textCase(.uppercase)
+                        .foregroundColor(.quordleSecondaryText)
+                        .padding(.top, 24)
+                }
+
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                    Text("\(result.solvedCount)")
+                        .font(.system(size: 44, weight: .bold, design: .serif))
+                        .foregroundColor(flawless ? .quordleGold : .quordlePrimaryText)
+                    Text("/ \(result.total)")
+                        .font(.system(size: 22, weight: .bold, design: .serif))
+                        .foregroundColor(.quordleSecondaryText)
+                }
+                .padding(.top, flawless ? 12 : 6)
+
+                Text("words this round")
+                    .font(.system(size: 13))
+                    .foregroundColor(.quordleSecondaryText)
+
+                Text(encouragement)
+                    .font(.system(size: 15, design: .serif))
+                    .foregroundColor(.quordlePrimaryText)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 12)
+
+                HStack(spacing: 5) {
+                    Image(systemName: "heart.fill").font(.system(size: 12))
+                    Text("\(livesLeft) \(livesLeft == 1 ? "life" : "lives") left")
+                        .font(.system(size: 13, weight: .bold, design: .serif))
+                }
+                .foregroundColor(.quordlePrimary)
+                .padding(.horizontal, 12).padding(.vertical, 6)
+                .background(Capsule().fill(Color.quordlePrimary.opacity(0.10)))
+                .padding(.top, 12)
+
+                Text("The Answers")
+                    .font(.system(size: 10.5, weight: .semibold)).tracking(2).textCase(.uppercase)
+                    .foregroundColor(.quordleSecondaryText)
+                    .padding(.top, 18)
+
+                answersGrid
+                    .padding(.top, 10)
+
+                Button(action: onContinue) {
+                    Text("Continue")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(PrimaryButtonStyle())
+                .padding(.top, 18)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 24)
+            }
+            .frame(maxWidth: 360)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.quordleCardBackground)
+                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.quordleCardBorder, lineWidth: 1))
+            )
+            .padding(.horizontal, 24)
+        }
+    }
+
+    private var answersGrid: some View {
+        let cols = [GridItem(.flexible(), spacing: 7), GridItem(.flexible(), spacing: 7)]
+        return LazyVGrid(columns: cols, spacing: 7) {
+            ForEach(Array(result.words.enumerated()), id: \.offset) { index, word in
+                let solved = result.solved[index]
+                HStack {
+                    Text(word.uppercased())
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .tracking(1)
+                        .foregroundColor(solved ? .quordlePrimaryText : .quordlePrimary)
+                    Spacer(minLength: 4)
+                    Image(systemName: solved ? "checkmark" : "xmark")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(solved ? .quordleCorrect : .quordlePrimary)
+                }
+                .padding(.horizontal, 10).padding(.vertical, 7)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(solved ? Color.quordleBackground : Color.quordlePrimary.opacity(0.06))
+                        .overlay(RoundedRectangle(cornerRadius: 8)
+                            .stroke(solved ? Color.quordleCardBorder : Color.quordlePrimary.opacity(0.5), lineWidth: 1))
+                )
+            }
+        }
+        .padding(.horizontal, 20)
+    }
+
+    private var encouragement: String {
+        let s = result.solvedCount, t = result.total
+        if s == t { return "Clean sweep! No lives lost. 🔥" }
+        if s >= t - 1 { return "So close — one slipped away." }
+        if s * 2 >= t { return "Solid round. Keep the streak going." }
+        return "Shake it off — next round's yours."
+    }
+}
+
+// MARK: - Answer review (all games)
+
+/// Scrollable list of every completed round's words (missed ones in red).
+/// Used from the end overlay — the only way to see answers for Timed mode.
+private struct ChallengeReviewView: View {
+    let rounds: [ChallengeSession.RoundResult]
+    @Environment(\.dismiss) private var dismiss
+
+    private let cols = [GridItem(.adaptive(minimum: 70), spacing: 6)]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Review")
+                    .font(.system(size: 20, weight: .bold, design: .serif))
+                    .foregroundColor(.quordlePrimaryText)
+                Spacer()
+                Button {
+                    HapticManager.shared.buttonTap()
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 22))
+                        .foregroundColor(.quordleSecondaryText)
+                }
+            }
+            .padding(.horizontal, 20).padding(.top, 20).padding(.bottom, 12)
+
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 18) {
+                    ForEach(rounds) { round in
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("Game \(round.id)")
+                                    .font(.system(size: 11, weight: .bold)).tracking(1).textCase(.uppercase)
+                                    .foregroundColor(.quordleSecondaryText)
+                                Spacer()
+                                Text("\(round.solvedCount)/\(round.total)")
+                                    .font(.system(size: 12, weight: .bold, design: .serif))
+                                    .foregroundColor(round.isFlawless ? .quordleGold : .quordleSecondaryText)
+                            }
+                            LazyVGrid(columns: cols, spacing: 6) {
+                                ForEach(Array(round.words.enumerated()), id: \.offset) { index, word in
+                                    let solved = round.solved[index]
+                                    Text(word.uppercased())
+                                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                        .tracking(0.5)
+                                        .foregroundColor(solved ? .quordlePrimaryText : .quordlePrimary)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 5)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 6)
+                                                .fill(solved ? Color.quordleCardBackground : Color.quordlePrimary.opacity(0.06))
+                                                .overlay(RoundedRectangle(cornerRadius: 6)
+                                                    .stroke(solved ? Color.quordleCardBorder : Color.quordlePrimary.opacity(0.5), lineWidth: 1))
+                                        )
+                                }
+                            }
+                        }
+                    }
+                    Spacer().frame(height: 20)
+                }
+                .padding(.horizontal, 20)
+            }
+        }
+        .background(Color.quordleBackground.ignoresSafeArea())
     }
 }
 

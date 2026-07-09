@@ -12,6 +12,9 @@ enum GameMode: String, Codable {
 struct GameState: Codable, Equatable {
     let mode: GameMode
     let difficulty: Difficulty
+    /// When set, overrides `difficulty.maxGuesses` for this game (e.g. Run
+    /// challenges tighten the budget so failing a board is a real risk).
+    let maxGuessesOverride: Int?
     var boards: [BoardData]
     var currentGuess: String
     var guessCount: Int
@@ -22,10 +25,15 @@ struct GameState: Codable, Equatable {
     var dailyDate: String? // Format: "yyyy-MM-dd"
     var accumulatedTime: TimeInterval = 0 // Total seconds from previous sessions
 
-    init(mode: GameMode, difficulty: Difficulty, words: [String]) {
+    /// Guesses allowed this game — the override if present, else the difficulty's.
+    var maxGuesses: Int { maxGuessesOverride ?? difficulty.maxGuesses }
+
+    init(mode: GameMode, difficulty: Difficulty, words: [String], maxGuesses: Int? = nil) {
         self.mode = mode
         self.difficulty = difficulty
-        self.boards = words.map { BoardData(targetWord: $0, maxGuesses: difficulty.maxGuesses) }
+        self.maxGuessesOverride = maxGuesses
+        let limit = maxGuesses ?? difficulty.maxGuesses
+        self.boards = words.map { BoardData(targetWord: $0, maxGuesses: limit) }
         self.currentGuess = ""
         self.guessCount = 0
         self.isGameOver = false
@@ -44,7 +52,7 @@ struct GameState: Codable, Equatable {
 
     // Custom Codable to handle backward compatibility (old saves without accumulatedTime)
     enum CodingKeys: String, CodingKey {
-        case mode, difficulty, boards, currentGuess, guessCount
+        case mode, difficulty, maxGuessesOverride, boards, currentGuess, guessCount
         case isGameOver, isWon, startTime, endTime, dailyDate, accumulatedTime
     }
 
@@ -52,6 +60,7 @@ struct GameState: Codable, Equatable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         mode = try container.decode(GameMode.self, forKey: .mode)
         difficulty = try container.decode(Difficulty.self, forKey: .difficulty)
+        maxGuessesOverride = try container.decodeIfPresent(Int.self, forKey: .maxGuessesOverride)
         boards = try container.decode([BoardData].self, forKey: .boards)
         currentGuess = try container.decode(String.self, forKey: .currentGuess)
         guessCount = try container.decode(Int.self, forKey: .guessCount)
@@ -102,12 +111,12 @@ struct GameState: Codable, Equatable {
 
     /// Check if game should end (all solved or out of guesses)
     var shouldEndGame: Bool {
-        allBoardsSolved || guessCount >= difficulty.maxGuesses
+        allBoardsSolved || guessCount >= maxGuesses
     }
 
     /// Remaining guesses
     var remainingGuesses: Int {
-        difficulty.maxGuesses - guessCount
+        maxGuesses - guessCount
     }
 
     /// Calculate star rating
@@ -150,6 +159,7 @@ struct GameState: Codable, Equatable {
     init(from result: GameResult) {
         self.mode = result.mode
         self.difficulty = result.difficulty
+        self.maxGuessesOverride = nil
         self.boards = result.boardResults.map { boardResult in
             var board = BoardData(targetWord: boardResult.targetWord, maxGuesses: result.difficulty.maxGuesses)
             board.isSolved = boardResult.isSolved

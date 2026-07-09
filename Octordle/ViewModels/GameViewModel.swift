@@ -59,7 +59,7 @@ class GameViewModel: ObservableObject {
     }
 
     var maxGuesses: Int {
-        gameState.difficulty.maxGuesses
+        gameState.maxGuesses
     }
 
     var isGameOver: Bool {
@@ -188,7 +188,10 @@ class GameViewModel: ObservableObject {
         let words = wordService.getRandomWords(count: difficulty.boardCount)
         self.challengeSession = session
 
-        self.gameState = GameState(mode: .unlimited, difficulty: difficulty, words: words)
+        // Run rounds tighten the guess budget so lives actually deplete; Timed
+        // rounds keep the standard budget.
+        let guessLimit: Int? = session.preset.family == .run ? ChallengeType.runGuessesPerRound : nil
+        self.gameState = GameState(mode: .unlimited, difficulty: difficulty, words: words, maxGuesses: guessLimit)
         startTimer()
         AnalyticsService.logGameStart(mode: .unlimited, difficulty: difficulty)
 
@@ -343,7 +346,7 @@ class GameViewModel: ObservableObject {
         let answers = gameState.boards.prefix(6).map { $0.targetWord }
         let filler = gameState.boards.first?.targetWord ?? "HAPPY"
         var script = Array(answers)
-        while script.count < gameState.difficulty.maxGuesses { script.append(filler) }
+        while script.count < gameState.maxGuesses { script.append(filler) }
         for word in script {
             if gameState.isGameOver { break }
             gameState.currentGuess = word
@@ -383,16 +386,19 @@ class GameViewModel: ObservableObject {
         // to the session and either queue the next round or leave the final board
         // on screen for the parent ChallengeGameView's end overlay.
         if let session = challengeSession {
-            let boardsSolved = gameState.boards.filter { $0.isSolved }.count
+            let boards = gameState.boards.map { (word: $0.targetWord, solved: $0.isSolved) }
             AnalyticsService.logGameComplete(gameState: gameState)
-            session.reportRoundEnd(boardsSolved: boardsSolved)
-            if !session.isOver {
+            session.reportRoundEnd(boards: boards)
+            // Timed rounds flow continuously — auto-deal the next game after a beat.
+            // Run rounds pause on a per-round result card; ChallengeGameView deals
+            // the next round when the player taps Continue (by bumping roundEpoch).
+            if !session.isOver && session.preset.family == .timed {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
                     guard let self, let session = self.challengeSession, !session.isOver else { return }
                     // The clock can hit zero during this inter-round pause; the
                     // expiry signal would be swallowed (no round is in progress),
                     // so settle the session here instead of dealing a dead round.
-                    if session.preset.family == .timed && session.remainingSeconds <= 0 {
+                    if session.remainingSeconds <= 0 {
                         session.finish()
                     } else {
                         self.resetGame()
