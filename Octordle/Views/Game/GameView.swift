@@ -303,9 +303,10 @@ struct GameView: View {
             }
 
             #if DEBUG
-            // TEMPORARY QA: auto-finish the game to test achievement cards. Remove later.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
-                viewModel.debugAutoPlay()
+            // TEMPORARY DEBUG: auto-win 3s after entering the game to test achievement
+            // cards (incl. Explore-mode badges). Remove this block when done.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                viewModel.debugAutoWin()
             }
             #endif
         }

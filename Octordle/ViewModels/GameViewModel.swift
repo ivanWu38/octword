@@ -356,6 +356,22 @@ class GameViewModel: ObservableObject {
             submitGuess()
         }
     }
+
+    // TEMPORARY DEBUG: auto-solve every board and finish the game, so the achievement
+    // unlock flow (incl. the new Explore-mode badges) can be tested without playing.
+    // Triggered 3s after the game screen appears. Remove this method + its caller in
+    // GameView.onAppear when done.
+    static var debugAutoWinEnabled = true
+
+    func debugAutoWin() {
+        guard Self.debugAutoWinEnabled else { return }
+        guard !gameState.isGameOver else { return }
+        for word in gameState.boards.map({ $0.targetWord }) {
+            if gameState.isGameOver { break }
+            gameState.currentGuess = word
+            submitGuess()
+        }
+    }
     #endif
 
     // MARK: - Game End
