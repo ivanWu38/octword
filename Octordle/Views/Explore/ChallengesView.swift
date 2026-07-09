@@ -91,7 +91,7 @@ struct ChallengesView: View {
         let best = ChallengeSession.loadBest(for: preset.id)
 
         return Button {
-            HapticManager.shared.buttonTap()
+            HapticManager.shared.cardTap()
             selectedPreset = preset
             showGame = true
         } label: {

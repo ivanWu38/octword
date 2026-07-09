@@ -50,7 +50,10 @@ struct LockedPackSheet: View {
                 .padding(.top, 10)
 
             // Primary — watch a rewarded ad (gold)
-            optionButton(action: onWatchAd) {
+            optionButton(action: {
+                AnalyticsService.logUnlockPackAdTap(categoryId: category.id)
+                onWatchAd()
+            }) {
                 optionRow(
                     icon: Image(systemName: "play.fill"),
                     iconBackground: Color.white.opacity(0.22),
@@ -74,7 +77,10 @@ struct LockedPackSheet: View {
             .padding(.top, 14)
 
             // Secondary — go Premium (outline)
-            optionButton(action: onPremium) {
+            optionButton(action: {
+                AnalyticsService.logUnlockPackPremiumTap(categoryId: category.id)
+                onPremium()
+            }) {
                 optionRow(
                     icon: Image(systemName: "star.fill"),
                     iconBackground: Color.quordleCardBackground,
@@ -105,7 +111,7 @@ struct LockedPackSheet: View {
                 .padding(.top, 16)
 
             Button {
-                HapticManager.shared.buttonTap()
+                HapticManager.shared.backTap()
                 dismiss()
             } label: {
                 Text("Not now")
@@ -121,6 +127,9 @@ struct LockedPackSheet: View {
         .padding(.horizontal, 20)
         .frame(maxWidth: .infinity)
         .background(Color.quordleBackground.ignoresSafeArea())
+        .onAppear {
+            AnalyticsService.logLockedPackView(categoryId: category.id)
+        }
     }
 
     private var rule: some View {
@@ -130,7 +139,7 @@ struct LockedPackSheet: View {
     private func optionButton<Content: View>(action: @escaping () -> Void,
                                              @ViewBuilder content: () -> Content) -> some View {
         Button {
-            HapticManager.shared.buttonTap()
+            HapticManager.shared.primaryTap()
             action()
         } label: {
             content()

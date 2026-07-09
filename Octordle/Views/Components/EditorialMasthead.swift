@@ -74,7 +74,7 @@ struct EditorialMasthead: View {
     @ViewBuilder private var leftSlot: some View {
         if let onBack {
             Button {
-                HapticManager.shared.buttonTap()
+                HapticManager.shared.backTap()
                 onBack()
             } label: {
                 Image(systemName: "chevron.left")

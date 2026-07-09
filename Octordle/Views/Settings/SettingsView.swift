@@ -27,10 +27,14 @@ struct SettingsView: View {
                     NavigationLink { ThemePickerView() } label: {
                         rowBody(symbol: "paintpalette", title: "Theme", trailingText: themeService.selectedTheme.displayName)
                     }
+                    .simultaneousGesture(TapGesture().onEnded { HapticManager.shared.cardTap() })
                     hairline
                     Menu {
                         ForEach(ColorSchemePreference.allCases, id: \.self) { pref in
-                            Button(pref.displayName) { themeService.colorSchemePreference = pref }
+                            Button(pref.displayName) {
+                                HapticManager.shared.buttonTap()
+                                themeService.colorSchemePreference = pref
+                            }
                         }
                     } label: {
                         rowBody(symbol: "circle.lefthalf.filled", title: "Appearance",
@@ -46,10 +50,12 @@ struct SettingsView: View {
                     Link(destination: URL(string: "https://apps.apple.com/app/id\(Constants.App.appStoreId)?action=write-review")!) {
                         rowBody(symbol: "star", title: "Rate on App Store", trailingSymbol: "arrow.up.right")
                     }
+                    .simultaneousGesture(TapGesture().onEnded { HapticManager.shared.buttonTap() })
                     hairline
                     Link(destination: URL(string: "mailto:wuyuping38@gmail.com?subject=Octordle%20Feedback")!) {
                         rowBody(symbol: "envelope", title: "Send Feedback", trailingSymbol: "arrow.up.right")
                     }
+                    .simultaneousGesture(TapGesture().onEnded { HapticManager.shared.buttonTap() })
 
                     if consentManager.isPrivacyOptionsRequired {
                         groupLabel("Privacy")
@@ -74,10 +80,12 @@ struct SettingsView: View {
                     Link(destination: URL(string: "https://ikuheikure.xyz/apps/octordle-word-puzzle/")!) {
                         rowBody(symbol: "doc.text", title: "Privacy Policy", trailingSymbol: "arrow.up.right")
                     }
+                    .simultaneousGesture(TapGesture().onEnded { HapticManager.shared.buttonTap() })
                     hairline
                     Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
                         rowBody(symbol: "doc.plaintext", title: "Terms of Use", trailingSymbol: "arrow.up.right")
                     }
+                    .simultaneousGesture(TapGesture().onEnded { HapticManager.shared.buttonTap() })
 
                     Spacer().frame(height: 90)
                 }

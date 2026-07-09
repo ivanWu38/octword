@@ -106,6 +106,7 @@ class RewardedAdManager: NSObject, ObservableObject {
             rewardedAd.present(fromRootViewController: topVC) { [weak self] in
                 print("[AdMob] User earned reward")
                 self?.pendingRewardEarned = true
+                AnalyticsService.logRewardedAdEarned(placement: "pack_unlock")
             }
         }
     }

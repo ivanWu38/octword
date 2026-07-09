@@ -19,7 +19,11 @@ struct ReviewPromptView: View {
                 .padding(.horizontal, 24)
 
             VStack(spacing: 12) {
-                Button(action: onAccept) {
+                Button {
+                    HapticManager.shared.primaryTap()
+                    AnalyticsService.logReviewPromptResponse(accepted: true)
+                    onAccept()
+                } label: {
                     Text("OK")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
@@ -29,7 +33,11 @@ struct ReviewPromptView: View {
                         .cornerRadius(12)
                 }
 
-                Button(action: onDecline) {
+                Button {
+                    HapticManager.shared.backTap()
+                    AnalyticsService.logReviewPromptResponse(accepted: false)
+                    onDecline()
+                } label: {
                     Text("Later")
                         .font(.subheadline)
                         .foregroundColor(.quordleSecondaryText)
@@ -42,5 +50,8 @@ struct ReviewPromptView: View {
         .padding()
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
+        .onAppear {
+            AnalyticsService.logReviewPromptShown()
+        }
     }
 }

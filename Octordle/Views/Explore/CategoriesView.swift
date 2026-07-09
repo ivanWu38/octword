@@ -88,7 +88,7 @@ struct CategoriesView: View {
         let done = categoryService.completedCount(categoryId: category.id)
 
         return Button {
-            HapticManager.shared.buttonTap()
+            HapticManager.shared.cardTap()
             if canEnter {
                 openedCategory = category
                 showDetail = true

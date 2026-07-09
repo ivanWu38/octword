@@ -48,7 +48,7 @@ struct ChallengeGameView: View {
                     result: card,
                     livesLeft: session.livesLeft,
                     onContinue: {
-                        HapticManager.shared.buttonTap()
+                        HapticManager.shared.primaryTap()
                         session.clearPendingRoundCard()
                         roundEpoch += 1   // deal the next round
                     }
@@ -249,7 +249,7 @@ struct ChallengeGameView: View {
 
                 VStack(spacing: 10) {
                     Button {
-                        HapticManager.shared.buttonTap()
+                        HapticManager.shared.primaryTap()
                         lastReportedTotal = 0
                         session.reset()
                         roundEpoch += 1
@@ -271,7 +271,7 @@ struct ChallengeGameView: View {
                     }
 
                     Button {
-                        HapticManager.shared.buttonTap()
+                        HapticManager.shared.backTap()
                         dismiss()
                     } label: {
                         Text("Done")
@@ -490,7 +490,7 @@ private struct ChallengeReviewView: View {
 
             HStack {
                 Button {
-                    HapticManager.shared.buttonTap()
+                    HapticManager.shared.backTap()
                     dismiss()
                 } label: {
                     Image(systemName: "xmark")

@@ -181,7 +181,7 @@ struct ArchiveCalendarView: View {
         let info = dayInfo(for: date)
         return Button {
             guard info.inRange else { return }
-            HapticManager.shared.buttonTap()
+            HapticManager.shared.cardTap()
             selectedDay = ArchiveDay(date: date)
         } label: {
             ZStack {

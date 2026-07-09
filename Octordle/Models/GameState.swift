@@ -28,6 +28,11 @@ struct GameState: Codable, Equatable {
     /// Guesses allowed this game — the override if present, else the difficulty's.
     var maxGuesses: Int { maxGuessesOverride ?? difficulty.maxGuesses }
 
+    /// A daily game replaying a past date from the Archive (not today's puzzle).
+    var isArchive: Bool {
+        mode == .daily && dailyDate != nil && dailyDate != Self.todayString()
+    }
+
     init(mode: GameMode, difficulty: Difficulty, words: [String], maxGuesses: Int? = nil) {
         self.mode = mode
         self.difficulty = difficulty

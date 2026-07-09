@@ -18,6 +18,8 @@ struct OnboardingView: View {
                 HStack {
                     Spacer()
                     Button("Skip") {
+                        HapticManager.shared.backTap()
+                        AnalyticsService.logTutorialComplete(skipped: true)
                         hasSeenOnboarding = true
                     }
                     .font(.body)
@@ -53,6 +55,7 @@ struct OnboardingView: View {
                 HStack {
                     if currentPage > 0 {
                         Button("Back") {
+                            HapticManager.shared.backTap()
                             withAnimation {
                                 currentPage -= 1
                             }
@@ -64,6 +67,7 @@ struct OnboardingView: View {
 
                     if currentPage < totalPages - 1 {
                         Button("Next") {
+                            HapticManager.shared.primaryTap()
                             withAnimation {
                                 currentPage += 1
                             }
@@ -71,6 +75,8 @@ struct OnboardingView: View {
                         .buttonStyle(PrimaryButtonStyle())
                     } else {
                         Button("Get Started") {
+                            HapticManager.shared.primaryTap()
+                            AnalyticsService.logTutorialComplete(skipped: false)
                             hasSeenOnboarding = true
                         }
                         .buttonStyle(PrimaryButtonStyle())
@@ -78,6 +84,9 @@ struct OnboardingView: View {
                 }
                 .padding()
             }
+        }
+        .onAppear {
+            AnalyticsService.logTutorialBegin()
         }
     }
 }

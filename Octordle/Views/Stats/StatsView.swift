@@ -137,7 +137,7 @@ struct StatsView: View {
                     progress: statsService.progressFor(achievement)
                 )
                 .contentShape(Rectangle())
-                .onTapGesture { selectedAchievement = achievement }
+                .onTapGesture { HapticManager.shared.cardTap(); selectedAchievement = achievement }
             }
         }
         .padding(.horizontal, 22)

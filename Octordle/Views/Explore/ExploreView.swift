@@ -105,6 +105,7 @@ struct ExploreView: View {
             )
         }
         .buttonStyle(ScaleButtonStyle(scale: 0.97))
+        .simultaneousGesture(TapGesture().onEnded { HapticManager.shared.cardTap() })
         .padding(.horizontal, 24)
     }
 
@@ -155,6 +156,7 @@ struct ExploreView: View {
             )
         }
         .buttonStyle(ScaleButtonStyle(scale: 0.97))
+        .simultaneousGesture(TapGesture().onEnded { HapticManager.shared.cardTap() })
         .padding(.horizontal, 24)
     }
 

@@ -183,7 +183,8 @@ struct ThemePickerView: View {
         } else if unlocked {
             // Unlocked → Apply
             Button {
-                HapticManager.shared.success()
+                HapticManager.shared.primaryTap()
+                AnalyticsService.logThemeSelected(themeId: theme.rawValue)
                 themeService.selectedTheme = theme
                 previewTheme = nil
             } label: {
@@ -207,7 +208,7 @@ struct ThemePickerView: View {
         } else if theme.isPremium {
             // Premium locked
             Button {
-                HapticManager.shared.buttonTap()
+                HapticManager.shared.primaryTap()
                 showSubscription = true
             } label: {
                 HStack(spacing: 8) {
@@ -333,7 +334,7 @@ struct ThemePickerView: View {
         let unlocked = theme.isUnlocked(isPremium: isPremium, wordsSolved: wordsSolved, maxStreak: maxStreak)
 
         return Button {
-            HapticManager.shared.selection()
+            HapticManager.shared.cardTap()
             previewTheme = theme
         } label: {
             HStack(spacing: 14) {

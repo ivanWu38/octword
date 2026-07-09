@@ -57,7 +57,7 @@ struct SupportCard: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             Button {
-                HapticManager.shared.buttonTap()
+                HapticManager.shared.primaryTap()
                 onSupport()
             } label: {
                 HStack(spacing: 8) {
@@ -74,7 +74,7 @@ struct SupportCard: View {
             .buttonStyle(ScaleButtonStyle())
 
             Button {
-                HapticManager.shared.buttonTap()
+                HapticManager.shared.backTap()
                 onDismiss()
             } label: {
                 Text("Maybe another day")
@@ -273,7 +273,7 @@ struct SupporterView: View {
             Rectangle().fill(Color.quordleCardBorder).frame(height: 1)
 
             Button {
-                HapticManager.shared.buttonTap()
+                HapticManager.shared.primaryTap()
                 buyCoffee()
             } label: {
                 HStack(spacing: 8) {
@@ -336,7 +336,7 @@ struct CoffeeThanksOverlay: View {
     var body: some View {
         ZStack {
             Color.black.opacity(0.45).ignoresSafeArea()
-                .onTapGesture { onDone() }
+                .onTapGesture { HapticManager.shared.backTap(); onDone() }
 
             VStack(spacing: 14) {
                 Text("☕")
@@ -362,7 +362,7 @@ struct CoffeeThanksOverlay: View {
                     .padding(.horizontal, 26)
 
                 Button {
-                    HapticManager.shared.buttonTap()
+                    HapticManager.shared.backTap()
                     onDone()
                 } label: {
                     Text("Close")

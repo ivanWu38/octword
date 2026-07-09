@@ -32,7 +32,10 @@ struct SubscriptionView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button { dismiss() } label: {
+                    Button {
+                        HapticManager.shared.backTap()
+                        dismiss()
+                    } label: {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(.quordleSecondaryText)
                     }
@@ -138,13 +141,14 @@ struct SubscriptionView: View {
                         monthlyPrice: monthlyPrice
                     ) {
                         selectedProduct = product
-                        HapticManager.shared.selection()
+                        HapticManager.shared.cardTap()
                         AnalyticsService.logPlanSelected(productId: product.id)
                     }
                 }
 
                 if let product = selectedProduct {
                     Button {
+                        HapticManager.shared.primaryTap()
                         Task { await purchase(product) }
                     } label: {
                         Group {
@@ -168,6 +172,7 @@ struct SubscriptionView: View {
 
     private var restoreButton: some View {
         Button {
+            HapticManager.shared.buttonTap()
             AnalyticsService.logRestoreTap()
             Task {
                 await subscriptionService.restore()

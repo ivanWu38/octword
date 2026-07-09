@@ -5,11 +5,12 @@ struct AnalyticsService {
 
     // MARK: - Game Lifecycle
 
-    static func logGameStart(mode: GameMode, difficulty: Difficulty) {
+    static func logGameStart(mode: GameMode, difficulty: Difficulty, isArchive: Bool = false) {
         Analytics.logEvent("game_start", parameters: [
             "mode": mode.rawValue,
             "difficulty": difficulty.rawValue,
-            "board_count": difficulty.boardCount
+            "board_count": difficulty.boardCount,
+            "is_archive": isArchive
         ])
     }
 
@@ -22,7 +23,8 @@ struct AnalyticsService {
             "guess_count": gameState.guessCount,
             "elapsed_seconds": gameState.elapsedSeconds,
             "star_rating": gameState.starRating,
-            "boards_solved": boardsSolved
+            "boards_solved": boardsSolved,
+            "is_archive": gameState.isArchive
         ])
     }
 
@@ -33,7 +35,83 @@ struct AnalyticsService {
             "difficulty": gameState.difficulty.rawValue,
             "guess_count": gameState.guessCount,
             "boards_solved": boardsSolved,
-            "elapsed_seconds": gameState.elapsedSeconds
+            "elapsed_seconds": gameState.elapsedSeconds,
+            "is_archive": gameState.isArchive
+        ])
+    }
+
+    // MARK: - Challenges
+
+    static func logChallengeStart(presetId: String) {
+        Analytics.logEvent("challenge_start", parameters: [
+            "preset_id": presetId
+        ])
+    }
+
+    static func logChallengeEnd(presetId: String, boardsSolved: Int, gamesCompleted: Int, isNewBest: Bool) {
+        Analytics.logEvent("challenge_end", parameters: [
+            "preset_id": presetId,
+            "boards_solved": boardsSolved,
+            "games_completed": gamesCompleted,
+            "is_new_best": isNewBest
+        ])
+    }
+
+    // MARK: - Pack Unlock Funnel
+
+    static func logLockedPackView(categoryId: String) {
+        Analytics.logEvent("locked_pack_view", parameters: [
+            "category_id": categoryId
+        ])
+    }
+
+    static func logUnlockPackAdTap(categoryId: String) {
+        Analytics.logEvent("unlock_pack_ad_tap", parameters: [
+            "category_id": categoryId
+        ])
+    }
+
+    static func logUnlockPackPremiumTap(categoryId: String) {
+        Analytics.logEvent("unlock_pack_premium_tap", parameters: [
+            "category_id": categoryId
+        ])
+    }
+
+    static func logRewardedAdEarned(placement: String) {
+        Analytics.logEvent("rewarded_ad_earned", parameters: [
+            "placement": placement
+        ])
+    }
+
+    // MARK: - Onboarding
+
+    static func logTutorialBegin() {
+        Analytics.logEvent(AnalyticsEventTutorialBegin, parameters: nil)
+    }
+
+    static func logTutorialComplete(skipped: Bool) {
+        Analytics.logEvent(AnalyticsEventTutorialComplete, parameters: [
+            "skipped": skipped
+        ])
+    }
+
+    // MARK: - Review Prompt
+
+    static func logReviewPromptShown() {
+        Analytics.logEvent("review_prompt_shown", parameters: nil)
+    }
+
+    static func logReviewPromptResponse(accepted: Bool) {
+        Analytics.logEvent("review_prompt_response", parameters: [
+            "accepted": accepted
+        ])
+    }
+
+    // MARK: - Themes
+
+    static func logThemeSelected(themeId: String) {
+        Analytics.logEvent("theme_selected", parameters: [
+            "theme_id": themeId
         ])
     }
 

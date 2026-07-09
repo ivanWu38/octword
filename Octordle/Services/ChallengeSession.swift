@@ -71,6 +71,7 @@ final class ChallengeSession: ObservableObject {
     /// Begin the session — starts the countdown for `.timed` presets. `.run`
     /// presets need no timer; lives are only spent at round boundaries.
     func start() {
+        AnalyticsService.logChallengeStart(presetId: preset.id)
         guard preset.family == .timed else { return }
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
@@ -140,6 +141,12 @@ final class ChallengeSession: ObservableObject {
         timer?.invalidate()
         timer = nil
         isOver = true
+        AnalyticsService.logChallengeEnd(
+            presetId: preset.id,
+            boardsSolved: totalBoardsSolved,
+            gamesCompleted: gamesCompleted,
+            isNewBest: totalBoardsSolved > bestScore
+        )
         if totalBoardsSolved > bestScore {
             isNewBest = true
             bestScore = totalBoardsSolved

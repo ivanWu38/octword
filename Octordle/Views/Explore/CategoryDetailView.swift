@@ -108,7 +108,7 @@ struct CategoryDetailView: View {
         let state = chipState(index)
 
         return Button {
-            HapticManager.shared.buttonTap()
+            HapticManager.shared.cardTap()
             switch state {
             case .locked:
                 lockedLevel = LockedLevel(id: index)

@@ -52,6 +52,7 @@ struct GameResultView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
+                        HapticManager.shared.backTap()
                         (onDone ?? { dismiss() })()
                     } label: {
                         Image(systemName: "xmark.circle.fill")
@@ -67,6 +68,7 @@ struct GameResultView: View {
                         .toolbar {
                             ToolbarItem(placement: .navigationBarTrailing) {
                                 Button {
+                                    HapticManager.shared.backTap()
                                     showSolveReport = false
                                 } label: {
                                     Image(systemName: "xmark.circle.fill")

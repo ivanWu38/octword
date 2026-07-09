@@ -156,7 +156,7 @@ class GameViewModel: ObservableObject {
 
         self.gameState = GameState(mode: .daily, difficulty: difficulty, words: words, date: archiveDate)
         startTimer()
-        AnalyticsService.logGameStart(mode: .daily, difficulty: difficulty)
+        AnalyticsService.logGameStart(mode: .daily, difficulty: difficulty, isArchive: gameState.isArchive)
 
         #if DEBUG
         print("🟡 [DEBUG] Archive \(GameState.dateString(for: archiveDate)) — Answers: \(words.enumerated().map { "Board \($0.offset + 1): \($0.element)" }.joined(separator: ", "))")
@@ -361,7 +361,7 @@ class GameViewModel: ObservableObject {
     // unlock flow (incl. the new Explore-mode badges) can be tested without playing.
     // Triggered 3s after the game screen appears. Remove this method + its caller in
     // GameView.onAppear when done.
-    static var debugAutoWinEnabled = true
+    static var debugAutoWinEnabled = false
 
     func debugAutoWin() {
         guard Self.debugAutoWinEnabled else { return }

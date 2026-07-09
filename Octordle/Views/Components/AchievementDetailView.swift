@@ -19,7 +19,7 @@ struct AchievementDetailView: View {
         ZStack {
             Color.black.opacity(appeared ? 0.4 : 0)
                 .ignoresSafeArea()
-                .onTapGesture { dismiss() }
+                .onTapGesture { HapticManager.shared.backTap(); dismiss() }
 
             VStack(spacing: 18) {
                 // Framed icon (newspaper engraving style)

@@ -83,7 +83,7 @@ struct ThemeUnlockView: View {
                     VStack(spacing: 10) {
                         Button {
                             ThemeService.shared.selectedTheme = theme
-                            HapticManager.shared.success()
+                            HapticManager.shared.primaryTap()
                             dismiss()
                         } label: {
                             Text("Apply Now")
@@ -105,6 +105,7 @@ struct ThemeUnlockView: View {
                         }
 
                         Button {
+                            HapticManager.shared.backTap()
                             dismiss()
                         } label: {
                             Text("Maybe Later")
