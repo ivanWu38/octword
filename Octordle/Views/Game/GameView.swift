@@ -26,8 +26,28 @@ struct GameView: View {
     /// Set once the player has reached the result card. After that, re-opening the
     /// results goes straight to the card and skips the report-first reveal.
     @State private var hasReachedResultCard = false
+    @State private var showHowToPlay = false
     @Environment(\.scenePhase) private var scenePhase
     @ObservedObject private var reviewManager = ReviewManager.shared
+
+    /// Explore modes (category packs + timed/run challenges) have special rules
+    /// worth a How-to-Play card; daily/unlimited are the standard game.
+    private var isExploreGame: Bool {
+        viewModel.challengeSession != nil || viewModel.gameState.mode == .categories
+    }
+
+    /// Mode-specific How-to-Play content, with the current preset/pack's numbers.
+    private var howToPlayContent: HowToPlayContent? {
+        if let session = viewModel.challengeSession {
+            return .forChallenge(session.preset)
+        }
+        if viewModel.gameState.mode == .categories,
+           let id = viewModel.currentCategoryId,
+           let category = CategoryService.shared.categories.first(where: { $0.id == id }) {
+            return .forCategory(category)
+        }
+        return nil
+    }
 
     init(mode: GameMode, difficulty: Difficulty) {
         _viewModel = StateObject(wrappedValue: GameViewModel(mode: mode, difficulty: difficulty))
@@ -118,6 +138,14 @@ struct GameView: View {
             }
         }
         .animation(.easeInOut(duration: 0.25), value: reviewingBoard)
+        .overlay {
+            if showHowToPlay, let content = howToPlayContent {
+                HowToPlayCard(content: content) {
+                    withAnimation(.easeInOut(duration: 0.2)) { showHowToPlay = false }
+                }
+                .transition(.opacity)
+            }
+        }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar) // 隐藏底部 Tab Bar
         .sheet(isPresented: $showResultSheet, onDismiss: {
@@ -329,6 +357,20 @@ struct GameView: View {
                         .foregroundColor(.quordlePrimaryText)
                 }
                 .buttonStyle(ScaleButtonStyle())
+
+                // Explore modes (Word Pack / Timed / Run) have special rules — a
+                // "?" opens a mode-specific How-to-Play card.
+                if isExploreGame {
+                    Button {
+                        HapticManager.shared.buttonTap()
+                        withAnimation(.easeInOut(duration: 0.2)) { showHowToPlay = true }
+                    } label: {
+                        Image(systemName: "questionmark.circle")
+                            .font(.system(size: 22))
+                            .foregroundColor(.quordleSecondaryText)
+                    }
+                    .padding(.leading, 14)
+                }
 
                 Spacer()
 
@@ -760,5 +802,173 @@ private struct RowVisibilityPreferenceKey: PreferenceKey {
         GameView(mode: .daily, difficulty: .classic)
             .environmentObject(ThemeService.shared)
             .environmentObject(SubscriptionService.shared)
+    }
+}
+
+// MARK: - How to Play
+
+/// Mode-specific rules card for Explore games. Assumes the player already knows
+/// standard Octordle — it only explains what's different about this mode, with
+/// the current preset/pack's real numbers filled in.
+struct HowToPlayContent {
+    let kicker: String
+    let title: String
+    let lead: String
+    let rules: [Rule]
+
+    struct Rule: Identifiable {
+        let id = UUID()
+        let icon: String
+        let text: String
+        let sub: String
+    }
+
+    static func forCategory(_ category: WordCategory) -> HowToPlayContent {
+        var rules: [Rule] = [
+            Rule(icon: category.symbol,
+                 text: "All 8 hidden words fit \(category.name).",
+                 sub: "So lean into the theme when you guess — it's your biggest hint."),
+            Rule(icon: "square.grid.2x2",
+                 text: "\(category.puzzleCount) puzzles in this pack.",
+                 sub: "Clear one to move on to the next."),
+        ]
+        if !category.free {
+            rules.append(Rule(icon: "lock.open",
+                              text: "Locked levels open with a short ad.",
+                              sub: "Once opened they stay unlocked — or get Premium for everything."))
+        }
+        return HowToPlayContent(
+            kicker: "How to Play · Word Pack",
+            title: category.name,
+            lead: "Every answer fits the theme.",
+            rules: rules
+        )
+    }
+
+    static func forChallenge(_ preset: ChallengeType) -> HowToPlayContent {
+        switch preset.family {
+        case .timed:
+            let minutes = preset.config / 60
+            let games = preset.gameTarget
+            return HowToPlayContent(
+                kicker: "How to Play · Timed",
+                title: preset.name,
+                lead: "Race the clock.",
+                rules: [
+                    Rule(icon: "stopwatch",
+                         text: "Finish \(games) \(games == 1 ? "puzzle" : "puzzles") within \(minutes) minutes.",
+                         sub: "Do it in time and the challenge is complete."),
+                    Rule(icon: "arrow.triangle.2.circlepath",
+                         text: "The clock never stops.",
+                         sub: "Solve one puzzle and the next starts right away."),
+                    Rule(icon: "star",
+                         text: "Score is the words you solved.",
+                         sub: "Out of time and it ends there — then try to beat your best."),
+                ]
+            )
+        case .run:
+            let lives = preset.config
+            return HowToPlayContent(
+                kicker: "How to Play · Run",
+                title: preset.name,
+                lead: "How far can you go?",
+                rules: [
+                    Rule(icon: "heart.fill",
+                         text: "You start with \(lives) \(lives == 1 ? "heart" : "hearts").",
+                         sub: "A heart is a word you can afford to miss."),
+                    Rule(icon: "heart.slash",
+                         text: "Every word you miss costs 1 heart.",
+                         sub: "Each round is 8 words with only 10 guesses, so misses happen."),
+                    Rule(icon: "infinity",
+                         text: "Still have hearts? Keep playing.",
+                         sub: "Round after round — the run ends only when hearts hit 0."),
+                    Rule(icon: "trophy",
+                         text: "The more rounds you survive, the better.",
+                         sub: "See how far you can push your streak."),
+                ]
+            )
+        }
+    }
+}
+
+/// The dimmed modal card that presents a `HowToPlayContent`.
+struct HowToPlayCard: View {
+    let content: HowToPlayContent
+    let onDismiss: () -> Void
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.45).ignoresSafeArea()
+                .onTapGesture { onDismiss() }
+
+            VStack(spacing: 0) {
+                Text(content.kicker)
+                    .font(.system(size: 10.5, weight: .semibold)).tracking(2).textCase(.uppercase)
+                    .foregroundColor(.quordleSecondaryText)
+                    .padding(.top, 22)
+
+                Rectangle().fill(Color.quordlePrimaryText).frame(height: 1).padding(.top, 8)
+
+                Text(content.title)
+                    .font(.system(size: 27, weight: .bold, design: .serif))
+                    .foregroundColor(.quordlePrimaryText)
+                    .lineLimit(1).minimumScaleFactor(0.6)
+                    .padding(.vertical, 6)
+
+                Rectangle().fill(Color.quordlePrimaryText).frame(height: 1)
+
+                Text(content.lead)
+                    .font(.system(size: 15, design: .serif)).italic()
+                    .foregroundColor(.quordleCoffee)
+                    .padding(.top, 12)
+
+                VStack(alignment: .leading, spacing: 16) {
+                    ForEach(content.rules) { rule in
+                        HStack(alignment: .center, spacing: 13) {
+                            Image(systemName: rule.icon)
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.quordlePrimary)
+                                .frame(width: 34, height: 34)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 9)
+                                        .fill(Color.quordleBackground)
+                                        .overlay(RoundedRectangle(cornerRadius: 9).stroke(Color.quordleCardBorder, lineWidth: 1))
+                                )
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(rule.text)
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundColor(.quordlePrimaryText)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                Text(rule.sub)
+                                    .font(.system(size: 12.5))
+                                    .foregroundColor(.quordleSecondaryText)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            Spacer(minLength: 0)
+                        }
+                    }
+                }
+                .padding(.top, 18)
+
+                Button {
+                    HapticManager.shared.buttonTap()
+                    onDismiss()
+                } label: {
+                    Text("Got it").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(PrimaryButtonStyle())
+                .padding(.top, 22)
+            }
+            .padding(.horizontal, 22)
+            .padding(.bottom, 22)
+            .frame(maxWidth: 360)
+            .background(
+                RoundedRectangle(cornerRadius: 22)
+                    .fill(Color.quordleCardBackground)
+                    .overlay(RoundedRectangle(cornerRadius: 22).stroke(Color.quordleCardBorder, lineWidth: 1))
+            )
+            .padding(.horizontal, 20)
+        }
     }
 }

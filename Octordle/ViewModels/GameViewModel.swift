@@ -109,6 +109,9 @@ class GameViewModel: ObservableObject {
     /// used to record pack progress on a win.
     private var categoryContext: (categoryId: String, puzzleIndex: Int)?
 
+    /// The pack id when this is a category game (for the How-to-Play card).
+    var currentCategoryId: String? { categoryContext?.categoryId }
+
     /// Create a new game
     init(mode: GameMode, difficulty: Difficulty) {
         let words: [String]
