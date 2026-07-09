@@ -325,7 +325,8 @@ struct SupporterView: View {
 // MARK: - D · Thank-you overlay (after earning a coffee)
 
 /// Celebratory overlay shown after a successful ad — from either the inline
-/// card flow or the full supporter page. Auto-dismisses on its own.
+/// card flow or the full supporter page. Stays up until the player closes it
+/// (Close button or tapping the backdrop).
 struct CoffeeThanksOverlay: View {
     let count: Int
     let onDone: () -> Void
@@ -359,6 +360,23 @@ struct CoffeeThanksOverlay: View {
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 26)
+
+                Button {
+                    HapticManager.shared.buttonTap()
+                    onDone()
+                } label: {
+                    Text("Close")
+                        .font(.system(size: 15, weight: .bold, design: .serif))
+                        .foregroundColor(.quordlePrimaryText)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 4)
+                                .stroke(Color.quordleCardBorder, lineWidth: 1)
+                        )
+                }
+                .padding(.horizontal, 26)
+                .padding(.top, 6)
             }
             .padding(.vertical, 30)
             .padding(.horizontal, 22)
@@ -372,10 +390,6 @@ struct CoffeeThanksOverlay: View {
         }
         .onAppear {
             withAnimation(.spring(response: 0.45, dampingFraction: 0.6)) { pop = true }
-            Task {
-                try? await Task.sleep(nanoseconds: 2_600_000_000)
-                onDone()
-            }
         }
     }
 }
