@@ -17,6 +17,9 @@ final class ChallengeSession: ObservableObject {
     @Published private(set) var gamesCompleted = 0
     @Published private(set) var isOver = false
     @Published private(set) var isNewBest = false
+    /// `.timed` only — true when the player finished all `preset.gameTarget` games
+    /// before the clock ran out (i.e. beat the challenge rather than timing out).
+    @Published private(set) var didCompleteGoal = false
     /// Flips to true the instant the timed clock hits zero. GameViewModel observes
     /// this (via Combine, in `init(challenge:)`) to force-finish the round even
     /// mid-guess. Reset back to false once the round has been reported.
@@ -69,7 +72,10 @@ final class ChallengeSession: ObservableObject {
 
         switch preset.family {
         case .timed:
-            if remainingSeconds <= 0 {
+            if preset.gameTarget > 0 && gamesCompleted >= preset.gameTarget {
+                didCompleteGoal = true
+                finish()
+            } else if remainingSeconds <= 0 {
                 finish()
             }
         case .run:
@@ -103,6 +109,7 @@ final class ChallengeSession: ObservableObject {
         gamesCompleted = 0
         isOver = false
         isNewBest = false
+        didCompleteGoal = false
         timeExpired = false
         start()
     }

@@ -69,6 +69,11 @@ struct ChallengeGameView: View {
                         .fontWeight(.bold)
                         .foregroundColor(session.remainingSeconds <= 10 ? .red : .quordlePrimaryText)
                         .monospacedDigit()
+
+                    Text("· \(min(session.gamesCompleted + 1, session.preset.gameTarget))/\(session.preset.gameTarget)")
+                        .font(.system(size: 12, weight: .semibold, design: .serif))
+                        .foregroundColor(.quordleSecondaryText)
+                        .monospacedDigit()
                 } else {
                     livesView
                 }
@@ -140,16 +145,21 @@ struct ChallengeGameView: View {
 
     // MARK: - End Overlay
 
+    private var endTitle: String {
+        if session.preset.family == .run { return "Out of Lives" }
+        return session.didCompleteGoal ? "Challenge Complete" : "Time's Up"
+    }
+
     private var endOverlay: some View {
         ZStack {
             Color.black.opacity(0.45).ignoresSafeArea()
 
             VStack(spacing: 0) {
-                Text(session.preset.family == .timed ? "Time's Up" : "Out of Lives")
+                Text(endTitle)
                     .font(.system(size: 11, weight: .semibold))
                     .tracking(2)
                     .textCase(.uppercase)
-                    .foregroundColor(.quordleSecondaryText)
+                    .foregroundColor(session.didCompleteGoal ? .quordleGold : .quordleSecondaryText)
                     .padding(.top, 28)
 
                 Text("\(session.totalBoardsSolved)")
@@ -181,12 +191,21 @@ struct ChallengeGameView: View {
                 Rectangle().fill(Color.quordleCardBorder).frame(height: 1).padding(.top, 20)
 
                 HStack(spacing: 6) {
-                    Text("\(session.gamesCompleted)")
-                        .font(.system(size: 15, weight: .bold, design: .serif))
-                        .foregroundColor(.quordlePrimaryText)
-                    Text(session.gamesCompleted == 1 ? "game played" : "games played")
-                        .font(.system(size: 13))
-                        .foregroundColor(.quordleSecondaryText)
+                    if session.preset.family == .timed {
+                        Text("\(session.gamesCompleted) / \(session.preset.gameTarget)")
+                            .font(.system(size: 15, weight: .bold, design: .serif))
+                            .foregroundColor(.quordlePrimaryText)
+                        Text("games")
+                            .font(.system(size: 13))
+                            .foregroundColor(.quordleSecondaryText)
+                    } else {
+                        Text("\(session.gamesCompleted)")
+                            .font(.system(size: 15, weight: .bold, design: .serif))
+                            .foregroundColor(.quordlePrimaryText)
+                        Text(session.gamesCompleted == 1 ? "game played" : "games played")
+                            .font(.system(size: 13))
+                            .foregroundColor(.quordleSecondaryText)
+                    }
                 }
                 .padding(.top, 16)
 

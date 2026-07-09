@@ -18,7 +18,7 @@ struct ChallengesView: View {
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
-                    sectionLabel("Timed")
+                    sectionLabel("Timed", description: "Finish the games before the clock runs out")
                     VStack(spacing: 12) {
                         ForEach(ChallengeType.timedPresets) { preset in
                             presetRow(preset)
@@ -26,7 +26,7 @@ struct ChallengesView: View {
                     }
                     .padding(.horizontal, 24)
 
-                    sectionLabel("Run")
+                    sectionLabel("Run", description: "Survive as long as you can on a life pool")
                     VStack(spacing: 12) {
                         ForEach(ChallengeType.runPresets) { preset in
                             presetRow(preset)
@@ -64,14 +64,21 @@ struct ChallengesView: View {
         )
     }
 
-    private func sectionLabel(_ title: String) -> some View {
-        HStack(spacing: 10) {
-            Text(title)
-                .font(.system(size: 12, weight: .semibold))
-                .tracking(2.5)
-                .textCase(.uppercase)
-                .foregroundColor(.quordleSecondaryText)
-            Rectangle().fill(Color.quordleCardBorder).frame(height: 1)
+    private func sectionLabel(_ title: String, description: String? = nil) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 10) {
+                Text(title)
+                    .font(.system(size: 12, weight: .semibold))
+                    .tracking(2.5)
+                    .textCase(.uppercase)
+                    .foregroundColor(.quordleSecondaryText)
+                Rectangle().fill(Color.quordleCardBorder).frame(height: 1)
+            }
+            if let description {
+                Text(description)
+                    .font(.system(size: 12.5, design: .serif))
+                    .foregroundColor(.quordleSecondaryText)
+            }
         }
         .padding(.horizontal, 24)
         .padding(.top, 28)
