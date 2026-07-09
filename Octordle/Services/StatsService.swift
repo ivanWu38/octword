@@ -452,9 +452,68 @@ class StatsService: ObservableObject {
             current = min(achievementProgress.maxStreak, required)
         case .explorer, .dailyDevotee:
             current = min(dailyChallengesCompleted, required)
+        case .onAssignment, .beatReporter, .specialEditions,
+             .rollThePresses, .theLongHaul, .nervesOfSteel,
+             .beatTheClock, .filedOnTime, .frontPageNews:
+            current = min(specialCurrent(for: achievement), required)
         }
 
         return (current, required)
+    }
+
+    // MARK: - Special (Explore-mode) Achievements
+
+    /// Live progress for a special achievement, read from CategoryService /
+    /// ChallengeSession records rather than daily game results. Shared by
+    /// `progressFor` (display) and `evaluateSpecialAchievements` (unlock check).
+    private func specialCurrent(for achievement: Achievement) -> Int {
+        switch achievement {
+        case .onAssignment, .specialEditions:
+            return CategoryService.shared.overallProgress.solved
+        case .beatReporter:
+            let anyPackCleared = CategoryService.shared.categories.contains { cat in
+                cat.puzzleCount > 0
+                    && CategoryService.shared.completedCount(categoryId: cat.id) == cat.puzzleCount
+            }
+            return anyPackCleared ? 1 : 0
+        case .rollThePresses, .theLongHaul:
+            // Longest survival across any Run preset.
+            return ChallengeType.runPresets
+                .map { ChallengeSession.loadBestRounds(for: $0.id) }.max() ?? 0
+        case .nervesOfSteel:
+            return ChallengeSession.loadBestRounds(for: ChallengeType.runSudden.id)
+        case .beatTheClock:
+            // Completed Flash = reached its 1-game target.
+            return ChallengeSession.loadBestRounds(for: ChallengeType.timedQuick.id) >= ChallengeType.timedQuick.gameTarget ? 1 : 0
+        case .filedOnTime:
+            return ChallengeSession.loadBestRounds(for: ChallengeType.timedExtended.id) >= ChallengeType.timedExtended.gameTarget ? 1 : 0
+        case .frontPageNews:
+            return ChallengeSession.loadBestRounds(for: ChallengeType.timedUltra.id) >= ChallengeType.timedUltra.gameTarget ? 1 : 0
+        default:
+            return 0
+        }
+    }
+
+    /// Re-evaluates every Explore-mode achievement from current records and returns
+    /// the ones newly unlocked (display order). Call after a Categories win or when
+    /// a Challenge session ends, so the game screen can present unlock cards.
+    @discardableResult
+    func evaluateSpecialAchievements() -> [Achievement] {
+        let previous = achievementProgress.unlockedAchievements
+        var unlocked = previous
+        for achievement in Achievement.specialCases where specialCurrent(for: achievement) >= achievement.requirement {
+            unlocked.insert(achievement)
+        }
+        let newly = unlocked.subtracting(previous)
+        guard !newly.isEmpty else { return [] }
+
+        achievementProgress.unlockedAchievements = unlocked
+        for achievement in newly {
+            AnalyticsService.logAchievementUnlocked(achievement: achievement)
+        }
+        saveAchievements()
+
+        return Achievement.allCases.filter { newly.contains($0) }
     }
 
     /// Most boards solved in any single game (for the "Sharp Eye" achievement)

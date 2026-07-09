@@ -61,7 +61,18 @@ struct ChallengeGameView: View {
                 endOverlay
             }
         }
+        .overlay {
+            // Explore-mode achievements unlocked by this session — presented with the
+            // same card as daily, stacked above the end overlay and shown first.
+            if let achievement = session.newlyUnlockedAchievements.first {
+                AchievementUnlockView(achievement: achievement) {
+                    session.dismissTopAchievement()
+                }
+                .transition(.opacity)
+            }
+        }
         .animation(.easeInOut(duration: 0.3), value: session.isOver)
+        .animation(.easeInOut(duration: 0.25), value: session.newlyUnlockedAchievements.first)
         .animation(.easeInOut(duration: 0.25), value: session.pendingRoundCard?.id)
         .sheet(isPresented: $showReview) {
             ChallengeReviewView(rounds: session.rounds)

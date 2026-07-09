@@ -39,6 +39,10 @@ final class ChallengeSession: ObservableObject {
     @Published private(set) var pendingRoundCard: RoundResult?
     @Published private(set) var isOver = false
     @Published private(set) var isNewBest = false
+    /// Achievements unlocked by this session's final result (in display order).
+    /// `ChallengeGameView` shows an unlock card per entry once the session ends —
+    /// mirroring the daily flow. Set exactly once, in `finish()`.
+    @Published private(set) var newlyUnlockedAchievements: [Achievement] = []
     /// `.timed` only — true when the player finished all `preset.gameTarget` games
     /// before the clock ran out (i.e. beat the challenge rather than timing out).
     @Published private(set) var didCompleteGoal = false
@@ -124,6 +128,13 @@ final class ChallengeSession: ObservableObject {
         pendingRoundCard = nil
     }
 
+    /// Pop the front achievement unlock card once the player dismisses it, so the
+    /// next queued one can animate in (see `ChallengeGameView`).
+    func dismissTopAchievement() {
+        guard !newlyUnlockedAchievements.isEmpty else { return }
+        newlyUnlockedAchievements.removeFirst()
+    }
+
     func finish() {
         guard !isOver else { return }
         timer?.invalidate()
@@ -134,6 +145,13 @@ final class ChallengeSession: ObservableObject {
             bestScore = totalBoardsSolved
             Self.saveBest(totalBoardsSolved, for: preset.id)
         }
+        // Longest survival (rounds completed) — drives the Run achievements.
+        if gamesCompleted > Self.loadBestRounds(for: preset.id) {
+            Self.saveBestRounds(gamesCompleted, for: preset.id)
+        }
+        // Evaluate Explore-mode achievements now that best records are up to date,
+        // so ChallengeGameView can present unlock cards (same flow as daily).
+        newlyUnlockedAchievements = StatsService.shared.evaluateSpecialAchievements()
     }
 
     /// Restart from scratch with the same preset — used by "Play Again".
@@ -167,5 +185,21 @@ final class ChallengeSession: ObservableObject {
 
     private static func saveBest(_ value: Int, for presetId: String) {
         UserDefaults.standard.set(value, forKey: key(for: presetId))
+    }
+
+    // MARK: - Best rounds persistence (longest survival)
+
+    private static func roundsKey(for presetId: String) -> String {
+        "octordle_challengeRounds_\(presetId)"
+    }
+
+    /// Most rounds ever completed in a single session of this preset (survival
+    /// length), or 0 if never played.
+    static func loadBestRounds(for presetId: String) -> Int {
+        UserDefaults.standard.integer(forKey: roundsKey(for: presetId))
+    }
+
+    private static func saveBestRounds(_ value: Int, for presetId: String) {
+        UserDefaults.standard.set(value, forKey: roundsKey(for: presetId))
     }
 }

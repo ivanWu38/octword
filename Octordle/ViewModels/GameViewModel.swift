@@ -499,9 +499,12 @@ class GameViewModel: ObservableObject {
         // Ask for a review only at a positive milestone (see ReviewManager).
         ReviewManager.shared.considerPrompt(triggers: reviewTriggers)
 
-        // Categories mode keeps no stats, but a win completes the pack puzzle.
+        // Categories mode keeps no stats, but a win completes the pack puzzle and
+        // may unlock Explore-mode achievements — surfaced through the same unlock
+        // cards as daily (the result sheet's onDismiss shows newlyUnlockedAchievements).
         if gameState.mode == .categories, gameState.isWon, let ctx = categoryContext {
             CategoryService.shared.markCompleted(categoryId: ctx.categoryId, puzzleIndex: ctx.puzzleIndex)
+            newlyUnlockedAchievements = statsService.evaluateSpecialAchievements()
         }
 
         // Pre-compute the solve report in the background so it's ready the moment the
