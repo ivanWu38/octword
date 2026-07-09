@@ -409,10 +409,10 @@ struct GameView: View {
             let boardAreaWidth = max(0, availableWidth - arrowWidth)
             let boardWidth = max(0, (boardAreaWidth - spacing) / 2)
 
-            // 寬度決定格子上限(2欄)；高度取 viewport 的 ~82%，留一截露出下一排。
+            // Tiles are sized by width (2 columns) so they stay large and legible
+            // regardless of guess count; the board scrolls vertically as needed.
             let tileWidth = (boardWidth - 4 * tileSpacing) / 5
-            let tileHeightCap = (availableHeight * 0.82 - CGFloat(maxGuesses - 1) * tileSpacing) / CGFloat(maxGuesses)
-            let tileSize = max(0, min(tileWidth, tileHeightCap))
+            let tileSize = max(0, tileWidth)
             let rowHeight = CGFloat(maxGuesses) * tileSize + CGFloat(maxGuesses - 1) * tileSpacing
 
             let lastRow = 3

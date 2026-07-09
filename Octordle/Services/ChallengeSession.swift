@@ -9,16 +9,21 @@ import Combine
 final class ChallengeSession: ObservableObject {
     let preset: ChallengeType
 
-    /// One finished round's per-board outcome — powers the answer reveal
-    /// (per-round card in Run, end-of-session Review in Timed).
+    /// One finished round's full board snapshot — powers the Review screen
+    /// (board grids + answer list) and the Run per-round card.
     struct RoundResult: Identifiable {
         let id: Int          // 1-based round number
-        let words: [String]
-        let solved: [Bool]
-        var solvedCount: Int { solved.filter { $0 }.count }
-        var total: Int { words.count }
+        let boards: [BoardData]
+        var words: [String] { boards.map { $0.targetWord } }
+        var solved: [Bool] { boards.map { $0.isSolved } }
+        var solvedCount: Int { boards.filter { $0.isSolved }.count }
+        var total: Int { boards.count }
         var isFlawless: Bool { solvedCount == total && total > 0 }
     }
+
+    /// Cap on stored round snapshots (a long Run could otherwise grow unbounded);
+    /// the Review shows the most recent rounds.
+    private static let maxStoredRounds = 40
 
     /// Ticks down once per second while `.timed`; unused for `.run`.
     @Published private(set) var remainingSeconds: Int
@@ -80,20 +85,17 @@ final class ChallengeSession: ObservableObject {
     /// Called by `GameViewModel.endGame()` whenever a round finishes (naturally or
     /// via `forceFinishForChallenge()`). Folds the round's solved-board count into
     /// the running total and decides whether the session continues.
-    func reportRoundEnd(boards: [(word: String, solved: Bool)]) {
+    func reportRoundEnd(boards: [BoardData]) {
         guard !isOver else { return }
 
-        let boardsSolved = boards.filter { $0.solved }.count
+        let boardsSolved = boards.filter { $0.isSolved }.count
         totalBoardsSolved += boardsSolved
         gamesCompleted += 1
         timeExpired = false // consumed by this report
 
-        let result = RoundResult(
-            id: gamesCompleted,
-            words: boards.map { $0.word },
-            solved: boards.map { $0.solved }
-        )
+        let result = RoundResult(id: gamesCompleted, boards: boards)
         rounds.append(result)
+        if rounds.count > Self.maxStoredRounds { rounds.removeFirst() }
         if result.isFlawless { flawlessRounds += 1 }
 
         switch preset.family {

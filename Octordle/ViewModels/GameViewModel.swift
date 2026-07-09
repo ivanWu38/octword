@@ -386,9 +386,8 @@ class GameViewModel: ObservableObject {
         // to the session and either queue the next round or leave the final board
         // on screen for the parent ChallengeGameView's end overlay.
         if let session = challengeSession {
-            let boards = gameState.boards.map { (word: $0.targetWord, solved: $0.isSolved) }
             AnalyticsService.logGameComplete(gameState: gameState)
-            session.reportRoundEnd(boards: boards)
+            session.reportRoundEnd(boards: gameState.boards)
             // Timed rounds flow continuously — auto-deal the next game after a beat.
             // Run rounds pause on a per-round result card; ChallengeGameView deals
             // the next round when the player taps Continue (by bumping roundEpoch).
