@@ -351,6 +351,7 @@ struct GameView: View {
             // Back button (left) and Remaining guesses (right)
             HStack {
                 Button {
+                    HapticManager.shared.backTap()
                     dismiss()
                 } label: {
                     Image(systemName: "chevron.left")
@@ -516,7 +517,7 @@ struct GameView: View {
                             Spacer()
 
                             Button {
-                                HapticManager.shared.keyTap()
+                                HapticManager.shared.light()
                                 withAnimation(.easeInOut(duration: 0.3)) {
                                     proxy.scrollTo("row\(max(0, topVisibleRow - 1))", anchor: .top)
                                 }
@@ -541,7 +542,7 @@ struct GameView: View {
                             }
 
                             Button {
-                                HapticManager.shared.keyTap()
+                                HapticManager.shared.light()
                                 withAnimation(.easeInOut(duration: 0.3)) {
                                     proxy.scrollTo("row\(min(lastRow, topVisibleRow + 1))", anchor: .top)
                                 }

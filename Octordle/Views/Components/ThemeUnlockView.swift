@@ -153,6 +153,7 @@ struct ThemeUnlockView: View {
         }
         .onAppear {
             HapticManager.shared.achievementUnlocked()
+            SoundManager.shared.play(.solved)
             withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) {
                 appeared = true
             }

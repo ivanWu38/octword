@@ -78,6 +78,7 @@
 		8DF30AB86D5EC2BA035EAF45 /* ChallengesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEACC8BA0862A1405EDDD68 /* ChallengesView.swift */; };
 		28E59A000CDBADC333BC39B6 /* ChallengeGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E61B16000A4F2B5ACDD8108 /* ChallengeGameView.swift */; };
 		FADE0001CAFE0002BEEF0003 /* categories.json in Resources */ = {isa = PBXBuildFile; fileRef = FADE0004CAFE0005BEEF0006 /* categories.json */; };
+		A5D0F00D50000000B0075001 /* Sounds in Resources */ = {isa = PBXBuildFile; fileRef = A5D0F00D50000000B0075002 /* Sounds */; };
 		F993BEBC5F090AB38C07377F /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526CCEC7E276CD9610A211BB /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
@@ -108,6 +109,7 @@
 		54CEC0E65B8464862ABFE0A4 /* ArchiveCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveCalendarView.swift; sourceTree = "<group>"; };
 		55FC38C16F7E6EBCE666E10B /* words.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = words.json; sourceTree = "<group>"; };
 		FADE0004CAFE0005BEEF0006 /* categories.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = categories.json; sourceTree = "<group>"; };
+		A5D0F00D50000000B0075002 /* Sounds */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Sounds; sourceTree = "<group>"; };
 		5859D80C1518D574771FFA15 /* AdMobManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdMobManager.swift; sourceTree = "<group>"; };
 		589AA71BC7A1950FEB332012 /* Difficulty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Difficulty.swift; sourceTree = "<group>"; };
 		59C880C14E1BB16E660D4179 /* ShareCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCardView.swift; sourceTree = "<group>"; };
@@ -175,6 +177,7 @@
 				362E9DEF721E073A739B429F /* Assets.xcassets */,
 				55FC38C16F7E6EBCE666E10B /* words.json */,
 				FADE0004CAFE0005BEEF0006 /* categories.json */,
+				A5D0F00D50000000B0075002 /* Sounds */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -489,6 +492,7 @@
 				8967473597D7DEE4D1E78B6A /* Products.storekit in Resources */,
 				F7A30C9CB7B3B0EBCD6AB0D6 /* words.json in Resources */,
 				FADE0001CAFE0002BEEF0003 /* categories.json in Resources */,
+				A5D0F00D50000000B0075001 /* Sounds in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

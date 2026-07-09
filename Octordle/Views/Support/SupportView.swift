@@ -313,7 +313,7 @@ struct SupporterView: View {
             let earned = await support.buyCoffee()
             isWorking = false
             if earned {
-                HapticManager.shared.gameWon()
+                HapticManager.shared.celebrateSilently()
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                     showThanks = true
                 }

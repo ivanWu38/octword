@@ -96,7 +96,7 @@ struct DailyView: View {
             let earned = await supportService.buyCoffee()
             isBuyingCoffee = false
             if earned {
-                HapticManager.shared.gameWon()
+                HapticManager.shared.celebrateSilently()
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                     showCoffeeThanks = true
                 }

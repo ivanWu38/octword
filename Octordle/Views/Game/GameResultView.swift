@@ -247,7 +247,6 @@ struct GameResultView: View {
     private var shareButton: some View {
         Button {
             HapticManager.shared.buttonTap()
-            HapticManager.shared.playSound(.click)
             AnalyticsService.logShareResult(gameState: gameState)
             generateAndShare()
         } label: {
@@ -288,7 +287,6 @@ struct GameResultView: View {
     private var doneButton: some View {
         Button {
             HapticManager.shared.buttonTap()
-            HapticManager.shared.playSound(.click)
             let leave = onDone ?? { dismiss() }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                 leave()
