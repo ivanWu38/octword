@@ -79,6 +79,10 @@ class ReviewManager: ObservableObject {
         case personalBest
         /// Won with a 3-star rating. Repeatable; the cooldown below prevents spam.
         case perfectWin
+        /// Won on the day a day-streak milestone (7 / 30 / 100) was crossed.
+        /// Unlike the one-shot streak achievements, this also fires on rebuilt
+        /// streaks; the cooldown below prevents spam.
+        case streakMilestone
     }
 
     /// Achievements excluded from the review-prompt trigger set.
