@@ -3,34 +3,34 @@ import SwiftUI
 /// Tab enumeration for 4-tab structure
 enum Tab: String, CaseIterable {
     case today          // Daily Challenge
+    case explore        // Categories & Challenges hub
     case unlimited      // Unlimited practice
     case journey        // Stats/Journey
-    case settings       // Settings
 
     var title: String {
         switch self {
         case .today: return "Today"
+        case .explore: return "Explore"
         case .unlimited: return "Unlimited"
         case .journey: return "Journey"
-        case .settings: return "Settings"
         }
     }
 
     var icon: String {
         switch self {
         case .today: return "calendar"
+        case .explore: return "sparkles"
         case .unlimited: return "infinity"
         case .journey: return "chart.line.uptrend.xyaxis"
-        case .settings: return "gearshape.fill"
         }
     }
 
     var index: Int {
         switch self {
         case .today: return 0
-        case .unlimited: return 1
-        case .journey: return 2
-        case .settings: return 3
+        case .explore: return 1
+        case .unlimited: return 2
+        case .journey: return 3
         }
     }
 }
@@ -39,6 +39,7 @@ enum Tab: String, CaseIterable {
 struct MainTabView: View {
     @State private var selectedTab: Tab = .today
     @State private var hideTabBar = false
+    @State private var showSettings = false
 
     @EnvironmentObject var themeService: ThemeService
     @EnvironmentObject var subscriptionService: SubscriptionService
@@ -55,20 +56,47 @@ struct MainTabView: View {
                 DailyView()
                     .tag(Tab.today)
 
+                ExploreView()
+                    .tag(Tab.explore)
+
                 UnlimitedView()
                     .tag(Tab.unlimited)
 
                 StatsView()
                     .tag(Tab.journey)
-
-                SettingsView()
-                    .tag(Tab.settings)
             }
 
             // Custom tab bar (only show when not hidden)
             if !hideTabBar {
                 CustomTabBar(selectedTab: $selectedTab)
             }
+        }
+        .overlay(alignment: .topTrailing) {
+            // Settings gear — floats over every root tab, hides during gameplay
+            if !hideTabBar {
+                Button {
+                    HapticManager.shared.buttonTap()
+                    showSettings = true
+                } label: {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.quordleSecondaryText)
+                        .frame(width: 36, height: 36)
+                        .background(
+                            Circle()
+                                .fill(Color.quordleBackground.opacity(0.85))
+                                .overlay(Circle().stroke(Color.quordleCardBorder, lineWidth: 1))
+                        )
+                        .contentShape(Circle())
+                }
+                .buttonStyle(ScaleButtonStyle(scale: 0.9))
+                .padding(.trailing, 20)
+                .padding(.top, 4)
+            }
+        }
+        .sheet(isPresented: $showSettings) {
+            SettingsView()
+                .presentationDragIndicator(.visible)
         }
         .onReceive(NotificationCenter.default.publisher(for: .hideTabBar)) { _ in
             hideTabBar = true

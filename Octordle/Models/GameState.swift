@@ -5,6 +5,7 @@ enum GameMode: String, Codable {
     case daily
     case practice
     case unlimited
+    case categories
 }
 
 /// Complete game state
@@ -171,7 +172,13 @@ struct GameState: Codable, Equatable {
 
     /// Generate share text
     func generateShareText() -> String {
-        var text = "Octordle \(mode == .daily ? "Daily" : "Practice") \(difficulty.displayName)\n"
+        let modeLabel: String
+        switch mode {
+        case .daily: modeLabel = "Daily"
+        case .categories: modeLabel = "Category"
+        case .practice, .unlimited: modeLabel = "Practice"
+        }
+        var text = "Octordle \(modeLabel) \(difficulty.displayName)\n"
         text += isWon ? "🎉 \(guessCount)/\(difficulty.maxGuesses)" : "❌ X/\(difficulty.maxGuesses)"
         text += " ⏱️ \(elapsedTimeString)\n\n"
 

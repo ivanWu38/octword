@@ -21,6 +21,12 @@ class GameViewModel: ObservableObject {
     @Published var solveReport: SolveReport? = nil
     private var isComputingSolveReport = false
 
+    /// The active Challenge session, if this game is a Challenge round (Timed/Run
+    /// preset). Weak — `ChallengeGameView` owns the session as a `@StateObject`;
+    /// this view model only reports round results into it. When set, `endGame()`
+    /// reports to the session instead of showing the normal result sheet.
+    weak var challengeSession: ChallengeSession?
+
     // MARK: - Services
 
     private let wordService = WordService.shared
@@ -99,6 +105,10 @@ class GameViewModel: ObservableObject {
 
     // MARK: - Initialization
 
+    /// Which category puzzle this game is playing, if any (categories mode only) —
+    /// used to record pack progress on a win.
+    private var categoryContext: (categoryId: String, puzzleIndex: Int)?
+
     /// Create a new game
     init(mode: GameMode, difficulty: Difficulty) {
         let words: [String]
@@ -115,6 +125,22 @@ class GameViewModel: ObservableObject {
 
         #if DEBUG
         print("🟡 [DEBUG] Answers: \(words.enumerated().map { "Board \($0.offset + 1): \($0.element)" }.joined(separator: ", "))")
+        #endif
+
+        startLiveReporterIfNeeded()
+    }
+
+    /// Create a category puzzle game with the pack's fixed 8-word set
+    init(category: WordCategory, puzzleIndex: Int, difficulty: Difficulty = Constants.Game.defaultDifficulty) {
+        let words = Array(category.puzzles[puzzleIndex].prefix(difficulty.boardCount))
+        self.categoryContext = (category.id, puzzleIndex)
+
+        self.gameState = GameState(mode: .categories, difficulty: difficulty, words: words)
+        startTimer()
+        AnalyticsService.logGameStart(mode: .categories, difficulty: difficulty)
+
+        #if DEBUG
+        print("🟡 [DEBUG] Category \(category.id) #\(puzzleIndex + 1) — Answers: \(words.enumerated().map { "Board \($0.offset + 1): \($0.element)" }.joined(separator: ", "))")
         #endif
 
         startLiveReporterIfNeeded()
@@ -151,6 +177,35 @@ class GameViewModel: ObservableObject {
         #endif
 
         startLiveReporterIfNeeded()
+    }
+
+    /// Create a Challenge round: an 8-board Unlimited-style game whose result
+    /// reports into an active `ChallengeSession` instead of being recorded. Like
+    /// Unlimited, Challenge rounds are pure practice — no stats, achievements,
+    /// themes, or review prompts (see the `challengeSession` branch in `endGame()`).
+    init(challenge session: ChallengeSession) {
+        let difficulty = Constants.Game.defaultDifficulty
+        let words = wordService.getRandomWords(count: difficulty.boardCount)
+        self.challengeSession = session
+
+        self.gameState = GameState(mode: .unlimited, difficulty: difficulty, words: words)
+        startTimer()
+        AnalyticsService.logGameStart(mode: .unlimited, difficulty: difficulty)
+
+        #if DEBUG
+        print("🟡 [DEBUG] Challenge (\(session.preset.name)) — Answers: \(words.enumerated().map { "Board \($0.offset + 1): \($0.element)" }.joined(separator: ", "))")
+        #endif
+
+        startLiveReporterIfNeeded()
+
+        // Force-finish the round the instant the shared clock hits zero, even if
+        // the player is mid-guess.
+        session.$timeExpired
+            .filter { $0 }
+            .sink { [weak self] _ in
+                self?.forceFinishForChallenge()
+            }
+            .store(in: &cancellables)
     }
 
     deinit {
@@ -324,12 +379,44 @@ class GameViewModel: ObservableObject {
             HapticManager.shared.gameLost()
         }
 
+        // Challenge rounds never reach the normal result flow — report the round
+        // to the session and either queue the next round or leave the final board
+        // on screen for the parent ChallengeGameView's end overlay.
+        if let session = challengeSession {
+            let boardsSolved = gameState.boards.filter { $0.isSolved }.count
+            AnalyticsService.logGameComplete(gameState: gameState)
+            session.reportRoundEnd(boardsSolved: boardsSolved)
+            if !session.isOver {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
+                    guard let self, let session = self.challengeSession, !session.isOver else { return }
+                    // The clock can hit zero during this inter-round pause; the
+                    // expiry signal would be swallowed (no round is in progress),
+                    // so settle the session here instead of dealing a dead round.
+                    if session.preset.family == .timed && session.remainingSeconds <= 0 {
+                        session.finish()
+                    } else {
+                        self.resetGame()
+                    }
+                }
+            }
+            return
+        }
+
         // Only the daily challenge feeds stats, achievements, themes, and reviews.
         // Unlimited is pure practice and leaves no trace on The Record.
         // (Daily replays are also excluded to avoid inflating wins/streaks.)
         let shouldRecord = gameState.mode == .daily && !isPlayedDayCompleted
 
+        var reviewTriggers: [ReviewManager.ReviewTrigger] = []
+
         if shouldRecord {
+            // Snapshot the "happy moment" signals before recording so we can tell
+            // whether this game just crossed a milestone (see ReviewManager).
+            let preDailyChallengesCompleted = statsService.dailyChallengesCompleted
+            let preBestBoardsSolved = statsService.bestBoardsSolvedInOneGame
+            let preFastestWin = statsService.fastestWin
+            let preTotalGamesPlayed = statsService.totalGamesPlayed
+
             // Snapshot theme unlock state before recording result
             let previouslyUnlocked = Set(BoardTheme.allCases.filter {
                 $0.isUnlocked(isPremium: false, wordsSolved: statsService.totalWordsSolved, maxStreak: statsService.maxStreak)
@@ -347,6 +434,42 @@ class GameViewModel: ObservableObject {
             let freshlyUnlocked = nowUnlocked.subtracting(previouslyUnlocked)
             if let theme = freshlyUnlocked.first {
                 newlyUnlockedTheme = theme
+            }
+
+            // Any achievement unlock except the very-first-solve one is a good
+            // moment to ask for a review.
+            if newlyUnlockedAchievements.contains(where: { !ReviewManager.excludedAchievementTriggers.contains($0) }) {
+                reviewTriggers.append(.achievement)
+            }
+
+            // Daily-dedication milestones — crossed today for the first time.
+            let postDailyChallengesCompleted = statsService.dailyChallengesCompleted
+            let dailyMilestones = [5, 15, 40, 80]
+            if dailyMilestones.contains(where: { preDailyChallengesCompleted < $0 && postDailyChallengesCompleted >= $0 }) {
+                reviewTriggers.append(.dailyMilestone)
+            }
+
+            // Personal bests — only once the player has enough games under their
+            // belt that this isn't just early-game noise.
+            if preTotalGamesPlayed >= 10 {
+                let postBestBoardsSolved = statsService.bestBoardsSolvedInOneGame
+                let bestBoardsImproved = postBestBoardsSolved > preBestBoardsSolved && postBestBoardsSolved >= 4
+
+                let postFastestWin = statsService.fastestWin
+                let fastestWinImproved: Bool = {
+                    guard let pre = preFastestWin, let post = postFastestWin else { return false }
+                    return post < pre
+                }()
+
+                if bestBoardsImproved || fastestWinImproved {
+                    reviewTriggers.append(.personalBest)
+                }
+            }
+
+            // A 3-star win is a peak-happiness moment worth asking at — repeatable,
+            // since ReviewManager's own cooldown keeps this from becoming spam.
+            if result.isWon && result.starRating == 3 {
+                reviewTriggers.append(.perfectWin)
             }
         }
 
@@ -366,7 +489,12 @@ class GameViewModel: ObservableObject {
         }
 
         // Ask for a review only at a positive milestone (see ReviewManager).
-        ReviewManager.shared.considerPrompt(forNewlyUnlocked: newlyUnlockedAchievements)
+        ReviewManager.shared.considerPrompt(triggers: reviewTriggers)
+
+        // Categories mode keeps no stats, but a win completes the pack puzzle.
+        if gameState.mode == .categories, gameState.isWon, let ctx = categoryContext {
+            CategoryService.shared.markCompleted(categoryId: ctx.categoryId, puzzleIndex: ctx.puzzleIndex)
+        }
 
         // Pre-compute the solve report in the background so it's ready the moment the
         // player opens it. Daily/archive only — Unlimited has no report.
@@ -477,6 +605,15 @@ class GameViewModel: ObservableObject {
         }
     }
 
+    /// Force-ends the current round for a Challenge session — used when the shared
+    /// clock/lives run out mid-game (e.g. the timed clock hits zero while still
+    /// guessing). Stops further input immediately, then reports boards solved so
+    /// far exactly like a natural round end.
+    func forceFinishForChallenge() {
+        guard challengeSession != nil, !gameState.isGameOver else { return }
+        endGame()
+    }
+
     // MARK: - State Management
 
     /// Load a saved game state
@@ -491,9 +628,13 @@ class GameViewModel: ObservableObject {
         stopTimer()
         let words: [String]
         let boardCount = gameState.difficulty.boardCount
-        if gameState.mode == .daily {
+        switch gameState.mode {
+        case .daily:
             words = wordService.getDailyWords(count: boardCount)
-        } else {
+        case .categories:
+            // A category puzzle is a fixed set — replaying means the same words.
+            words = gameState.boards.map { $0.targetWord }
+        case .practice, .unlimited:
             words = wordService.getRandomWords(count: boardCount)
         }
         self.gameState = GameState(mode: gameState.mode, difficulty: gameState.difficulty, words: words)

@@ -41,6 +41,20 @@ struct GameView: View {
         _viewModel = StateObject(wrappedValue: GameViewModel(archiveDate: archiveDate))
     }
 
+    init(category: WordCategory, puzzleIndex: Int) {
+        _viewModel = StateObject(wrappedValue: GameViewModel(category: category, puzzleIndex: puzzleIndex))
+    }
+
+    /// A Challenge round (Timed/Run). The result sheet, confetti, streak overlay,
+    /// and achievement/theme cards never trigger here — `challengeSession` being
+    /// set makes `endGame()` report to the session instead of setting
+    /// `showGameCompleteSheet`, so all of that stays naturally dormant. The parent
+    /// `ChallengeGameView` hosts the HUD, inter-round toast, and end-of-session
+    /// overlay around this view.
+    init(challenge session: ChallengeSession) {
+        _viewModel = StateObject(wrappedValue: GameViewModel(challenge: session))
+    }
+
     var body: some View {
         GeometryReader { geometry in
             let maxContentWidth: CGFloat = 600
