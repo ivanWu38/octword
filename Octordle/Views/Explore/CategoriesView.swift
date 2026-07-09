@@ -7,17 +7,13 @@ struct CategoriesView: View {
     @EnvironmentObject var themeService: ThemeService
     @EnvironmentObject var subscriptionService: SubscriptionService
     @ObservedObject private var categoryService = CategoryService.shared
-    @ObservedObject private var rewardedAd = RewardedAdManager.shared
+    @ObservedObject private var rewardedAd = RewardedAdManager.category
     @Environment(\.dismiss) private var dismiss
 
     @State private var openedCategory: WordCategory?
     @State private var showDetail = false
     @State private var lockedCategory: WordCategory?
-    @State private var showLockedDialog = false
     @State private var showPaywall = false
-    @State private var adGameCategory: WordCategory?
-    @State private var adGameIndex = 0
-    @State private var showAdGame = false
     @State private var isShowingAd = false
 
     var body: some View {
@@ -45,22 +41,22 @@ struct CategoriesView: View {
                 CategoryDetailView(category: category)
             }
         }
-        .navigationDestination(isPresented: $showAdGame) {
-            if let category = adGameCategory {
-                GameView(category: category, puzzleIndex: adGameIndex)
-            }
-        }
         .sheet(isPresented: $showPaywall) { SubscriptionView() }
-        .confirmationDialog(
-            lockedCategory.map { "\($0.name) is a Pro pack" } ?? "",
-            isPresented: $showLockedDialog,
-            titleVisibility: .visible
-        ) {
-            Button("Unlock everything with Pro") { showPaywall = true }
-            Button("Watch an ad · play one puzzle") { startAdUnlock() }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("A different Pro pack is free to play every day.")
+        .sheet(item: $lockedCategory) { category in
+            LockedPackSheet(
+                category: category,
+                packCount: categoryService.categories.count,
+                onWatchAd: {
+                    lockedCategory = nil
+                    startAdUnlock(for: category)
+                },
+                onPremium: {
+                    lockedCategory = nil
+                    showPaywall = true
+                }
+            )
+            .presentationDetents([.height(440)])
+            .presentationDragIndicator(.visible)
         }
         .onAppear { rewardedAd.preloadIfNeeded() }
         .overlay {
@@ -89,7 +85,6 @@ struct CategoriesView: View {
 
     private func categoryRow(_ category: WordCategory) -> some View {
         let unlocked = categoryService.isUnlocked(category, isPremium: subscriptionService.isPremium)
-        let isTodayFree = !category.free && category.id == categoryService.dailyFreeCategoryId
         let done = categoryService.completedCount(categoryId: category.id)
 
         return Button {
@@ -99,7 +94,6 @@ struct CategoriesView: View {
                 showDetail = true
             } else {
                 lockedCategory = category
-                showLockedDialog = true
             }
         } label: {
             HStack(spacing: 14) {
@@ -113,21 +107,9 @@ struct CategoriesView: View {
                     )
 
                 VStack(alignment: .leading, spacing: 3) {
-                    HStack(spacing: 6) {
-                        Text(category.name)
-                            .font(.system(size: 17, weight: .bold, design: .serif))
-                            .foregroundColor(.quordlePrimaryText)
-                        if isTodayFree {
-                            Text("Free Today")
-                                .font(.system(size: 9, weight: .bold))
-                                .tracking(1)
-                                .textCase(.uppercase)
-                                .foregroundColor(.quordleGold)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 3)
-                                .overlay(Capsule().stroke(Color.quordleGold, lineWidth: 1))
-                        }
-                    }
+                    Text(category.name)
+                        .font(.system(size: 17, weight: .bold, design: .serif))
+                        .foregroundColor(.quordlePrimaryText)
                     Text("\(done) / \(category.puzzleCount) solved")
                         .font(.system(size: 13))
                         .foregroundColor(.quordleSecondaryText)
@@ -151,7 +133,7 @@ struct CategoriesView: View {
                     .fill(Color.quordleCardBackground)
                     .overlay(
                         RoundedRectangle(cornerRadius: 14)
-                            .stroke(isTodayFree ? Color.quordleGold.opacity(0.6) : Color.quordleCardBorder, lineWidth: 1)
+                            .stroke(Color.quordleCardBorder, lineWidth: 1)
                     )
             )
         }
@@ -160,8 +142,9 @@ struct CategoriesView: View {
 
     // MARK: - Rewarded ad unlock
 
-    private func startAdUnlock() {
-        guard let category = lockedCategory else { return }
+    /// Watch a rewarded ad, then unlock the front unsolved level and drop the
+    /// player into the pack's level list (where that one level is ready to play).
+    private func startAdUnlock(for category: WordCategory) {
         let index = categoryService.nextUnsolvedIndex(in: category)
         isShowingAd = true
         Task {
@@ -169,9 +152,8 @@ struct CategoriesView: View {
             isShowingAd = false
             if rewarded {
                 categoryService.grantAdUnlock(categoryId: category.id, puzzleIndex: index)
-                adGameCategory = category
-                adGameIndex = index
-                showAdGame = true
+                openedCategory = category
+                showDetail = true
             }
         }
     }

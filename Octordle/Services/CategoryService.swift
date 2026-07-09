@@ -49,19 +49,8 @@ final class CategoryService: ObservableObject {
 
     // MARK: - Unlocking
 
-    /// The paid category that is free to play today — rotates daily so there's
-    /// always something new to come back for.
-    var dailyFreeCategoryId: String? {
-        let paid = categories.filter { !$0.free }
-        guard !paid.isEmpty else { return nil }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyyMMdd"
-        let daySeed = Int(formatter.string(from: Date())) ?? 0
-        return paid[daySeed % paid.count].id
-    }
-
     func isUnlocked(_ category: WordCategory, isPremium: Bool) -> Bool {
-        category.free || isPremium || category.id == dailyFreeCategoryId
+        category.free || isPremium
     }
 
     func isPuzzlePlayable(_ category: WordCategory, puzzleIndex: Int, isPremium: Bool) -> Bool {

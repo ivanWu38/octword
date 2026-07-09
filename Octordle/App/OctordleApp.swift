@@ -43,9 +43,10 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         let clarityConfig = ClarityConfig(projectId: "wxg3m4aogx")
         ClaritySDK.initialize(config: clarityConfig)
 
-        // Warm up the rewarded ad (used to unlock archive puzzles) so it's ready
-        // the moment the player opens the Archive.
+        // Warm up the rewarded ads (archive puzzles + themed-category levels) so
+        // they're ready the moment the player needs one.
         RewardedAdManager.shared.preloadIfNeeded()
+        RewardedAdManager.category.preloadIfNeeded()
     }
 }
 

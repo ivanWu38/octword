@@ -16,7 +16,6 @@ struct DailyView: View {
     @State private var showResult = false
     @State private var showSettings = false
     @State private var showSupporter = false
-    @State private var showSupportConfirm = false
     @State private var isBuyingCoffee = false
     @State private var showCoffeeThanks = false
 
@@ -77,15 +76,6 @@ struct DailyView: View {
             }
             .sheet(isPresented: $showSupporter) {
                 SupporterView()
-            }
-            .sheet(isPresented: $showSupportConfirm) {
-                SupportConfirmSheet(
-                    onWatch: {
-                        showSupportConfirm = false
-                        buyCoffeeFromCard()
-                    },
-                    onCancel: { showSupportConfirm = false }
-                )
             }
             .overlay {
                 if showCoffeeThanks {
@@ -309,7 +299,7 @@ struct DailyView: View {
             Spacer()
             if supportService.shouldShowCard(isPremium: subscriptionService.isPremium, totalGamesPlayed: statsService.totalGamesPlayed) {
                 SupportCard(
-                    onSupport: { showSupportConfirm = true },
+                    onSupport: { buyCoffeeFromCard() },
                     onDismiss: { supportService.dismissCardForToday() }
                 )
                 .padding(.bottom, 18)

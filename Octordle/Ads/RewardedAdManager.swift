@@ -8,6 +8,8 @@ class RewardedAdManager: NSObject, ObservableObject {
     static let shared = RewardedAdManager(adUnitId: Constants.AdMob.rewardedAdUnitId)
     /// Dedicated instance for the "buy me a coffee" support flow (separate ad unit).
     static let support = RewardedAdManager(adUnitId: Constants.AdMob.supportRewardedAdUnitId)
+    /// Dedicated instance for unlocking themed-category levels (separate ad unit).
+    static let category = RewardedAdManager(adUnitId: Constants.AdMob.categoryRewardedAdUnitId)
 
     @Published private(set) var isAdReady = false
 
@@ -89,19 +91,14 @@ class RewardedAdManager: NSObject, ObservableObject {
 
         pendingRewardEarned = false
 
-        // Wait briefly for any sheet/alert dismissal animation to settle
-        try? await Task.sleep(nanoseconds: 300_000_000)
-
-        // Present from the TOPMOST presented view controller (e.g. above the unlock sheet)
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let rootVC = (windowScene.windows.first(where: { $0.isKeyWindow }) ?? windowScene.windows.first)?.rootViewController else {
-            print("[AdMob] No root view controller found")
+        // Any triggering sheet (e.g. the locked-pack sheet) is usually dismissing
+        // right now. Presenting on a view controller that is mid-dismissal fails
+        // silently AND never calls the delegate — which would hang the caller
+        // forever. So wait for a stable presenter that is on-screen and not being
+        // dismissed before presenting.
+        guard let topVC = await stablePresenter() else {
+            print("[AdMob] No stable presenter found — skipping ad (\(adUnitId))")
             return false
-        }
-
-        var topVC = rootVC
-        while let presented = topVC.presentedViewController {
-            topVC = presented
         }
 
         return await withCheckedContinuation { continuation in
@@ -111,6 +108,41 @@ class RewardedAdManager: NSObject, ObservableObject {
                 self?.pendingRewardEarned = true
             }
         }
+    }
+
+    /// Resolve the top-most view controller that is actually on-screen and not in
+    /// the middle of a presentation/dismissal transition. Polls briefly so a sheet
+    /// that is currently dismissing has time to finish first.
+    private func stablePresenter() async -> UIViewController? {
+        for attempt in 0..<25 { // up to ~2.5s
+            if attempt > 0 { try? await Task.sleep(nanoseconds: 100_000_000) }
+
+            guard let windowScene = UIApplication.shared.connectedScenes
+                    .compactMap({ $0 as? UIWindowScene })
+                    .first(where: { $0.activationState == .foregroundActive }) ?? (UIApplication.shared.connectedScenes.first as? UIWindowScene),
+                  let rootVC = (windowScene.windows.first(where: { $0.isKeyWindow }) ?? windowScene.windows.first)?.rootViewController else {
+                continue
+            }
+
+            // Walk down to the deepest presented VC, but never step onto one that
+            // is being dismissed (that's the transient sheet we're waiting out).
+            var topVC = rootVC
+            while let presented = topVC.presentedViewController, !presented.isBeingDismissed {
+                topVC = presented
+            }
+
+            // The presenter must have NOTHING currently presented on it, or the
+            // present call fails with "already presenting another view controller".
+            // A non-nil presentedViewController here means a sheet is still mid-
+            // dismissal — wait for it to finish.
+            if topVC.presentedViewController != nil
+                || topVC.isBeingPresented || topVC.isBeingDismissed
+                || topVC.view.window == nil {
+                continue // still transitioning — wait and retry
+            }
+            return topVC
+        }
+        return nil
     }
 
     // MARK: - Reset

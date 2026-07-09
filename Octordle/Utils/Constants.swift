@@ -78,6 +78,8 @@ enum Constants {
         /// Separate rewarded unit for the "buy me a coffee" support flow (kept
         /// distinct so its performance can be tracked independently).
         static let prodSupportRewardedAdUnitId = "ca-app-pub-5654617376526903/5535012213"
+        /// Separate rewarded unit for unlocking themed-category levels.
+        static let prodCategoryRewardedAdUnitId = "ca-app-pub-5654617376526903/3122234771"
 
         // Google's official test Ad Unit IDs (always return test ads)
         static let testBannerAdUnitId = "ca-app-pub-3940256099942544/2934735716"
@@ -87,10 +89,12 @@ enum Constants {
         static let bannerAdUnitId = testBannerAdUnitId
         static let rewardedAdUnitId = testRewardedAdUnitId
         static let supportRewardedAdUnitId = testRewardedAdUnitId
+        static let categoryRewardedAdUnitId = testRewardedAdUnitId
         #else
         static let bannerAdUnitId = prodBannerAdUnitId
         static let rewardedAdUnitId = prodRewardedAdUnitId
         static let supportRewardedAdUnitId = prodSupportRewardedAdUnitId
+        static let categoryRewardedAdUnitId = prodCategoryRewardedAdUnitId
         #endif
     }
 }

@@ -12,20 +12,24 @@ struct StatsView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 0) {
-                    masthead
-                    ledgerSection
-                    if statsService.totalWins > 0 {
-                        blockLabel("Guess Distribution")
-                        guessDistribution
+            VStack(spacing: 0) {
+                masthead
+                    .iPadReadableWidth(520)
+
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        ledgerSection
+                        if statsService.totalWins > 0 {
+                            blockLabel("Guess Distribution")
+                            guessDistribution
+                        }
+                        blockLabel("Marks of Distinction",
+                                   trailing: "\(statsService.unlockedAchievementsCount) / \(statsService.totalAchievementsCount)")
+                        marksSection
+                        Spacer().frame(height: 100)
                     }
-                    blockLabel("Marks of Distinction",
-                               trailing: "\(statsService.unlockedAchievementsCount) / \(statsService.totalAchievementsCount)")
-                    marksSection
-                    Spacer().frame(height: 100)
+                    .iPadReadableWidth(520)
                 }
-                .iPadReadableWidth(520)
             }
             .background(Color.quordleBackground.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)

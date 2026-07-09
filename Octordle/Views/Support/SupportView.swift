@@ -89,82 +89,6 @@ struct SupportCard: View {
     }
 }
 
-// MARK: - B · Gentle confirmation sheet
-
-/// Shown before the ad plays — a no-pressure reassurance that this is optional
-/// and the game never changes either way.
-struct SupportConfirmSheet: View {
-    let onWatch: () -> Void
-    let onCancel: () -> Void
-
-    var body: some View {
-        VStack(spacing: 0) {
-            Text("☕")
-                .font(.system(size: 46))
-                .padding(.top, 30)
-
-            Text("No pressure 🙂")
-                .font(.system(size: 22, weight: .bold, design: .serif))
-                .foregroundColor(.quordlePrimaryText)
-                .padding(.top, 10)
-
-            Text("This is just a short ad — no charge, and the game's exactly the same whether you watch or not. If you'd like to buy me a coffee this way, thank you. Really.")
-                .font(.system(size: 14, design: .serif))
-                .foregroundColor(.quordleSecondaryText)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, 26)
-                .padding(.top, 10)
-
-            Button {
-                HapticManager.shared.buttonTap()
-                onWatch()
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "play.fill")
-                        .font(.system(size: 13))
-                    Text("Watch a short ad")
-                        .font(.system(size: 16, weight: .semibold, design: .serif))
-                    Text("AD")
-                        .font(.system(size: 10, weight: .heavy))
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 1)
-                        .background(Capsule().fill(Color.white.opacity(0.25)))
-                }
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 15)
-                .background(RoundedRectangle(cornerRadius: 4).fill(Color.quordleCoffee))
-            }
-            .buttonStyle(ScaleButtonStyle())
-            .padding(.horizontal, 22)
-            .padding(.top, 22)
-
-            Button {
-                HapticManager.shared.buttonTap()
-                onCancel()
-            } label: {
-                Text("Not today")
-                    .font(.system(size: 15, design: .serif))
-                    .foregroundColor(.quordleSecondaryText)
-                    .padding(.vertical, 12)
-            }
-            .buttonStyle(.plain)
-            .padding(.top, 4)
-
-            Text("100% optional · the game never changes")
-                .font(.system(size: 11, weight: .medium))
-                .tracking(0.5)
-                .foregroundColor(.quordleSecondaryText.opacity(0.7))
-                .padding(.top, 6)
-
-            Spacer(minLength: 12)
-        }
-        .frame(maxWidth: .infinity)
-        .background(Color.quordleBackground.ignoresSafeArea())
-    }
-}
-
 // MARK: - C · Supporter page (the full-screen sheet, opened via the masthead coffee pill)
 
 /// Owns the whole coffee flow when opened from the masthead pill: shows the
@@ -173,7 +97,6 @@ struct SupportConfirmSheet: View {
 struct SupporterView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var support = SupportService.shared
-    @State private var showConfirm = false
     @State private var isWorking = false
     @State private var showThanks = false
 
@@ -203,15 +126,6 @@ struct SupporterView: View {
         .background(Color.quordleBackground.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .onAppear { support.preload() }
-        .sheet(isPresented: $showConfirm) {
-            SupportConfirmSheet(
-                onWatch: {
-                    showConfirm = false
-                    buyCoffee()
-                },
-                onCancel: { showConfirm = false }
-            )
-        }
         .overlay {
             if showThanks {
                 CoffeeThanksOverlay(count: support.coffeeCount) {
@@ -360,7 +274,7 @@ struct SupporterView: View {
 
             Button {
                 HapticManager.shared.buttonTap()
-                showConfirm = true
+                buyCoffee()
             } label: {
                 HStack(spacing: 8) {
                     if isWorking {
