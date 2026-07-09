@@ -14,10 +14,11 @@ struct CategoryDetailView: View {
     private let columns = [GridItem(.adaptive(minimum: 64), spacing: 12)]
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 0) {
-                header
+        VStack(spacing: 0) {
+            header
+                .iPadReadableWidth(520)
 
+            ScrollView(showsIndicators: false) {
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(0..<category.puzzleCount, id: \.self) { index in
                         puzzleChip(index)
@@ -25,10 +26,9 @@ struct CategoryDetailView: View {
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 24)
-
-                Spacer().frame(height: 110)
+                .padding(.bottom, 110)
+                .iPadReadableWidth(520)
             }
-            .iPadReadableWidth(520)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.quordleBackground.ignoresSafeArea())

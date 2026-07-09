@@ -65,7 +65,8 @@
       "Bash(xargs -I{} sh -c 'echo \"{}: $\\(grep -o \"\\\\\"\" {} | wc -l\\) quotes\"')",
       "Bash(/usr/libexec/PlistBuddy *)",
       "WebFetch(domain:community.revenuecat.com)",
-      "Bash(curl -s \"https://apps.apple.com/us/app/8words-daily-word-puzzle/id6444903053\" -A \"Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/605.1.15\" -o /private/tmp/claude-501/-Users-wuyuping-Desktop-ios-apps-octordle-claude/729d3950-8959-47bf-a4a9-88586303844a/scratchpad/appstore.html)"
+      "Bash(curl -s \"https://apps.apple.com/us/app/8words-daily-word-puzzle/id6444903053\" -A \"Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/605.1.15\" -o /private/tmp/claude-501/-Users-wuyuping-Desktop-ios-apps-octordle-claude/729d3950-8959-47bf-a4a9-88586303844a/scratchpad/appstore.html)",
+      "Bash(awk '/WordCategory\\\\\\(/{name=$0} /puzzles:/{n=0} /\\\\[\"/{n++} /\\\\]\\\\]/{if\\(name!=\"\"\\){print name; name=\"\"}}' Octordle/Services/CategoryService.swift)"
     ]
   }
 }

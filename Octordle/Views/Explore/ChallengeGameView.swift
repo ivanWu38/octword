@@ -108,13 +108,11 @@ struct ChallengeGameView: View {
     }
 
     private var livesView: some View {
-        HStack(spacing: 3) {
-            ForEach(0..<session.preset.config, id: \.self) { i in
-                Image(systemName: i < session.livesLeft ? "heart.fill" : "heart")
-                    .font(.system(size: 11))
-                    .foregroundColor(i < session.livesLeft ? .quordlePrimary : .quordleSecondaryText.opacity(0.35))
-            }
-        }
+        Text("\(session.livesLeft)")
+            .font(.system(.subheadline, design: .serif))
+            .fontWeight(.bold)
+            .foregroundColor(session.livesLeft <= 1 ? .red : .quordlePrimaryText)
+            .monospacedDigit()
     }
 
     // MARK: - Inter-round toast

@@ -21,10 +21,11 @@ struct CategoriesView: View {
     @State private var isShowingAd = false
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 0) {
-                header
+        VStack(spacing: 0) {
+            header
+                .iPadReadableWidth(520)
 
+            ScrollView(showsIndicators: false) {
                 VStack(spacing: 12) {
                     ForEach(categoryService.categories) { category in
                         categoryRow(category)
@@ -32,10 +33,9 @@ struct CategoriesView: View {
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 20)
-
-                Spacer().frame(height: 110)
+                .padding(.bottom, 110)
+                .iPadReadableWidth(520)
             }
-            .iPadReadableWidth(520)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.quordleBackground.ignoresSafeArea())

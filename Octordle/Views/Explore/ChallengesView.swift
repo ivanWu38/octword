@@ -12,29 +12,32 @@ struct ChallengesView: View {
     @State private var bestScoreRefresh = 0
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 0) {
-                header
+        VStack(spacing: 0) {
+            header
+                .iPadReadableWidth(520)
 
-                sectionLabel("Timed")
-                VStack(spacing: 12) {
-                    ForEach(ChallengeType.timedPresets) { preset in
-                        presetRow(preset)
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    sectionLabel("Timed")
+                    VStack(spacing: 12) {
+                        ForEach(ChallengeType.timedPresets) { preset in
+                            presetRow(preset)
+                        }
                     }
-                }
-                .padding(.horizontal, 24)
+                    .padding(.horizontal, 24)
 
-                sectionLabel("Run")
-                VStack(spacing: 12) {
-                    ForEach(ChallengeType.runPresets) { preset in
-                        presetRow(preset)
+                    sectionLabel("Run")
+                    VStack(spacing: 12) {
+                        ForEach(ChallengeType.runPresets) { preset in
+                            presetRow(preset)
+                        }
                     }
-                }
-                .padding(.horizontal, 24)
+                    .padding(.horizontal, 24)
 
-                Spacer().frame(height: 110)
+                    Spacer().frame(height: 110)
+                }
+                .iPadReadableWidth(520)
             }
-            .iPadReadableWidth(520)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.quordleBackground.ignoresSafeArea())
@@ -107,9 +110,11 @@ struct ChallengesView: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text(best > 0 ? "Best \(best)" : "—")
-                        .font(.system(size: 13, weight: .semibold, design: .serif))
-                        .foregroundColor(best > 0 ? .quordleGold : .quordleSecondaryText)
+                    if best > 0 {
+                        Text("Best \(best)")
+                            .font(.system(size: 13, weight: .semibold, design: .serif))
+                            .foregroundColor(.quordleGold)
+                    }
                     Image(systemName: "chevron.right")
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundColor(.quordleSecondaryText)

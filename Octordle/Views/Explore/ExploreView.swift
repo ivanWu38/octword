@@ -12,27 +12,30 @@ struct ExploreView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 0) {
-                    EditorialMasthead(
-                        kicker: "Beyond the Daily",
-                        title: "Explore",
-                        subtitle: "Categories · Challenges",
-                        showCoffee: !subscriptionService.isPremium,
-                        coffeeCount: supportService.coffeeCount,
-                        onCoffee: { showSupporter = true },
-                        onSettings: { showSettings = true }
-                    )
-
-                    sectionLabel("Categories")
-                    categoriesCard
-
-                    sectionLabel("Challenges")
-                    challengesCard
-
-                    Spacer().frame(height: 110)
-                }
+            VStack(spacing: 0) {
+                EditorialMasthead(
+                    kicker: "Beyond the Daily",
+                    title: "Explore",
+                    subtitle: "Categories · Challenges",
+                    showCoffee: !subscriptionService.isPremium,
+                    coffeeCount: supportService.coffeeCount,
+                    onCoffee: { showSupporter = true },
+                    onSettings: { showSettings = true }
+                )
                 .iPadReadableWidth(520)
+
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        sectionLabel("Categories")
+                        categoriesCard
+
+                        sectionLabel("Challenges")
+                        challengesCard
+
+                        Spacer().frame(height: 110)
+                    }
+                    .iPadReadableWidth(520)
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.quordleBackground.ignoresSafeArea())
