@@ -244,6 +244,12 @@ struct GameView: View {
             }
         }
         .sheet(isPresented: $shouldDismissAfterResult, onDismiss: {
+            // A swipe-down never hits either button, which would leave the prompt
+            // armed and re-showing after every following game — count it as a
+            // decline so the cooldowns apply.
+            if reviewManager.showReviewPrompt {
+                reviewManager.userDeclined()
+            }
             // After the review prompt closes, mark completed and pop together.
             viewModel.markDailyCompletedIfNeeded()
             dismiss()

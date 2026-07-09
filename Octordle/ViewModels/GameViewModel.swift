@@ -495,6 +495,16 @@ class GameViewModel: ObservableObject {
             if result.isWon && result.starRating == 3 {
                 reviewTriggers.append(.perfectWin)
             }
+
+            // Crossing a day-streak milestone is the strongest happy moment in a
+            // daily game. `streakIncludingToday` counts today (it's not marked
+            // completed until the result sheet closes), and this path runs once
+            // per day (first daily completion only), so an exact match means the
+            // milestone was crossed today. Win-only: never ask on a loss.
+            let streakMilestones: Set<Int> = [7, 30, 100]
+            if result.isWon && streakMilestones.contains(DailyPuzzleService.shared.streakIncludingToday) {
+                reviewTriggers.append(.streakMilestone)
+            }
         }
 
         // Log analytics
