@@ -309,10 +309,14 @@ struct GameView: View {
                     .font(.system(size: 17, weight: .semibold, design: .serif))
                     .foregroundColor(.quordlePrimaryText)
 
-                Text(viewModel.elapsedTimeString)
-                    .font(.system(.subheadline, design: .serif))
-                    .foregroundColor(.quordleSecondaryText)
-                    .monospacedDigit()
+                // Challenge rounds show the session clock in the HUD strip above,
+                // so the per-game count-up timer would be a confusing second clock.
+                if viewModel.challengeSession == nil {
+                    Text(viewModel.elapsedTimeString)
+                        .font(.system(.subheadline, design: .serif))
+                        .foregroundColor(.quordleSecondaryText)
+                        .monospacedDigit()
+                }
             }
 
             // Back button (left) and Remaining guesses (right)

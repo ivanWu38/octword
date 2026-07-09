@@ -39,7 +39,6 @@ enum Tab: String, CaseIterable {
 struct MainTabView: View {
     @State private var selectedTab: Tab = .today
     @State private var hideTabBar = false
-    @State private var showSettings = false
 
     @EnvironmentObject var themeService: ThemeService
     @EnvironmentObject var subscriptionService: SubscriptionService
@@ -70,33 +69,6 @@ struct MainTabView: View {
             if !hideTabBar {
                 CustomTabBar(selectedTab: $selectedTab)
             }
-        }
-        .overlay(alignment: .topTrailing) {
-            // Settings gear — floats over every root tab, hides during gameplay
-            if !hideTabBar {
-                Button {
-                    HapticManager.shared.buttonTap()
-                    showSettings = true
-                } label: {
-                    Image(systemName: "gearshape")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(.quordleSecondaryText)
-                        .frame(width: 36, height: 36)
-                        .background(
-                            Circle()
-                                .fill(Color.quordleBackground.opacity(0.85))
-                                .overlay(Circle().stroke(Color.quordleCardBorder, lineWidth: 1))
-                        )
-                        .contentShape(Circle())
-                }
-                .buttonStyle(ScaleButtonStyle(scale: 0.9))
-                .padding(.trailing, 20)
-                .padding(.top, 4)
-            }
-        }
-        .sheet(isPresented: $showSettings) {
-            SettingsView()
-                .presentationDragIndicator(.visible)
         }
         .onReceive(NotificationCenter.default.publisher(for: .hideTabBar)) { _ in
             hideTabBar = true

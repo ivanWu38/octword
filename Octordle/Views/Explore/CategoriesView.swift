@@ -8,6 +8,7 @@ struct CategoriesView: View {
     @EnvironmentObject var subscriptionService: SubscriptionService
     @ObservedObject private var categoryService = CategoryService.shared
     @ObservedObject private var rewardedAd = RewardedAdManager.shared
+    @Environment(\.dismiss) private var dismiss
 
     @State private var openedCategory: WordCategory?
     @State private var showDetail = false
@@ -75,33 +76,13 @@ struct CategoriesView: View {
     // MARK: - Header
 
     private var header: some View {
-        VStack(spacing: 0) {
-            Text("Themed Word Packs")
-                .font(.system(size: 11, weight: .medium))
-                .tracking(2)
-                .textCase(.uppercase)
-                .foregroundColor(.quordleSecondaryText)
-                .padding(.bottom, 8)
-
-            Rectangle().fill(Color.quordlePrimaryText).frame(height: 1)
-
-            Text("Categories")
-                .font(.system(size: 38, weight: .bold, design: .serif))
-                .foregroundColor(.quordlePrimaryText)
-                .padding(.vertical, 8)
-
-            Rectangle().fill(Color.quordlePrimaryText).frame(height: 1)
-
-            let progress = categoryService.overallProgress
-            Text("\(progress.solved) of \(progress.total) puzzles solved")
-                .font(.system(size: 10.5, weight: .medium))
-                .tracking(2)
-                .textCase(.uppercase)
-                .foregroundColor(.quordleSecondaryText)
-                .padding(.top, 8)
-        }
-        .padding(.horizontal, 24)
-        .padding(.top, 8)
+        let progress = categoryService.overallProgress
+        return EditorialMasthead(
+            kicker: "Themed Word Packs",
+            title: "Categories",
+            subtitle: "\(progress.solved) of \(progress.total) puzzles solved",
+            onBack: { dismiss() }
+        )
     }
 
     // MARK: - Rows

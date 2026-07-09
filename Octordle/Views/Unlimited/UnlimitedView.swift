@@ -7,8 +7,11 @@ struct UnlimitedView: View {
     @EnvironmentObject var themeService: ThemeService
     @EnvironmentObject var subscriptionService: SubscriptionService
 
+    @ObservedObject private var supportService = SupportService.shared
     @State private var showGame = false
     @State private var selectedDifficulty: Difficulty = .unlimitedNormal
+    @State private var showSettings = false
+    @State private var showSupporter = false
 
     var body: some View {
         NavigationStack {
@@ -48,38 +51,27 @@ struct UnlimitedView: View {
             .navigationDestination(isPresented: $showGame) {
                 GameView(mode: .unlimited, difficulty: selectedDifficulty)
             }
+            .sheet(isPresented: $showSettings) {
+                SettingsView().presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showSupporter) {
+                SupporterView()
+            }
         }
     }
 
     // MARK: - Masthead
 
     private var masthead: some View {
-        VStack(spacing: 0) {
-            Text("No Limits · Play On")
-                .font(.system(size: 11, weight: .medium))
-                .tracking(2)
-                .textCase(.uppercase)
-                .foregroundColor(.quordleSecondaryText)
-                .padding(.bottom, 8)
-
-            Rectangle().fill(Color.quordlePrimaryText).frame(height: 1)
-
-            Text("Unlimited")
-                .font(.system(size: 38, weight: .bold, design: .serif))
-                .foregroundColor(.quordlePrimaryText)
-                .padding(.vertical, 8)
-
-            Rectangle().fill(Color.quordlePrimaryText).frame(height: 1)
-
-            Text("Eight Words  ·  Three Modes")
-                .font(.system(size: 10.5, weight: .medium))
-                .tracking(2)
-                .textCase(.uppercase)
-                .foregroundColor(.quordleSecondaryText)
-                .padding(.top, 8)
-        }
-        .padding(.horizontal, 24)
-        .padding(.top, 8)
+        EditorialMasthead(
+            kicker: "No Limits · Play On",
+            title: "Unlimited",
+            subtitle: "Eight Words · Three Modes",
+            showCoffee: !subscriptionService.isPremium,
+            coffeeCount: supportService.coffeeCount,
+            onCoffee: { showSupporter = true },
+            onSettings: { showSettings = true }
+        )
     }
 
     // MARK: - Difficulty Card

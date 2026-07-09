@@ -6,12 +6,23 @@ struct ExploreView: View {
     @EnvironmentObject var statsService: StatsService
     @EnvironmentObject var subscriptionService: SubscriptionService
     @ObservedObject private var categoryService = CategoryService.shared
+    @ObservedObject private var supportService = SupportService.shared
+    @State private var showSettings = false
+    @State private var showSupporter = false
 
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
-                    masthead
+                    EditorialMasthead(
+                        kicker: "Beyond the Daily",
+                        title: "Explore",
+                        subtitle: "Categories · Challenges",
+                        showCoffee: !subscriptionService.isPremium,
+                        coffeeCount: supportService.coffeeCount,
+                        onCoffee: { showSupporter = true },
+                        onSettings: { showSettings = true }
+                    )
 
                     sectionLabel("Categories")
                     categoriesCard
@@ -26,38 +37,13 @@ struct ExploreView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.quordleBackground.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
+            .sheet(isPresented: $showSettings) {
+                SettingsView().presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showSupporter) {
+                SupporterView()
+            }
         }
-    }
-
-    // MARK: - Masthead
-
-    private var masthead: some View {
-        VStack(spacing: 0) {
-            Text("Beyond the Daily")
-                .font(.system(size: 11, weight: .medium))
-                .tracking(2)
-                .textCase(.uppercase)
-                .foregroundColor(.quordleSecondaryText)
-                .padding(.bottom, 8)
-
-            Rectangle().fill(Color.quordlePrimaryText).frame(height: 1)
-
-            Text("Explore")
-                .font(.system(size: 38, weight: .bold, design: .serif))
-                .foregroundColor(.quordlePrimaryText)
-                .padding(.vertical, 8)
-
-            Rectangle().fill(Color.quordlePrimaryText).frame(height: 1)
-
-            Text("Categories  ·  Challenges")
-                .font(.system(size: 10.5, weight: .medium))
-                .tracking(2)
-                .textCase(.uppercase)
-                .foregroundColor(.quordleSecondaryText)
-                .padding(.top, 8)
-        }
-        .padding(.horizontal, 24)
-        .padding(.top, 8)
     }
 
     // MARK: - Sections

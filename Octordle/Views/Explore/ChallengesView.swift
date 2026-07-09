@@ -4,6 +4,7 @@ import SwiftUI
 /// Tapping a preset pushes `ChallengeGameView`, which owns the session and hosts
 /// consecutive Unlimited-style rounds until the clock/lives run out.
 struct ChallengesView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var selectedPreset: ChallengeType?
     @State private var showGame = false
     /// Bumped whenever a session ends, so best-score labels refresh without
@@ -52,32 +53,12 @@ struct ChallengesView: View {
     // MARK: - Header
 
     private var header: some View {
-        VStack(spacing: 0) {
-            Text("Beyond the Daily")
-                .font(.system(size: 11, weight: .medium))
-                .tracking(2)
-                .textCase(.uppercase)
-                .foregroundColor(.quordleSecondaryText)
-                .padding(.bottom, 8)
-
-            Rectangle().fill(Color.quordlePrimaryText).frame(height: 1)
-
-            Text("Challenges")
-                .font(.system(size: 38, weight: .bold, design: .serif))
-                .foregroundColor(.quordlePrimaryText)
-                .padding(.vertical, 8)
-
-            Rectangle().fill(Color.quordlePrimaryText).frame(height: 1)
-
-            Text("Timed  ·  Run")
-                .font(.system(size: 10.5, weight: .medium))
-                .tracking(2)
-                .textCase(.uppercase)
-                .foregroundColor(.quordleSecondaryText)
-                .padding(.top, 8)
-        }
-        .padding(.horizontal, 24)
-        .padding(.top, 8)
+        EditorialMasthead(
+            kicker: "Beyond the Daily",
+            title: "Challenges",
+            subtitle: "Timed · Run",
+            onBack: { dismiss() }
+        )
     }
 
     private func sectionLabel(_ title: String) -> some View {

@@ -7,12 +7,18 @@ struct DailyView: View {
     @EnvironmentObject var subscriptionService: SubscriptionService
 
     @StateObject private var dailyPuzzleService = DailyPuzzleService.shared
+    @ObservedObject private var supportService = SupportService.shared
     @State private var showGame = false
     @State private var showArchive = false
     @State private var isReplaying = false
     @State private var savedState: GameState?
     @State private var showSolveReport = false
     @State private var showResult = false
+    @State private var showSettings = false
+    @State private var showSupporter = false
+    @State private var showSupportConfirm = false
+    @State private var isBuyingCoffee = false
+    @State private var showCoffeeThanks = false
 
     var body: some View {
         NavigationStack {
@@ -66,6 +72,45 @@ struct DailyView: View {
                     GameResultView(gameState: completed)
                 }
             }
+            .sheet(isPresented: $showSettings) {
+                SettingsView().presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showSupporter) {
+                SupporterView()
+            }
+            .sheet(isPresented: $showSupportConfirm) {
+                SupportConfirmSheet(
+                    onWatch: {
+                        showSupportConfirm = false
+                        buyCoffeeFromCard()
+                    },
+                    onCancel: { showSupportConfirm = false }
+                )
+            }
+            .overlay {
+                if showCoffeeThanks {
+                    CoffeeThanksOverlay(count: supportService.coffeeCount) {
+                        showCoffeeThanks = false
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Support flow (inline card on the completed screen)
+
+    private func buyCoffeeFromCard() {
+        guard !isBuyingCoffee else { return }
+        isBuyingCoffee = true
+        Task {
+            let earned = await supportService.buyCoffee()
+            isBuyingCoffee = false
+            if earned {
+                HapticManager.shared.gameWon()
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                    showCoffeeThanks = true
+                }
+            }
         }
     }
 
@@ -78,32 +123,15 @@ struct DailyView: View {
     }
 
     private var masthead: some View {
-        VStack(spacing: 0) {
-            Text(dateLine)
-                .font(.system(size: 11, weight: .medium))
-                .tracking(2)
-                .textCase(.uppercase)
-                .foregroundColor(.quordleSecondaryText)
-                .padding(.bottom, 8)
-
-            Rectangle().fill(Color.quordlePrimaryText).frame(height: 1)
-
-            Text("Octordle")
-                .font(.system(size: 38, weight: .bold, design: .serif))
-                .foregroundColor(.quordlePrimaryText)
-                .padding(.vertical, 8)
-
-            Rectangle().fill(Color.quordlePrimaryText).frame(height: 1)
-
-            Text("No. \(dailyPuzzleService.puzzleNumber)  ·  Eight Words  ·  Daily")
-                .font(.system(size: 10.5, weight: .medium))
-                .tracking(2)
-                .textCase(.uppercase)
-                .foregroundColor(.quordleSecondaryText)
-                .padding(.top, 8)
-        }
-        .padding(.horizontal, 24)
-        .padding(.top, 8)
+        EditorialMasthead(
+            kicker: dateLine,
+            title: "Octordle",
+            subtitle: "No. \(dailyPuzzleService.puzzleNumber) · Eight Words · Daily",
+            showCoffee: !subscriptionService.isPremium,
+            coffeeCount: supportService.coffeeCount,
+            onCoffee: { showSupporter = true },
+            onSettings: { showSettings = true }
+        )
     }
 
     private var countdownFooter: some View {
@@ -279,6 +307,13 @@ struct DailyView: View {
             }
             .padding(.horizontal, 28)
             Spacer()
+            if supportService.shouldShowCard(isPremium: subscriptionService.isPremium, totalGamesPlayed: statsService.totalGamesPlayed) {
+                SupportCard(
+                    onSupport: { showSupportConfirm = true },
+                    onDismiss: { supportService.dismissCardForToday() }
+                )
+                .padding(.bottom, 18)
+            }
             countdownFooter
         }
         .padding(.bottom, 100)

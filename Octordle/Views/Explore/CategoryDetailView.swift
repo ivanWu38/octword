@@ -6,6 +6,7 @@ struct CategoryDetailView: View {
 
     @EnvironmentObject var themeService: ThemeService
     @ObservedObject private var categoryService = CategoryService.shared
+    @Environment(\.dismiss) private var dismiss
 
     @State private var selectedIndex = 0
     @State private var showGame = false
@@ -40,36 +41,12 @@ struct CategoryDetailView: View {
     // MARK: - Header
 
     private var header: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 8) {
-                Image(systemName: category.symbol)
-                    .font(.system(size: 12, weight: .semibold))
-                Text("Word Pack")
-                    .tracking(2)
-                    .textCase(.uppercase)
-            }
-            .font(.system(size: 11, weight: .medium))
-            .foregroundColor(.quordleSecondaryText)
-            .padding(.bottom, 8)
-
-            Rectangle().fill(Color.quordlePrimaryText).frame(height: 1)
-
-            Text(category.name)
-                .font(.system(size: 38, weight: .bold, design: .serif))
-                .foregroundColor(.quordlePrimaryText)
-                .padding(.vertical, 8)
-
-            Rectangle().fill(Color.quordlePrimaryText).frame(height: 1)
-
-            Text("\(categoryService.completedCount(categoryId: category.id)) of \(category.puzzleCount) solved")
-                .font(.system(size: 10.5, weight: .medium))
-                .tracking(2)
-                .textCase(.uppercase)
-                .foregroundColor(.quordleSecondaryText)
-                .padding(.top, 8)
-        }
-        .padding(.horizontal, 24)
-        .padding(.top, 8)
+        EditorialMasthead(
+            kicker: "Word Pack",
+            title: category.name,
+            subtitle: "\(categoryService.completedCount(categoryId: category.id)) of \(category.puzzleCount) solved",
+            onBack: { dismiss() }
+        )
     }
 
     // MARK: - Chips

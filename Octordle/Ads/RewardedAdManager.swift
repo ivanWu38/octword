@@ -6,6 +6,8 @@ import UIKit
 @MainActor
 class RewardedAdManager: NSObject, ObservableObject {
     static let shared = RewardedAdManager(adUnitId: Constants.AdMob.rewardedAdUnitId)
+    /// Dedicated instance for the "buy me a coffee" support flow (separate ad unit).
+    static let support = RewardedAdManager(adUnitId: Constants.AdMob.supportRewardedAdUnitId)
 
     @Published private(set) var isAdReady = false
 

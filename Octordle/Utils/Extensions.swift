@@ -71,6 +71,9 @@ extension Color {
     /// Gold for stars / achievements (amber, matches "present").
     static let quordleGold = dynamicColor(light: (0.847, 0.612, 0.157), dark: (0.925, 0.698, 0.243))
 
+    /// Warm coffee brown for the "buy me a coffee" support flow.
+    static let quordleCoffee = dynamicColor(light: (0.541, 0.353, 0.196), dark: (0.710, 0.510, 0.310))
+
     /// Orange for streaks / the flame animation.
     static let quordleOrange = dynamicColor(light: (0.847, 0.412, 0.169), dark: (0.886, 0.451, 0.196))
 

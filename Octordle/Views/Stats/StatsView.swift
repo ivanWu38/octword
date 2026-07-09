@@ -3,8 +3,12 @@ import SwiftUI
 /// Journey — "The Record", an editorial almanac of the player's history.
 struct StatsView: View {
     @EnvironmentObject var statsService: StatsService
+    @EnvironmentObject var subscriptionService: SubscriptionService
     @StateObject private var dailyPuzzleService = DailyPuzzleService.shared
+    @ObservedObject private var supportService = SupportService.shared
     @State private var selectedAchievement: Achievement?
+    @State private var showSettings = false
+    @State private var showSupporter = false
 
     var body: some View {
         NavigationStack {
@@ -27,6 +31,12 @@ struct StatsView: View {
             .toolbar(.hidden, for: .navigationBar)
             .onAppear { selectedAchievement = nil }
             .onDisappear { selectedAchievement = nil }
+            .sheet(isPresented: $showSettings) {
+                SettingsView().presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showSupporter) {
+                SupporterView()
+            }
             .overlay {
                 if let achievement = selectedAchievement {
                     AchievementDetailView(
@@ -43,22 +53,15 @@ struct StatsView: View {
     // MARK: - Masthead
 
     private var masthead: some View {
-        VStack(spacing: 0) {
-            Rectangle().fill(Color.quordleCardBorder).frame(height: 1)
-            Text("The Record")
-                .font(.system(size: 30, weight: .bold, design: .serif))
-                .foregroundColor(.quordlePrimaryText)
-                .padding(.vertical, 8)
-            Text("Your Octordle Almanac")
-                .font(.system(size: 10.5, weight: .medium))
-                .tracking(2)
-                .textCase(.uppercase)
-                .foregroundColor(.quordleSecondaryText)
-                .padding(.bottom, 8)
-            Rectangle().fill(Color.quordleCardBorder).frame(height: 1)
-        }
-        .padding(.horizontal, 22)
-        .padding(.top, 12)
+        EditorialMasthead(
+            kicker: "Statistics · Achievements",
+            title: "The Record",
+            subtitle: "Your Octordle Almanac",
+            showCoffee: !subscriptionService.isPremium,
+            coffeeCount: supportService.coffeeCount,
+            onCoffee: { showSupporter = true },
+            onSettings: { showSettings = true }
+        )
     }
 
     private func blockLabel(_ title: String, trailing: String? = nil) -> some View {
@@ -281,4 +284,5 @@ struct GuessDistributionBar: View {
 #Preview {
     StatsView()
         .environmentObject(StatsService.shared)
+        .environmentObject(SubscriptionService.shared)
 }
