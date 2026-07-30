@@ -18,7 +18,7 @@ struct ATTPrePromptView: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 26)
 
-                    Text("Rest assured, we never gather your personal information. By tapping 'Allow', you're letting us use anonymous data to show you ads that better suit your preferences. Choosing 'Ask App Not to Track' won't remove ads; they'll just be less relevant. We hope you enjoy playing Octordle!")
+                    Text("Rest assured, we never gather your personal information. By tapping 'Allow', you're letting us use anonymous data to show you ads that better suit your preferences. Choosing 'Ask App Not to Track' won't remove ads; they'll just be less relevant. We hope you enjoy playing Octors!")
                         .font(.system(size: 16))
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)

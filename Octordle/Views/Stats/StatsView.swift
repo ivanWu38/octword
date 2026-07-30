@@ -60,7 +60,7 @@ struct StatsView: View {
         EditorialMasthead(
             kicker: "Statistics · Achievements",
             title: "The Record",
-            subtitle: "Your Octordle Almanac",
+            subtitle: "Your Octors Almanac",
             showCoffee: !subscriptionService.isPremium,
             coffeeCount: supportService.coffeeCount,
             onCoffee: { showSupporter = true },

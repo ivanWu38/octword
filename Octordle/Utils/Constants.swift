@@ -4,7 +4,7 @@ import Foundation
 enum Constants {
     /// App information
     enum App {
-        static let name = "Octordle"
+        static let name = "Octors"
         static let bundleId = "com.ikuhei.octordle"
         static let appStoreId = "6773183406"
         static let appStoreURL = "https://apps.apple.com/app/id6773183406"

@@ -193,7 +193,7 @@ struct GameState: Codable, Equatable {
         case .categories: modeLabel = "Category"
         case .practice, .unlimited: modeLabel = "Practice"
         }
-        var text = "Octordle \(modeLabel) \(difficulty.displayName)\n"
+        var text = "Octors \(modeLabel) \(difficulty.displayName)\n"
         text += isWon ? "🎉 \(guessCount)/\(difficulty.maxGuesses)" : "❌ X/\(difficulty.maxGuesses)"
         text += " ⏱️ \(elapsedTimeString)\n\n"
 
@@ -225,7 +225,7 @@ struct GameState: Codable, Equatable {
 
     /// Generate emoji grid for sharing
     func generateEmojiGrid() -> String {
-        var text = "Octordle \(mode == .daily ? "Daily" : "Practice")\n\n"
+        var text = "Octors \(mode == .daily ? "Daily" : "Practice")\n\n"
 
         for (index, board) in boards.enumerated() {
             text += "Board \(index + 1):\n"

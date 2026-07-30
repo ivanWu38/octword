@@ -119,12 +119,12 @@ private struct WelcomePage: View {
             }
 
             VStack(spacing: 16) {
-                Text("Welcome to Octordle")
+                Text("Welcome to Octors")
                     .font(.title.bold())
                     .foregroundColor(.quordlePrimaryText)
                     .multilineTextAlignment(.center)
 
-                Text("Guess eight 5-letter words at the same time! Test your vocabulary skills with this focused Octordle puzzle game.")
+                Text("Guess eight 5-letter words at the same time! Test your vocabulary skills with this focused Octors puzzle game.")
                     .font(.body)
                     .foregroundColor(.quordleSecondaryText)
                     .multilineTextAlignment(.center)

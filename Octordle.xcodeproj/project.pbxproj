@@ -578,9 +578,9 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = Octordle/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Octordle;
+				INFOPLIST_KEY_CFBundleDisplayName = Octors;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.word-games";
-				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Allowing tracking helps us keep Octordle free. It simply makes ads more relevant to you — it won't increase the number of ads you see.";
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Allowing tracking helps us keep Octors free. It simply makes ads more relevant to you — it won't increase the number of ads you see.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -590,7 +590,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.09;
+				MARKETING_VERSION = 1.10;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ikuhei.octordle;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -673,9 +673,9 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = Octordle/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Octordle;
+				INFOPLIST_KEY_CFBundleDisplayName = Octors;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.word-games";
-				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Allowing tracking helps us keep Octordle free. It simply makes ads more relevant to you — it won't increase the number of ads you see.";
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Allowing tracking helps us keep Octors free. It simply makes ads more relevant to you — it won't increase the number of ads you see.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -685,7 +685,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.09;
+				MARKETING_VERSION = 1.10;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ikuhei.octordle;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

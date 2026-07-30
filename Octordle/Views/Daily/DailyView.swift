@@ -115,7 +115,7 @@ struct DailyView: View {
     private var masthead: some View {
         EditorialMasthead(
             kicker: dateLine,
-            title: "Octordle",
+            title: "Octors",
             subtitle: "No. \(dailyPuzzleService.puzzleNumber) · Eight Words · Daily",
             showCoffee: !subscriptionService.isPremium,
             coffeeCount: supportService.coffeeCount,

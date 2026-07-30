@@ -52,7 +52,7 @@ enum Difficulty: String, CaseIterable, Codable, Identifiable {
         case .relaxed: return "Relaxed"
         case .classic: return "Classic"
         case .challenge: return "Challenge"
-        case .ultimate: return "Octordle"
+        case .ultimate: return "Octors"
         case .unlimitedEasy: return "Easy"
         case .unlimitedNormal: return "Normal"
         case .unlimitedHard: return "Hard"

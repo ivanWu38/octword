@@ -52,7 +52,7 @@ struct SettingsView: View {
                     }
                     .simultaneousGesture(TapGesture().onEnded { HapticManager.shared.buttonTap() })
                     hairline
-                    Link(destination: URL(string: "mailto:wuyuping38@gmail.com?subject=Octordle%20Feedback")!) {
+                    Link(destination: URL(string: "mailto:wuyuping38@gmail.com?subject=Octors%20Feedback")!) {
                         rowBody(symbol: "envelope", title: "Send Feedback", trailingSymbol: "arrow.up.right")
                     }
                     .simultaneousGesture(TapGesture().onEnded { HapticManager.shared.buttonTap() })

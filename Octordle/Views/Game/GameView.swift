@@ -339,7 +339,7 @@ struct GameView: View {
             // Title and Timer (centered)
             HStack(spacing: 8) {
                 Text(viewModel.gameState.mode == .daily
-                     ? "Octordle · No.\(DailyPuzzleService.shared.puzzleNumber)"
+                     ? "Octors · No.\(DailyPuzzleService.shared.puzzleNumber)"
                      : viewModel.gameState.difficulty.displayName)
                     .font(.system(size: 17, weight: .semibold, design: .serif))
                     .foregroundColor(.quordlePrimaryText)

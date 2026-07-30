@@ -44,7 +44,7 @@ struct SupportCard: View {
 
             HStack(spacing: 10) {
                 Text("☕").font(.system(size: 22))
-                Text("Enjoying Octordle?")
+                Text("Enjoying Octors?")
                     .font(.system(size: 18, weight: .bold, design: .serif))
                     .foregroundColor(.quordlePrimaryText)
                 Spacer()

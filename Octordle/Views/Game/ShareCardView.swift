@@ -52,7 +52,7 @@ struct ShareCardView: View {
                     .foregroundColor(secondary)
                     .padding(.bottom, 6)
                 Rectangle().fill(ink).frame(height: 1)
-                Text("Octordle")
+                Text("Octors")
                     .font(.system(size: 30, weight: .bold, design: .serif))
                     .foregroundColor(ink)
                     .padding(.vertical, 6)
@@ -90,7 +90,7 @@ struct ShareCardView: View {
                 // Footer
                 Rectangle().fill(line).frame(height: 1).padding(.top, 16).padding(.bottom, 10)
                 HStack {
-                    Text("Can you beat this? — Octordle")
+                    Text("Can you beat this? — Octors")
                         .font(.system(size: 10, weight: .semibold, design: .serif))
                         .foregroundColor(terracotta)
                     Spacer()

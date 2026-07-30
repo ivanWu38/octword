@@ -8,11 +8,11 @@ struct ReviewPromptView: View {
         VStack(spacing: 24) {
             Spacer()
 
-            Text("Rate Octordle")
+            Text("Rate Octors")
                 .font(.title.bold())
                 .foregroundColor(.quordlePrimaryText)
 
-            Text("We're so glad you're having fun with Octordle! Would you mind taking a moment to leave us a 5-star review? It really helps us continue making the game better.")
+            Text("We're so glad you're having fun with Octors! Would you mind taking a moment to leave us a 5-star review? It really helps us continue making the game better.")
                 .font(.body)
                 .multilineTextAlignment(.center)
                 .foregroundColor(.quordleSecondaryText)

@@ -101,7 +101,7 @@ enum Achievement: String, CaseIterable, Codable, Identifiable {
         case .dailyDevotee: return "Complete 30 daily editions"
         case .sharpEye: return "Solve 6 or more boards in one game"
         case .downToTheWire: return "Win on your very last guess"
-        case .flawless: return "Win an Octordle with 3 stars"
+        case .flawless: return "Win an Octors game with 3 stars"
         case .onAssignment: return "Solve your first themed puzzle"
         case .beatReporter: return "Clear every puzzle in a pack"
         case .specialEditions: return "Solve 30 themed puzzles in total"

@@ -71,7 +71,7 @@ struct SubscriptionView: View {
     private var headerSection: some View {
         VStack(spacing: 0) {
             Rectangle().fill(Color.quordlePrimaryText).frame(height: 1)
-            Text("Octordle Premium")
+            Text("Octors Premium")
                 .font(.system(size: 26, weight: .bold, design: .serif))
                 .foregroundColor(.quordlePrimaryText)
                 .padding(.vertical, 8)
@@ -94,7 +94,7 @@ struct SubscriptionView: View {
                 .font(.system(size: 18, weight: .semibold, design: .serif))
                 .foregroundColor(.quordlePrimaryText)
 
-            Text("You'll never see pop-up ads here — just a small banner. You don't have to subscribe — the game is fully playable without it. But if you do, every subscription directly helps make Octordle better.")
+            Text("You'll never see pop-up ads here — just a small banner. You don't have to subscribe — the game is fully playable without it. But if you do, every subscription directly helps make Octors better.")
                 .font(.system(size: 15, design: .serif))
                 .foregroundColor(.quordleSecondaryText)
                 .lineSpacing(4)
