@@ -12,9 +12,6 @@ class DailyPuzzleService: ObservableObject {
     @Published private(set) var completedDates: Set<String> = []
     /// Archive days the player has unlocked by watching a rewarded ad.
     @Published private(set) var unlockedArchiveDates: Set<String> = []
-    @Published private(set) var countdownString: String = "--:--:--"
-
-    private var countdownTimer: Timer?
 
     /// Shared formatter for "yyyy-MM-dd" day strings.
     static let dateFormatter: DateFormatter = {
@@ -26,8 +23,6 @@ class DailyPuzzleService: ObservableObject {
     private init() {
         loadCompletedDates()
         loadUnlockedDates()
-        updateCountdown()
-        startCountdownTimer()
     }
 
     /// Check if today's puzzle is completed
@@ -125,24 +120,6 @@ class DailyPuzzleService: ObservableObject {
         return midnight.timeIntervalSince(now)
     }
 
-    /// Start the countdown timer
-    private func startCountdownTimer() {
-        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            Task { @MainActor in
-                self?.updateCountdown()
-            }
-        }
-    }
-
-    /// Update the countdown string
-    private func updateCountdown() {
-        let interval = timeUntilNextPuzzle
-        let hours = Int(interval) / 3600
-        let minutes = (Int(interval) % 3600) / 60
-        let seconds = Int(interval) % 60
-        countdownString = String(format: "%02d:%02d:%02d", hours, minutes, seconds)
-    }
-
     /// Mark today as completed
     func markTodayCompleted() {
         markCompleted(todayString)
@@ -151,6 +128,9 @@ class DailyPuzzleService: ObservableObject {
     /// Mark an arbitrary day's puzzle as completed (used by archive).
     func markCompleted(_ dayString: String) {
         completedDates.insert(dayString)
+        streakCache = nil
+        // The streak just moved, which can unlock a theme.
+        ThemeService.shared.invalidateResolvedTheme()
         saveCompletedDates()
     }
 
@@ -158,14 +138,29 @@ class DailyPuzzleService: ObservableObject {
     /// The streak earned up to yesterday stays alive until today's day ends, so we don't
     /// show 0 in the morning before the user has played today's puzzle. If today isn't
     /// completed yet, we start counting from yesterday instead of today.
+    /// Cached streak, keyed by the day it was computed for so it expires by itself
+    /// when the app is left open past midnight. Cleared whenever `completedDates`
+    /// changes. Worth caching: this walks back day by day allocating `Date`s, and
+    /// it sits behind `StatsService.maxStreak`, which theme resolution reads on
+    /// every tile render.
+    private var streakCache: (day: String, value: Int)?
+
     var currentStreak: Int {
+        let today = todayString
+        if let cache = streakCache, cache.day == today { return cache.value }
+        let value = computeCurrentStreak()
+        streakCache = (today, value)
+        return value
+    }
+
+    private func computeCurrentStreak() -> Int {
         var streak = 0
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
+        let formatter = Self.dateFormatter
+        let calendar = Calendar.current
 
         var date = Date()
         if !completedDates.contains(formatter.string(from: date)) {
-            guard let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: date) else {
+            guard let yesterday = calendar.date(byAdding: .day, value: -1, to: date) else {
                 return 0
             }
             date = yesterday
@@ -173,7 +168,7 @@ class DailyPuzzleService: ObservableObject {
 
         while completedDates.contains(formatter.string(from: date)) {
             streak += 1
-            guard let previousDay = Calendar.current.date(byAdding: .day, value: -1, to: date) else { break }
+            guard let previousDay = calendar.date(byAdding: .day, value: -1, to: date) else { break }
             date = previousDay
         }
 
@@ -185,8 +180,7 @@ class DailyPuzzleService: ObservableObject {
     /// day, since `markTodayCompleted()` runs later (when the result sheet closes).
     var streakIncludingToday: Int {
         if isTodayCompleted { return currentStreak }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
+        let formatter = Self.dateFormatter
         var streak = 1 // today, about to be completed
         var date = Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date()
         while completedDates.contains(formatter.string(from: date)) {
@@ -201,13 +195,13 @@ class DailyPuzzleService: ObservableObject {
     /// TEMPORARY QA: pretend the player completed the `count` days immediately
     /// before today, so finishing today's daily crosses a streak threshold.
     func debugSeedConsecutiveDaysBeforeToday(_ count: Int) {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
+        let formatter = Self.dateFormatter
         for offset in 1...max(1, count) {
             if let day = Calendar.current.date(byAdding: .day, value: -offset, to: Date()) {
                 completedDates.insert(formatter.string(from: day))
             }
         }
+        streakCache = nil
         saveCompletedDates()
     }
     #endif
@@ -217,6 +211,7 @@ class DailyPuzzleService: ObservableObject {
     private func loadCompletedDates() {
         if let dates = defaults.stringArray(forKey: completedDatesKey) {
             self.completedDates = Set(dates)
+            streakCache = nil
         }
     }
 
@@ -232,5 +227,35 @@ class DailyPuzzleService: ObservableObject {
 
     private func saveUnlockedDates() {
         defaults.set(Array(unlockedArchiveDates), forKey: unlockedDatesKey)
+    }
+}
+
+/// The "Next Edition In" clock.
+///
+/// Deliberately a separate object from `DailyPuzzleService`: it publishes a new
+/// value every second, and everything observing the puzzle service (Today, Journey,
+/// Archive — all alive at once inside the TabView) would otherwise rebuild its whole
+/// body on every tick. Only `CountdownText` observes this, so only that label redraws.
+@MainActor
+final class EditionCountdown: ObservableObject {
+    static let shared = EditionCountdown()
+
+    @Published private(set) var text: String = "--:--:--"
+
+    private var timer: Timer?
+
+    private init() {
+        update()
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            Task { @MainActor in self?.update() }
+        }
+    }
+
+    private func update() {
+        let interval = DailyPuzzleService.shared.timeUntilNextPuzzle
+        let hours = Int(interval) / 3600
+        let minutes = (Int(interval) % 3600) / 60
+        let seconds = Int(interval) % 60
+        text = String(format: "%02d:%02d:%02d", hours, minutes, seconds)
     }
 }

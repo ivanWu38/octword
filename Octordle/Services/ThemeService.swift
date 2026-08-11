@@ -274,6 +274,7 @@ class ThemeService: ObservableObject {
     @Published var selectedTheme: BoardTheme {
         didSet {
             defaults.set(selectedTheme.rawValue, forKey: themeKey)
+            invalidateResolvedTheme()
         }
     }
 
@@ -313,10 +314,27 @@ class ThemeService: ObservableObject {
         return .classic
     }
 
+    /// Cached result of the convenience resolver below. Rendering paths hammer it —
+    /// every tile on the board asks for the theme several times per body — so the
+    /// answer is memoised and only recomputed when something that could change it
+    /// happens: the chosen theme, the subscription, or the unlock stats (words
+    /// solved / streak, which only move when a game is recorded).
+    private var resolvedThemeCache: (isPremium: Bool, theme: BoardTheme)?
+
+    /// Drop the cached resolution. Called by the services that own the inputs.
+    func invalidateResolvedTheme() {
+        resolvedThemeCache = nil
+    }
+
     /// Legacy convenience (backward compatible)
     func effectiveTheme(isPremium: Bool) -> BoardTheme {
+        if let cache = resolvedThemeCache, cache.isPremium == isPremium {
+            return cache.theme
+        }
         let stats = StatsService.shared
-        return effectiveTheme(isPremium: isPremium, wordsSolved: stats.totalWordsSolved, maxStreak: stats.maxStreak)
+        let theme = effectiveTheme(isPremium: isPremium, wordsSolved: stats.totalWordsSolved, maxStreak: stats.maxStreak)
+        resolvedThemeCache = (isPremium, theme)
+        return theme
     }
 
     private init() {

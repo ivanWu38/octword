@@ -96,11 +96,7 @@ struct ChallengeGameView: View {
                     .foregroundColor(.quordlePrimary)
 
                 if session.preset.family == .timed {
-                    Text(timeString)
-                        .font(.system(.subheadline, design: .serif))
-                        .fontWeight(.bold)
-                        .foregroundColor(session.remainingSeconds <= 10 ? .red : .quordlePrimaryText)
-                        .monospacedDigit()
+                    ChallengeClockLabel(clock: session.clock)
 
                     Text("· \(min(session.gamesCompleted + 1, session.preset.gameTarget))/\(session.preset.gameTarget)")
                         .font(.system(size: 12, weight: .semibold, design: .serif))
@@ -140,12 +136,6 @@ struct ChallengeGameView: View {
         .overlay(alignment: .bottom) {
             Rectangle().fill(Color.quordleCardBorder).frame(height: 1)
         }
-    }
-
-    private var timeString: String {
-        let minutes = session.remainingSeconds / 60
-        let seconds = session.remainingSeconds % 60
-        return String(format: "%d:%02d", minutes, seconds)
     }
 
     private var livesView: some View {
@@ -683,5 +673,19 @@ private struct ChallengeReviewView: View {
         ChallengeGameView(preset: .timedQuick)
             .environmentObject(ThemeService.shared)
             .environmentObject(SubscriptionService.shared)
+    }
+}
+
+/// The only view that watches the Timed challenge's countdown, so a tick redraws
+/// this label instead of the whole board below it.
+private struct ChallengeClockLabel: View {
+    @ObservedObject var clock: ChallengeClock
+
+    var body: some View {
+        Text(String(format: "%d:%02d", clock.seconds / 60, clock.seconds % 60))
+            .font(.system(.subheadline, design: .serif))
+            .fontWeight(.bold)
+            .foregroundColor(clock.seconds <= 10 ? .red : .quordlePrimaryText)
+            .monospacedDigit()
     }
 }

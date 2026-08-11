@@ -70,6 +70,11 @@ struct MainTabView: View {
                 CustomTabBar(selectedTab: $selectedTab)
             }
         }
+        .onAppear {
+            // Sets the Game Center auth handler once; iOS decides whether to show
+            // its sign-in sheet. Needed before any Daily Rank read or submit.
+            GameCenterService.shared.authenticate()
+        }
         .onReceive(NotificationCenter.default.publisher(for: .hideTabBar)) { _ in
             hideTabBar = true
         }

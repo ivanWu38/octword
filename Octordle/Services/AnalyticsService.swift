@@ -141,8 +141,12 @@ struct AnalyticsService {
 
     // MARK: - Subscription
 
-    static func logPaywallView() {
-        Analytics.logEvent("paywall_view", parameters: nil)
+    /// `source` records which entry point opened the paywall (e.g. "explore",
+    /// "unlimited", "settings", "archive") so conversion can be compared per surface.
+    static func logPaywallView(source: String = "unknown") {
+        Analytics.logEvent("paywall_view", parameters: [
+            "source": source
+        ])
     }
 
     static func logPlanSelected(productId: String) {

@@ -41,7 +41,7 @@ struct CategoriesView: View {
                 CategoryDetailView(category: category)
             }
         }
-        .sheet(isPresented: $showPaywall) { SubscriptionView() }
+        .sheet(isPresented: $showPaywall) { SubscriptionView(source: "categories") }
         .sheet(item: $lockedCategory) { category in
             LockedPackSheet(
                 category: category,

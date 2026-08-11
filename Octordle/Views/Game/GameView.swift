@@ -347,10 +347,7 @@ struct GameView: View {
                 // Challenge rounds show the session clock in the HUD strip above,
                 // so the per-game count-up timer would be a confusing second clock.
                 if viewModel.challengeSession == nil {
-                    Text(viewModel.elapsedTimeString)
-                        .font(.system(.subheadline, design: .serif))
-                        .foregroundColor(.quordleSecondaryText)
-                        .monospacedDigit()
+                    GameTimerLabel(clock: viewModel.clock)
                 }
             }
 
@@ -796,6 +793,19 @@ private struct RowVisibility: Equatable {
     let rowIndex: Int
     let minY: CGFloat
     let maxY: CGFloat
+}
+
+/// The only view that observes the game clock, so a tick redraws this label
+/// instead of the whole board.
+private struct GameTimerLabel: View {
+    @ObservedObject var clock: GameClock
+
+    var body: some View {
+        Text(clock.text)
+            .font(.system(.subheadline, design: .serif))
+            .foregroundColor(.quordleSecondaryText)
+            .monospacedDigit()
+    }
 }
 
 private struct RowVisibilityPreferenceKey: PreferenceKey {

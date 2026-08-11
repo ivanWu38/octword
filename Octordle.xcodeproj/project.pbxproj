@@ -70,6 +70,9 @@
 		C69E52763452DEB31975BA26 /* SolveReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AC7B2DC9E5608C1F0659BC7 /* SolveReportView.swift */; };
 		C6CD8FF1C384136F67B2DFB0 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D0FBAA63E58663BABF08E2 /* Constants.swift */; };
 		D1E2F3A4B5C6D7E8F9A0B1C2 /* LockedPackSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6D7E8F9A0B1C3 /* LockedPackSheet.swift */; };
+		AA01B0010000000000000001 /* GameCenterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA01B0010000000000000002 /* GameCenterService.swift */; };
+		AA01B0010000000000000003 /* DailyRankView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA01B0010000000000000004 /* DailyRankView.swift */; };
+		AA01B0010000000000000005 /* PremiumEntryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA01B0010000000000000006 /* PremiumEntryCard.swift */; };
 		D6A36CB71BAF539DCFEA3A2D /* StatsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F54408581B1D6647B968487 /* StatsService.swift */; };
 		DC02685A940104AF800530B2 /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A1EB872191EE691958B55D /* SubscriptionService.swift */; };
 		DFCE39F19A46979F081FA28F /* BannerAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A7CDCC246F11FAC64B9FEA /* BannerAdView.swift */; };
@@ -143,6 +146,10 @@
 		CED7F2D0447A48C336889865 /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
 		D05BBC82B8C4FB9BA01BC701 /* AchievementDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementDetailView.swift; sourceTree = "<group>"; };
 		D1E2F3A4B5C6D7E8F9A0B1C3 /* LockedPackSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockedPackSheet.swift; sourceTree = "<group>"; };
+		AA01B0010000000000000002 /* GameCenterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCenterService.swift; sourceTree = "<group>"; };
+		AA01B0010000000000000004 /* DailyRankView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyRankView.swift; sourceTree = "<group>"; };
+		AA01B0010000000000000006 /* PremiumEntryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumEntryCard.swift; sourceTree = "<group>"; };
+		AA01B0010000000000000008 /* Octordle.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Octordle.entitlements; sourceTree = "<group>"; };
 		DAD06AA7C774DF2460256AAE /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		DBD9DBC316D6A873CF0406D3 /* DailyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyView.swift; sourceTree = "<group>"; };
 		DDF29951F90673E9BC16FB91 /* SolveAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolveAnalyzer.swift; sourceTree = "<group>"; };
@@ -187,6 +194,7 @@
 			children = (
 				F69156BE12974880E1864B65 /* GoogleService-Info.plist */,
 				510411AA9DF51A36684E6718 /* Info.plist */,
+				AA01B0010000000000000008 /* Octordle.entitlements */,
 				1174C51E0EB64BE618381FBF /* PrivacyInfo.xcprivacy */,
 				33A299EA3419C145E7D27FAC /* Products.storekit */,
 				976B9B251ADDD0455F7D3848 /* Ads */,
@@ -305,10 +313,19 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		AA01B0010000000000000007 /* Leaderboard */ = {
+			isa = PBXGroup;
+			children = (
+				AA01B0010000000000000004 /* DailyRankView.swift */,
+			);
+			path = Leaderboard;
+			sourceTree = "<group>";
+		};
 		848C12F6314047F912BA421D /* Subscription */ = {
 			isa = PBXGroup;
 			children = (
 				50E03879B1F2CCE9CBFBB2DD /* SubscriptionView.swift */,
+				AA01B0010000000000000006 /* PremiumEntryCard.swift */,
 			);
 			path = Subscription;
 			sourceTree = "<group>";
@@ -360,6 +377,7 @@
 			isa = PBXGroup;
 			children = (
 				2B3C4D5E6F708192A3B4C5D6 /* CategoryService.swift */,
+				AA01B0010000000000000002 /* GameCenterService.swift */,
 				206F5E6C5D97CEC3B91FD6FA /* AnalyticsService.swift */,
 				363FDCB38563C10DAC8237FE /* ATTService.swift */,
 				892507B5910BC1C321C06702 /* ConsentManager.swift */,
@@ -406,6 +424,7 @@
 				305DFB60EB437C050829B5BB /* Daily */,
 				C0FFEE00C0FFEE00C0FFEE00 /* Explore */,
 				3B15BC82E0861A4293C234C7 /* Game */,
+				AA01B0010000000000000007 /* Leaderboard */,
 				86B54EB0B6FD03E5E28C416F /* Onboarding */,
 				44160BEE0BD281DAE49C366D /* Settings */,
 				2D3A5C3EC364BF48F5A9D390 /* Stats */,
@@ -524,6 +543,9 @@
 				7E6D5C4B3A2918070605F4E3 /* CategoriesView.swift in Sources */,
 				8F7E6D5C4B3A2918070605F4 /* CategoryDetailView.swift in Sources */,
 				D1E2F3A4B5C6D7E8F9A0B1C2 /* LockedPackSheet.swift in Sources */,
+				AA01B0010000000000000001 /* GameCenterService.swift in Sources */,
+				AA01B0010000000000000003 /* DailyRankView.swift in Sources */,
+				AA01B0010000000000000005 /* PremiumEntryCard.swift in Sources */,
 				DFCE39F19A46979F081FA28F /* BannerAdView.swift in Sources */,
 				C4EBF9BAA8682DB05FD84B38 /* BoardData.swift in Sources */,
 				3D0A4493DF10A88F1AA5B520 /* BoardView.swift in Sources */,
@@ -576,6 +598,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Octordle/Octordle.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = Octordle/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Octors;
@@ -590,7 +613,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.10;
+				MARKETING_VERSION = 1.11;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ikuhei.octordle;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -671,6 +694,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Octordle/Octordle.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = Octordle/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Octors;
@@ -685,7 +709,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.10;
+				MARKETING_VERSION = 1.11;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ikuhei.octordle;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

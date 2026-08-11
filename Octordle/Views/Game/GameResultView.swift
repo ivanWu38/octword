@@ -20,6 +20,13 @@ struct GameResultView: View {
     @EnvironmentObject var statsService: StatsService
     @State private var answersHidden = false
     @State private var showSolveReport = false
+    @State private var showDailyRank = false
+    @State private var dailyRank: Int?
+
+    /// Only today's daily edition is ranked — archive days and replays are not.
+    private var isTodayDaily: Bool {
+        gameState.mode == .daily && gameState.dailyDate == GameState.todayString()
+    }
 
     var body: some View {
         NavigationStack {
@@ -218,6 +225,11 @@ struct GameResultView: View {
                 shareButton.buttonStyle(PrimaryButtonStyle())
             }
 
+            // Today's standings — a one-tap jump straight into Daily Rank.
+            if isTodayDaily {
+                dailyRankRow
+            }
+
             // Solve Report is computed lazily and cached, so opening/re-opening it
             // never recomputes. Promote it to primary when there's no Share (replay).
             if canReport {
@@ -243,6 +255,43 @@ struct GameResultView: View {
             } else {
                 doneButton.buttonStyle(PrimaryButtonStyle())
             }
+        }
+    }
+
+    /// Framed rank row. Shows the actual placing once Game Center answers; falls
+    /// back to the plain label while loading or when not signed in. Never quotes a
+    /// player total — see DailyRankView.
+    private var dailyRankRow: some View {
+        Button {
+            HapticManager.shared.cardTap()
+            showDailyRank = true
+        } label: {
+            HStack(spacing: 9) {
+                Text("✦")
+                    .font(.system(size: 14))
+                    .foregroundColor(.quordleGold)
+                Text(dailyRank.map { "You're #\($0) today" } ?? "Daily Rank")
+                    .font(.system(size: 15, weight: .semibold, design: .serif))
+                    .foregroundColor(.quordlePrimaryText)
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.quordleSecondaryText)
+            }
+            .padding(.horizontal, 15)
+            .padding(.vertical, 12)
+            .background(RoundedRectangle(cornerRadius: 4).fill(Color.quordleCardBackground))
+            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.quordleCardBorder, lineWidth: 1))
+        }
+        .buttonStyle(ScaleButtonStyle(scale: 0.98))
+        .sheet(isPresented: $showDailyRank) {
+            DailyRankView().presentationDragIndicator(.visible)
+        }
+        .task {
+            // The score is submitted as the game ends, so give the leaderboard a
+            // moment to register it before asking where the player landed.
+            try? await Task.sleep(nanoseconds: 1_200_000_000)
+            dailyRank = await GameCenterService.shared.loadLocalDailyRank()?.rank
         }
     }
 

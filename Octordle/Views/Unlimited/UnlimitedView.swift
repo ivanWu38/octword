@@ -37,6 +37,10 @@ struct UnlimitedView: View {
 
                 Spacer(minLength: 12)
 
+                PremiumEntryCard(source: "unlimited")
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 18)
+
                 Text("Practice freely — results are not recorded.")
                     .font(.system(size: 12, design: .serif))
                     .italic()

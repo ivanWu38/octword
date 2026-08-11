@@ -8,10 +8,17 @@ struct DailyView: View {
 
     @StateObject private var dailyPuzzleService = DailyPuzzleService.shared
     @ObservedObject private var supportService = SupportService.shared
+    @ObservedObject private var gameCenter = GameCenterService.shared
+    @State private var dailyRank: Int?
+    @State private var showDailyRank = false
     @State private var showGame = false
     @State private var showArchive = false
     @State private var isReplaying = false
     @State private var savedState: GameState?
+    /// Today's finished game, held in state instead of being re-read from disk.
+    /// `completedView` used to call `loadCompletedDailyResult()` straight from its
+    /// body — a UserDefaults read plus a full 8-board JSON decode on every redraw.
+    @State private var completedResult: GameState?
     @State private var showSolveReport = false
     @State private var showResult = false
     @State private var showSettings = false
@@ -39,6 +46,7 @@ struct DailyView: View {
                 } else {
                     savedState = state
                 }
+                completedResult = statsService.loadCompletedDailyResult()
             }
             .navigationDestination(isPresented: $showGame) {
                 if let state = savedState {
@@ -57,17 +65,21 @@ struct DailyView: View {
                 if !newValue {
                     isReplaying = false
                     savedState = statsService.loadDailyState()
+                    completedResult = statsService.loadCompletedDailyResult()
                 }
             }
+            .onChange(of: dailyPuzzleService.isTodayCompleted) { _ in
+                completedResult = statsService.loadCompletedDailyResult()
+            }
             .sheet(isPresented: $showSolveReport) {
-                if let completed = statsService.loadCompletedDailyResult() {
+                if let completed = completedResult {
                     NavigationStack {
                         StandaloneSolveReportView(gameState: completed, puzzleNumber: dailyPuzzleService.puzzleNumber)
                     }
                 }
             }
             .sheet(isPresented: $showResult) {
-                if let completed = statsService.loadCompletedDailyResult() {
+                if let completed = completedResult {
                     GameResultView(gameState: completed)
                 }
             }
@@ -76,6 +88,16 @@ struct DailyView: View {
             }
             .sheet(isPresented: $showSupporter) {
                 SupporterView()
+            }
+            .sheet(isPresented: $showDailyRank) {
+                DailyRankView().presentationDragIndicator(.visible)
+            }
+            .task { await refreshDailyRank() }
+            .onChange(of: showDailyRank) { showing in
+                if !showing { Task { await refreshDailyRank() } }
+            }
+            .onChange(of: gameCenter.isAuthenticated) { _ in
+                Task { await refreshDailyRank() }
             }
             .overlay {
                 if showCoffeeThanks {
@@ -104,6 +126,72 @@ struct DailyView: View {
         }
     }
 
+    // MARK: - Daily Rank
+
+    /// Today's rank, refreshed whenever the screen appears or the sheet closes.
+    /// Deliberately keeps only the rank — never the player total, which is the
+    /// weakest number this board has while the app is young.
+    private func refreshDailyRank() async {
+        dailyRank = await gameCenter.loadLocalDailyRank()?.rank
+    }
+
+    private var dailyRankSubtitle: String {
+        if !gameCenter.isAuthenticated { return "Tap to join the ranking" }
+        if let rank = dailyRank { return "You're #\(rank) today" }
+        return "See how you rank today"
+    }
+
+    /// Ruled row above the countdown — the leading mark becomes the rank once known.
+    private var dailyRankRow: some View {
+        Button {
+            HapticManager.shared.cardTap()
+            showDailyRank = true
+        } label: {
+            HStack(spacing: 12) {
+                Group {
+                    if let rank = dailyRank, gameCenter.isAuthenticated {
+                        Text("#\(rank)")
+                            .font(.system(size: 24, weight: .bold, design: .serif))
+                            .foregroundColor(.quordlePrimary)
+                            .minimumScaleFactor(0.6)
+                            .lineLimit(1)
+                    } else {
+                        Text("✦")
+                            .font(.system(size: 19))
+                            .foregroundColor(.quordleGold)
+                    }
+                }
+                .frame(width: 44)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Daily Rank")
+                        .font(.system(size: 15, weight: .bold, design: .serif))
+                        .foregroundColor(.quordlePrimaryText)
+                    Text(dailyRankSubtitle)
+                        .font(.system(size: 11.5))
+                        .foregroundColor(.quordleSecondaryText)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.quordleSecondaryText)
+            }
+            .padding(.vertical, 12)
+            .padding(.horizontal, 2)
+            .background(dailyRank != nil ? Color.quordlePrimary.opacity(0.05) : Color.clear)
+            .overlay(alignment: .top) {
+                Rectangle().fill(Color.quordlePrimaryText).frame(height: 1)
+            }
+            .overlay(alignment: .bottom) {
+                Rectangle().fill(Color.quordleCardBorder).frame(height: 1)
+            }
+        }
+        .buttonStyle(ScaleButtonStyle(scale: 0.98))
+        .padding(.horizontal, 20)
+    }
+
     // MARK: - Masthead
 
     private var dateLine: String {
@@ -125,9 +213,9 @@ struct DailyView: View {
     }
 
     private var countdownFooter: some View {
+        // No leading rule here — the Daily Rank row directly above already closes
+        // with one, and two hairlines a few points apart read as a mistake.
         VStack(spacing: 14) {
-            Rectangle().fill(Color.quordleCardBorder).frame(height: 1).padding(.horizontal, 24)
-
             Button {
                 HapticManager.shared.buttonTap()
                 showArchive = true
@@ -157,10 +245,7 @@ struct DailyView: View {
                     .tracking(2.5)
                     .textCase(.uppercase)
                     .foregroundColor(.quordleSecondaryText)
-                Text(dailyPuzzleService.countdownString)
-                    .font(.system(size: 30, weight: .semibold, design: .serif))
-                    .foregroundColor(.quordlePrimaryText)
-                    .monospacedDigit()
+                CountdownText()
             }
             .padding(.bottom, 18)
         }
@@ -208,6 +293,8 @@ struct DailyView: View {
             }
             .padding(.horizontal, 28)
             Spacer()
+            dailyRankRow
+                .padding(.bottom, 14)
             countdownFooter
         }
         .padding(.bottom, 100)
@@ -217,7 +304,7 @@ struct DailyView: View {
     // MARK: - Completed View
 
     private var completedView: some View {
-        let completed = statsService.loadCompletedDailyResult()
+        let completed = completedResult
         let solved = completed?.boards.filter { $0.isSolved }.count ?? 0
         let total = completed?.boards.count ?? 8
         let guesses = completed?.guessCount ?? 0
@@ -297,6 +384,8 @@ struct DailyView: View {
             }
             .padding(.horizontal, 28)
             Spacer()
+            dailyRankRow
+                .padding(.bottom, 14)
             if supportService.shouldShowCard(isPremium: subscriptionService.isPremium, totalGamesPlayed: statsService.totalGamesPlayed) {
                 SupportCard(
                     onSupport: { buyCoffeeFromCard() },
@@ -308,6 +397,19 @@ struct DailyView: View {
         }
         .padding(.bottom, 100)
         .iPadReadableWidth()
+    }
+}
+
+/// The one view that observes the per-second countdown, so the tick redraws a
+/// single label instead of the whole screen.
+private struct CountdownText: View {
+    @ObservedObject private var countdown = EditionCountdown.shared
+
+    var body: some View {
+        Text(countdown.text)
+            .font(.system(size: 30, weight: .semibold, design: .serif))
+            .foregroundColor(.quordlePrimaryText)
+            .monospacedDigit()
     }
 }
 

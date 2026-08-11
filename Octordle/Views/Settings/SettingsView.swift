@@ -93,7 +93,7 @@ struct SettingsView: View {
             }
             .background(Color.quordleBackground.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
-            .sheet(isPresented: $showSubscription) { SubscriptionView() }
+            .sheet(isPresented: $showSubscription) { SubscriptionView(source: "settings") }
             .fullScreenCover(isPresented: $showOnboarding) {
                 OnboardingView(hasSeenOnboarding: $onboardingCompleted)
             }

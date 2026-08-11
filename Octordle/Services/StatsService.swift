@@ -14,9 +14,52 @@ class StatsService: ObservableObject {
     @Published private(set) var gameResults: [GameResult] = []
     @Published private(set) var achievementProgress = AchievementProgress()
 
+    /// Every whole-history figure, computed in ONE pass over `gameResults` and cached.
+    ///
+    /// These used to be computed properties that each walked the full history (and
+    /// some allocated a temporary array per call). `totalWordsSolved` in particular
+    /// is read from `ThemeService.effectiveTheme`, which every tile on the board calls
+    /// while rendering — so a single frame could walk the entire game history
+    /// thousands of times, and got slower the longer someone played.
+    private struct Aggregates {
+        var wins = 0
+        var guessesInWins = 0
+        var secondsInWins = 0
+        var threeStar = 0
+        var twoStar = 0
+        var oneStar = 0
+        var wordsSolved = 0
+        var timeEnjoyed = 0
+    }
+
+    private var aggregates = Aggregates()
+
     private init() {
         loadResults()
         loadAchievements()
+    }
+
+    /// Rebuild the cache. Call after any change to `gameResults`.
+    private func recomputeAggregates() {
+        var agg = Aggregates()
+        for result in gameResults {
+            agg.timeEnjoyed += result.elapsedSeconds
+            for board in result.boardResults where board.isSolved {
+                agg.wordsSolved += 1
+            }
+            if result.isWon {
+                agg.wins += 1
+                agg.guessesInWins += result.guessCount
+                agg.secondsInWins += result.elapsedSeconds
+            }
+            switch result.starRating {
+            case 3: agg.threeStar += 1
+            case 2: agg.twoStar += 1
+            case 1: agg.oneStar += 1
+            default: break
+            }
+        }
+        aggregates = agg
     }
 
     // MARK: - Statistics Properties
@@ -26,7 +69,7 @@ class StatsService: ObservableObject {
     }
 
     var totalWins: Int {
-        gameResults.filter { $0.isWon }.count
+        aggregates.wins
     }
 
     var winPercentage: Double {
@@ -43,27 +86,25 @@ class StatsService: ObservableObject {
     }
 
     var averageGuesses: Double {
-        let wins = gameResults.filter { $0.isWon }
-        guard !wins.isEmpty else { return 0 }
-        return Double(wins.reduce(0) { $0 + $1.guessCount }) / Double(wins.count)
+        guard aggregates.wins > 0 else { return 0 }
+        return Double(aggregates.guessesInWins) / Double(aggregates.wins)
     }
 
     var averageTime: Int {
-        let wins = gameResults.filter { $0.isWon }
-        guard !wins.isEmpty else { return 0 }
-        return wins.reduce(0) { $0 + $1.elapsedSeconds } / wins.count
+        guard aggregates.wins > 0 else { return 0 }
+        return aggregates.secondsInWins / aggregates.wins
     }
 
     var threeStarCount: Int {
-        gameResults.filter { $0.starRating == 3 }.count
+        aggregates.threeStar
     }
 
     var twoStarCount: Int {
-        gameResults.filter { $0.starRating == 2 }.count
+        aggregates.twoStar
     }
 
     var oneStarCount: Int {
-        gameResults.filter { $0.starRating == 1 }.count
+        aggregates.oneStar
     }
 
     // MARK: - Game Result Management
@@ -73,8 +114,13 @@ class StatsService: ObservableObject {
     @discardableResult
     func addResult(_ result: GameResult) -> [Achievement] {
         gameResults.insert(result, at: 0)
+        recomputeAggregates()
         saveResults()
-        return updateAchievements(for: result)
+        let unlocked = updateAchievements(for: result)
+        // Words solved and the achievement-tracked max streak both just moved, and
+        // either can unlock a theme — invalidate after they've settled.
+        ThemeService.shared.invalidateResolvedTheme()
+        return unlocked
     }
 
     // MARK: - Daily State Management
@@ -134,7 +180,23 @@ class StatsService: ObservableObject {
             if day == GameState.todayString() {
                 defaults.set(encoded, forKey: completedDailyResultKey) // legacy
             }
+            wonDayCache[day] = state.isWon
         }
+    }
+
+    /// Whether a past day's puzzle was won.
+    ///
+    /// The archive calendar asks this for every completed day cell while it draws,
+    /// and answering it used to mean a UserDefaults read plus a full 8-board JSON
+    /// decode per cell. The answer never changes once a day is finished, so it's
+    /// decoded once and remembered.
+    private var wonDayCache: [String: Bool] = [:]
+
+    func didWinDaily(on day: String) -> Bool {
+        if let cached = wonDayCache[day] { return cached }
+        let won = loadCompletedDailyResult(for: day)?.isWon ?? false
+        wonDayCache[day] = won
+        return won
     }
 
     func loadCompletedDailyResult() -> GameState? {
@@ -182,6 +244,7 @@ class StatsService: ObservableObject {
     // MARK: - Persistence
 
     private func loadResults() {
+        defer { recomputeAggregates() }
         guard let data = defaults.data(forKey: resultsKey) else { return }
         do {
             self.gameResults = try JSONDecoder().decode([GameResult].self, from: data)
@@ -300,14 +363,12 @@ class StatsService: ObservableObject {
 
     /// Total words solved across all games
     var totalWordsSolved: Int {
-        gameResults.reduce(0) { total, result in
-            total + result.boardResults.filter { $0.isSolved }.count
-        }
+        aggregates.wordsSolved
     }
 
     /// Total time enjoyed playing (in seconds)
     var totalTimeEnjoyed: Int {
-        gameResults.reduce(0) { $0 + $1.elapsedSeconds }
+        aggregates.timeEnjoyed
     }
 
     /// Format total time as readable string

@@ -66,7 +66,7 @@ struct ThemePickerView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Theme")
         .sheet(isPresented: $showSubscription) {
-            SubscriptionView()
+            SubscriptionView(source: "theme_picker")
         }
     }
 

@@ -3,7 +3,12 @@ import StoreKit
 
 /// Subscription purchase view — "A Subscriber's Edition".
 struct SubscriptionView: View {
+    /// Where the paywall was opened from (analytics: paywall_view.source).
+    var source: String = "unknown"
+
     @EnvironmentObject var subscriptionService: SubscriptionService
+    @ObservedObject private var categoryService = CategoryService.shared
+    @ObservedObject private var dailyPuzzleService = DailyPuzzleService.shared
     @Environment(\.dismiss) private var dismiss
 
     @State private var selectedProduct: Product?
@@ -42,7 +47,7 @@ struct SubscriptionView: View {
                 }
             }
             .onAppear {
-                AnalyticsService.logPaywallView()
+                AnalyticsService.logPaywallView(source: source)
                 if selectedProduct == nil, let yearly = subscriptionService.products.last {
                     selectedProduct = yearly
                 }
@@ -111,13 +116,55 @@ struct SubscriptionView: View {
 
     private var featuresSection: some View {
         VStack(spacing: 0) {
-            FeatureRow(symbol: "❦", title: "Every Theme Unlocked", description: "Dress the page your way.")
+            FeatureRow(
+                symbol: "▤",
+                title: "Every edition ever — \(editionCount) and counting",
+                description: "Missed a day? The full archive opens. Free readers get the last \(Constants.Archive.freeDays)."
+            )
             featureDivider
-            FeatureRow(symbol: "⊘", title: "No Advertisements", description: "A clean, quiet page.")
+            FeatureRow(
+                symbol: "▦",
+                title: "All \(packCount) themed packs — \(packPuzzleCount) puzzles",
+                description: "Film, Science, Space, Fashion… \(premiumPackCount) packs are subscriber-only."
+            )
             featureDivider
-            FeatureRow(symbol: "✶", title: "Support the Press", description: "Made by one person.")
+            FeatureRow(
+                symbol: "❦",
+                title: "Every board theme unlocked",
+                description: "All \(themeCount) — including the \(premiumThemeCount) kept for subscribers."
+            )
+            featureDivider
+            FeatureRow(
+                symbol: "⊘",
+                title: "No advertisements at all",
+                description: "Even the small banner leaves the page."
+            )
+            featureDivider
+            FeatureRow(
+                symbol: "⚿",
+                title: "No more ad walls",
+                description: "Packs and past editions open at a tap — never a video first."
+            )
+            featureDivider
+            FeatureRow(
+                symbol: "✶",
+                title: "Support the press",
+                description: "You fund the next edition — not a corporation."
+            )
         }
     }
+
+    // MARK: - Live benefit numbers
+    //
+    // Read from the real content at render time — the archive grows by one every
+    // day and packs get added, so hardcoding these would quietly go stale.
+
+    private var editionCount: Int { dailyPuzzleService.puzzleNumber }
+    private var packCount: Int { categoryService.categories.count }
+    private var premiumPackCount: Int { categoryService.categories.filter { !$0.free }.count }
+    private var packPuzzleCount: Int { categoryService.categories.reduce(0) { $0 + $1.puzzleCount } }
+    private var themeCount: Int { BoardTheme.allCases.count }
+    private var premiumThemeCount: Int { BoardTheme.allCases.filter { $0.isPremium }.count }
 
     private var featureDivider: some View {
         Rectangle().fill(Color.quordleCardBorder).frame(height: 1).padding(.leading, 60)

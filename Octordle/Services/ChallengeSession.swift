@@ -26,7 +26,16 @@ final class ChallengeSession: ObservableObject {
     private static let maxStoredRounds = 40
 
     /// Ticks down once per second while `.timed`; unused for `.run`.
-    @Published private(set) var remainingSeconds: Int
+    ///
+    /// Deliberately NOT `@Published`: `ChallengeGameView` hosts the full 8-board
+    /// game, so publishing every second would rebuild the whole board once a second.
+    /// The HUD reads the mirrored value on `clock` instead (see `ChallengeClock`).
+    private(set) var remainingSeconds: Int {
+        didSet { clock.seconds = remainingSeconds }
+    }
+
+    /// The per-second display value, isolated so only the HUD label observes it.
+    let clock = ChallengeClock()
     /// Decremented by unsolved-board count at the end of each round; unused for `.timed`.
     @Published private(set) var livesLeft: Int
     @Published private(set) var totalBoardsSolved = 0
@@ -60,6 +69,7 @@ final class ChallengeSession: ObservableObject {
         self.remainingSeconds = preset.family == .timed ? preset.config : 0
         self.livesLeft = preset.family == .run ? preset.config : 0
         self.bestScore = Self.loadBest(for: preset.id)
+        clock.seconds = remainingSeconds   // didSet doesn't fire during init
     }
 
     deinit {
@@ -209,4 +219,11 @@ final class ChallengeSession: ObservableObject {
     private static func saveBestRounds(_ value: Int, for presetId: String) {
         UserDefaults.standard.set(value, forKey: roundsKey(for: presetId))
     }
+}
+
+/// The Timed challenge's visible countdown, split out of `ChallengeSession` so a
+/// tick redraws the HUD label rather than the 8-board game beneath it.
+@MainActor
+final class ChallengeClock: ObservableObject {
+    @Published var seconds = 0
 }

@@ -9,7 +9,11 @@ class GameViewModel: ObservableObject {
     @Published var gameState: GameState
     @Published var showInvalidWordAlert = false
     @Published var showGameCompleteSheet = false
-    @Published var elapsedTimeString = "0:00"
+    /// The count-up clock lives in its own observable object: it changes every
+    /// second, and if it were `@Published` here, every tick would invalidate the
+    /// whole game screen — all 8 boards, 520 tiles and the keyboard. Only
+    /// `GameTimerLabel` observes it.
+    let clock = GameClock()
     @Published var invalidWordMessage = ""
     @Published var shakingBoardIndex: Int? = nil
     @Published var isNotepadOpen = false
@@ -235,7 +239,7 @@ class GameViewModel: ObservableObject {
     }
 
     private func updateTimeString() {
-        elapsedTimeString = gameState.elapsedTimeString
+        clock.text = gameState.elapsedTimeString
     }
 
     /// Pause the timer and save state (call on exit or background)
@@ -516,6 +520,23 @@ class GameViewModel: ObservableObject {
             // Save completed result for review (only first attempt, not replays)
             if !isPlayedDayCompleted {
                 statsService.saveCompletedDailyResult(gameState)
+
+                // Submit to the Daily Rank leaderboard — today's edition only, first
+                // completion only, so replays and archive days never pollute it.
+                if gameState.dailyDate == GameState.todayString() {
+                    let solved = gameState.boards.filter { $0.isSolved }.count
+                    let guesses = gameState.guessCount
+                    let maxGuesses = gameState.maxGuesses
+                    let seconds = gameState.elapsedSeconds
+                    Task {
+                        await GameCenterService.shared.submitDailyScore(
+                            solvedBoards: solved,
+                            guessCount: guesses,
+                            maxGuesses: maxGuesses,
+                            elapsedSeconds: seconds
+                        )
+                    }
+                }
             }
             if let day = playedDay {
                 statsService.clearDailyState(for: day)
@@ -689,4 +710,11 @@ class GameViewModel: ObservableObject {
     func emojiGrid() -> String {
         gameState.generateEmojiGrid()
     }
+}
+
+/// The in-game count-up clock, kept out of `GameViewModel` so its per-second
+/// update only redraws the label that shows it (see `GameTimerLabel`).
+@MainActor
+final class GameClock: ObservableObject {
+    @Published var text = "0:00"
 }

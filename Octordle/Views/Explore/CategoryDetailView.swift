@@ -52,7 +52,7 @@ struct CategoryDetailView: View {
         .navigationDestination(isPresented: $showGame) {
             GameView(category: category, puzzleIndex: selectedIndex)
         }
-        .sheet(isPresented: $showPaywall) { SubscriptionView() }
+        .sheet(isPresented: $showPaywall) { SubscriptionView(source: "category_detail") }
         .sheet(item: $lockedLevel) { level in
             LockedPackSheet(
                 category: category,

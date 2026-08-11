@@ -32,6 +32,10 @@ struct ExploreView: View {
                         sectionLabel("Challenges")
                         challengesCard
 
+                        sectionLabel("Subscription")
+                        PremiumEntryCard(source: "explore")
+                            .padding(.horizontal, 24)
+
                         Spacer().frame(height: 110)
                     }
                     .iPadReadableWidth(520)

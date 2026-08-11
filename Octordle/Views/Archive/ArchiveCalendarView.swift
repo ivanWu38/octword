@@ -78,7 +78,7 @@ struct ArchiveCalendarView: View {
             .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showSubscription) {
-            SubscriptionView()
+            SubscriptionView(source: "archive")
         }
         .navigationDestination(isPresented: $showGame) {
             if let date = gameDate {
@@ -370,11 +370,7 @@ struct ArchiveCalendarView: View {
         let locked = dailyPuzzleService.isLocked(date, isPremium: subscriptionService.isPremium)
         let isLatest = latestUnplayedDate.map { calendar.isDate(date, inSameDayAs: $0) } ?? false
 
-        var won = false
-        if completed,
-           let result = statsService.loadCompletedDailyResult(for: dailyPuzzleService.dateString(for: date)) {
-            won = result.isWon
-        }
+        let won = completed && statsService.didWinDaily(on: dailyPuzzleService.dateString(for: date))
 
         return DayCellInfo(
             isLatest: isLatest,
