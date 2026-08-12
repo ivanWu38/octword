@@ -48,10 +48,13 @@ struct UnlimitedView: View {
                     .padding(.bottom, 24)
             }
             .padding(.bottom, 100)
+            // Width limit goes on the CONTENT; the paper background stays full-bleed
+            // behind it. The other way round clamps the background to 600pt too and
+            // leaves the system's own backdrop showing down both sides on iPad.
+            .iPadReadableWidth()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.quordleBackground.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
-            .iPadReadableWidth()
             .navigationDestination(isPresented: $showGame) {
                 GameView(mode: .unlimited, difficulty: selectedDifficulty)
             }
