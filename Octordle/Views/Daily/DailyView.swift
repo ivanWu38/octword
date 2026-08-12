@@ -251,9 +251,26 @@ struct DailyView: View {
         }
     }
 
+    // MARK: - Page container
+
+    /// Keeps the front page's Spacer-centred layout when everything fits, and lets
+    /// it scroll when it doesn't. The completed page can now carry the masthead,
+    /// the result block, Daily Rank, the support card and the countdown at once —
+    /// more than a short screen holds, and as a plain VStack that overflow was
+    /// simply unreachable (the masthead clipped off the top and nothing moved).
+    private func page<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        let body = content()
+        return GeometryReader { geo in
+            ScrollView(showsIndicators: false) {
+                body.frame(minHeight: geo.size.height)
+            }
+        }
+    }
+
     // MARK: - Start View
 
     private var startView: some View {
+        page {
         VStack(spacing: 0) {
             masthead
             Spacer()
@@ -299,6 +316,7 @@ struct DailyView: View {
         }
         .padding(.bottom, 100)
         .iPadReadableWidth()
+        }
     }
 
     // MARK: - Completed View
@@ -312,7 +330,8 @@ struct DailyView: View {
         let timeStr = String(format: "%d:%02d", secs / 60, secs % 60)
         let stars = completed?.starRating ?? 0
 
-        return VStack(spacing: 0) {
+        return page {
+        VStack(spacing: 0) {
             masthead
             Spacer()
             VStack(spacing: 18) {
@@ -397,6 +416,7 @@ struct DailyView: View {
         }
         .padding(.bottom, 100)
         .iPadReadableWidth()
+        }
     }
 }
 
