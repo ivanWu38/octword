@@ -56,6 +56,9 @@
 		A59903FAA77B8CC9CE349B02 /* ChallengeSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC0C327DA8F1F7C3A3B4A07 /* ChallengeSession.swift */; };
 		A5D0F00D50000000B0075001 /* Sounds in Resources */ = {isa = PBXBuildFile; fileRef = A5D0F00D50000000B0075002 /* Sounds */; };
 		A72593ADF1BD482984BEFB84 /* ThemeUnlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F2A61B566865E6F22D78D9 /* ThemeUnlockView.swift */; };
+		AA01B0010000000000000001 /* GameCenterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA01B0010000000000000002 /* GameCenterService.swift */; };
+		AA01B0010000000000000003 /* DailyRankView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA01B0010000000000000004 /* DailyRankView.swift */; };
+		AA01B0010000000000000005 /* PremiumEntryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA01B0010000000000000006 /* PremiumEntryCard.swift */; };
 		AB12CD34EF56AB78CD90EF12 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA98DC76FE54BA32DC10FE98 /* ExploreView.swift */; };
 		AD27623C05901D19A430EF6A /* ArchiveCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CEC0E65B8464862ABFE0A4 /* ArchiveCalendarView.swift */; };
 		AE106A2B96D04E8AB8DA0EFB /* SupportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D76FF560329B91E81C19B99 /* SupportView.swift */; };
@@ -70,9 +73,6 @@
 		C69E52763452DEB31975BA26 /* SolveReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AC7B2DC9E5608C1F0659BC7 /* SolveReportView.swift */; };
 		C6CD8FF1C384136F67B2DFB0 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D0FBAA63E58663BABF08E2 /* Constants.swift */; };
 		D1E2F3A4B5C6D7E8F9A0B1C2 /* LockedPackSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6D7E8F9A0B1C3 /* LockedPackSheet.swift */; };
-		AA01B0010000000000000001 /* GameCenterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA01B0010000000000000002 /* GameCenterService.swift */; };
-		AA01B0010000000000000003 /* DailyRankView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA01B0010000000000000004 /* DailyRankView.swift */; };
-		AA01B0010000000000000005 /* PremiumEntryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA01B0010000000000000006 /* PremiumEntryCard.swift */; };
 		D6A36CB71BAF539DCFEA3A2D /* StatsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F54408581B1D6647B968487 /* StatsService.swift */; };
 		DC02685A940104AF800530B2 /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A1EB872191EE691958B55D /* SubscriptionService.swift */; };
 		DFCE39F19A46979F081FA28F /* BannerAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A7CDCC246F11FAC64B9FEA /* BannerAdView.swift */; };
@@ -135,6 +135,10 @@
 		8E854120399DB325DBFEB410 /* UnlimitedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnlimitedView.swift; sourceTree = "<group>"; };
 		8F096B96DB20B71D8AB235AF /* Achievement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Achievement.swift; sourceTree = "<group>"; };
 		A5D0F00D50000000B0075002 /* Sounds */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Sounds; sourceTree = "<group>"; };
+		AA01B0010000000000000002 /* GameCenterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCenterService.swift; sourceTree = "<group>"; };
+		AA01B0010000000000000004 /* DailyRankView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyRankView.swift; sourceTree = "<group>"; };
+		AA01B0010000000000000006 /* PremiumEntryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumEntryCard.swift; sourceTree = "<group>"; };
+		AA01B0010000000000000008 /* Octordle.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Octordle.entitlements; sourceTree = "<group>"; };
 		AAEACC8BA0862A1405EDDD68 /* ChallengesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengesView.swift; sourceTree = "<group>"; };
 		B0E38A023CE77EBB840871AA /* ConfettiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiView.swift; sourceTree = "<group>"; };
 		B64ABA569D2976B678F378A0 /* NotepadIntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotepadIntroView.swift; sourceTree = "<group>"; };
@@ -146,10 +150,6 @@
 		CED7F2D0447A48C336889865 /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
 		D05BBC82B8C4FB9BA01BC701 /* AchievementDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementDetailView.swift; sourceTree = "<group>"; };
 		D1E2F3A4B5C6D7E8F9A0B1C3 /* LockedPackSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockedPackSheet.swift; sourceTree = "<group>"; };
-		AA01B0010000000000000002 /* GameCenterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCenterService.swift; sourceTree = "<group>"; };
-		AA01B0010000000000000004 /* DailyRankView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyRankView.swift; sourceTree = "<group>"; };
-		AA01B0010000000000000006 /* PremiumEntryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumEntryCard.swift; sourceTree = "<group>"; };
-		AA01B0010000000000000008 /* Octordle.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Octordle.entitlements; sourceTree = "<group>"; };
 		DAD06AA7C774DF2460256AAE /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		DBD9DBC316D6A873CF0406D3 /* DailyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyView.swift; sourceTree = "<group>"; };
 		DDF29951F90673E9BC16FB91 /* SolveAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolveAnalyzer.swift; sourceTree = "<group>"; };
@@ -313,14 +313,6 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
-		AA01B0010000000000000007 /* Leaderboard */ = {
-			isa = PBXGroup;
-			children = (
-				AA01B0010000000000000004 /* DailyRankView.swift */,
-			);
-			path = Leaderboard;
-			sourceTree = "<group>";
-		};
 		848C12F6314047F912BA421D /* Subscription */ = {
 			isa = PBXGroup;
 			children = (
@@ -354,6 +346,14 @@
 				5A1BE45FE8F9D43B399AF7DA /* RewardedAdManager.swift */,
 			);
 			path = Ads;
+			sourceTree = "<group>";
+		};
+		AA01B0010000000000000007 /* Leaderboard */ = {
+			isa = PBXGroup;
+			children = (
+				AA01B0010000000000000004 /* DailyRankView.swift */,
+			);
+			path = Leaderboard;
 			sourceTree = "<group>";
 		};
 		AAAE87AF608084FAC326607A /* Products */ = {
@@ -600,6 +600,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Octordle/Octordle.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 2;
 				INFOPLIST_FILE = Octordle/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Octors;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.word-games";
@@ -696,6 +697,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Octordle/Octordle.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 2;
 				INFOPLIST_FILE = Octordle/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Octors;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.word-games";
