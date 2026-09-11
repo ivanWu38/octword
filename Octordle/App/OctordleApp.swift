@@ -109,8 +109,21 @@ struct RootView: View {
                 ZStack {
                     MainTabView()
                         .task {
+                            #if DEBUG
+                            // Review-prompt harness: OCTORDLE_REVIEW_TEST=reset clears state and asks at
+                            // launch; OCTORDLE_REVIEW_TEST=ask just re-asks (to verify cooldowns).
+                            if let mode = ProcessInfo.processInfo.environment["OCTORDLE_REVIEW_TEST"] {
+                                let r = ReviewManager.shared
+                                if mode == "reset" { r.resetAll() }
+                                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                                r.considerPrompt(triggers: [.perfectWin])
+                                print("[ReviewTest] considerPrompt -> \(r.isPromptShowing) lastPrompt=\(String(describing: r.lastPromptDate)) consecutive=\(r.consecutivePromptCount) ratedVersion=\(String(describing: r.lastRatedVersion))")
+                                return
+                            }
+                            #endif
                             await startConsentAndTrackingFlow()
                         }
+                        .reviewPromptHarness()
 
                     if showATTPrePrompt {
                         ATTPrePromptView(onContinue: {
@@ -165,3 +178,36 @@ struct RootView: View {
         await attService.requestTrackingPermission()
     }
 }
+
+#if DEBUG
+/// Harness-only presenter (in real play GameView presents the sheet).
+private struct ReviewPromptHarness: ViewModifier {
+    @ObservedObject private var review = ReviewManager.shared
+    @Environment(\.openURL) private var openURL
+    @State private var choice: Int? // 1 rate, 2 later
+    func body(content: Content) -> some View {
+        content.sheet(isPresented: $review.isPromptShowing, onDismiss: {
+            switch choice {
+            case 1: openURL(ReviewManager.writeReviewURL)
+            case 2: break
+            default: review.userDismissedWithoutChoice()
+            }
+            choice = nil
+        }) {
+            ReviewPromptView(onAccept: { choice = 1; review.userAccepted() },
+                             onDecline: { choice = 2; review.userDeclined() })
+                .interactiveDismissDisabled()
+        }
+    }
+}
+private extension View {
+    @ViewBuilder
+    func reviewPromptHarness() -> some View {
+        if ProcessInfo.processInfo.environment["OCTORDLE_REVIEW_TEST"] != nil { self.modifier(ReviewPromptHarness()) } else { self }
+    }
+}
+#else
+private extension View {
+    func reviewPromptHarness() -> some View { self }
+}
+#endif

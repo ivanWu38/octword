@@ -1,5 +1,4 @@
 import Foundation
-import StoreKit
 import SwiftUI
 
 @MainActor
@@ -8,14 +7,14 @@ class ReviewManager: ObservableObject {
 
     // MARK: - Published
 
-    @Published var showReviewPrompt = false
+    @Published var isPromptShowing = false
 
     // MARK: - UserDefaults Keys
 
     private let kLastPromptDate = "octordle_lastPromptDate"
     private let kConsecutivePromptCount = "octordle_consecutivePromptCount"
     private let kRatedVersion = "octordle_ratedVersion"
-    private let kSystemReviewRequestDates = "octordle_systemReviewRequestDates"
+    private let kLastRatedDate = "octordle_lastRatedDate"
 
     private let defaults = UserDefaults.standard
 
@@ -31,7 +30,9 @@ class ReviewManager: ObservableObject {
     /// Apple silently no-ops the native dialog once it's been used ~3 times in a
     /// rolling year for this app. Track our own usage so we can fall back to the
     /// App Store's write-review page instead of asking into the void.
-    private let kMaxSystemReviewRequestsPerYear = 3
+    /// After OK (sent to the App Store), don't ask again for this long even if the
+    /// app version changes — a rater per release is a nag.
+    private let ratedCooldownDays = 120
 
     private init() {}
 
@@ -41,16 +42,23 @@ class ReviewManager: ObservableObject {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
     }
 
+    var lastRatedVersion: String? { defaults.string(forKey: kRatedVersion) }
+
     private var hasRatedCurrentVersion: Bool {
-        defaults.string(forKey: kRatedVersion) == currentAppVersion
+        lastRatedVersion == currentAppVersion
     }
 
-    private var consecutivePromptCount: Int {
+    private var lastRatedDate: Date? {
+        get { defaults.object(forKey: kLastRatedDate) as? Date }
+        set { defaults.set(newValue, forKey: kLastRatedDate) }
+    }
+
+    private(set) var consecutivePromptCount: Int {
         get { defaults.integer(forKey: kConsecutivePromptCount) }
         set { defaults.set(newValue, forKey: kConsecutivePromptCount) }
     }
 
-    private var lastPromptDate: Date? {
+    private(set) var lastPromptDate: Date? {
         get { defaults.object(forKey: kLastPromptDate) as? Date }
         set { defaults.set(newValue, forKey: kLastPromptDate) }
     }
@@ -101,38 +109,68 @@ class ReviewManager: ObservableObject {
             consecutivePromptCount = 0
         }
 
-        guard shouldPrompt() else { return }
-        // Stamp at show time, not on button tap — a swiped-away sheet still
-        // counts as an ask, so the daily/14-day spacing can't be bypassed.
-        lastPromptDate = Date()
-        showReviewPrompt = true
+        tryPrompt()
     }
 
-    /// User tapped "OK". Uses Apple's native review sheet while we're within its
-    /// yearly budget; otherwise sends the player straight to the write-review
-    /// page so the ask isn't wasted on a dialog that won't show.
+    /// Shows the soft prompt if every guard passes. Returns whether it was shown.
+    @discardableResult
+    func tryPrompt(now: Date = Date()) -> Bool {
+        guard shouldPrompt() else { return false }
+        // Stamp at show time, not on button tap — a swiped-away sheet still
+        // counts as an ask, so the daily/14-day spacing can't be bypassed.
+        lastPromptDate = now
+        #if DEBUG
+        print("[Review] shown at \(now)")
+        #endif
+        isPromptShowing = true
+        AnalyticsService.logReviewPrompt("review_prompt_shown")
+        return true
+    }
+
+    /// User tapped "OK". Marks this version rated; the presenting sheet then opens
+    /// the App Store write-review page in `onDismiss` (`requestReview()` was
+    /// dropped: 94 OK taps → 6 ratings, Apple's dialog mostly never showed).
     func userAccepted() {
-        showReviewPrompt = false
+        isPromptShowing = false
         defaults.set(currentAppVersion, forKey: kRatedVersion)
+        lastRatedDate = Date()
         consecutivePromptCount = 0
+        AnalyticsService.logReviewPrompt("review_prompt_accepted")
+    }
 
-        let recentRequests = recentSystemReviewRequests()
-        let windowScene = UIApplication.shared.connectedScenes
-            .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene
-
-        if recentRequests.count < kMaxSystemReviewRequestsPerYear, let windowScene {
-            systemReviewRequestDates = recentRequests + [Date()]
-            AppStore.requestReview(in: windowScene)
-        } else {
-            openWriteReviewPage()
-        }
+    /// Deep link straight to the App Store's "Write a Review" form.
+    static var writeReviewURL: URL {
+        URL(string: "https://apps.apple.com/app/id\(Constants.App.appStoreId)?action=write-review")!
     }
 
     /// User tapped "Later" — increment the decline count.
     /// (`lastPromptDate` was already stamped when the prompt was shown.)
     func userDeclined() {
-        showReviewPrompt = false
+        #if DEBUG
+        print("[Review] later at \(Date())")
+        #endif
+        isPromptShowing = false
         consecutivePromptCount += 1
+        AnalyticsService.logReviewPrompt("review_prompt_later")
+    }
+
+    /// The sheet was closed without either button (swipe / tap outside / backgrounded).
+    /// Counts exactly like Later so the player isn't asked again at the next game.
+    func userDismissedWithoutChoice() {
+        #if DEBUG
+        print("[Review] dismissed without choice at \(Date())")
+        #endif
+        isPromptShowing = false
+        consecutivePromptCount += 1
+        AnalyticsService.logReviewPrompt("review_prompt_dismissed")
+    }
+
+    // MARK: - Dev util
+
+    func resetAll() {
+        for key in [kLastPromptDate, kConsecutivePromptCount, kRatedVersion, kLastRatedDate] {
+            defaults.removeObject(forKey: key)
+        }
     }
 
     // MARK: - Gating
@@ -140,6 +178,7 @@ class ReviewManager: ObservableObject {
     private func shouldPrompt() -> Bool {
         // Don't prompt if already rated this version
         guard !hasRatedCurrentVersion else { return false }
+        if let rated = lastRatedDate, daysSince(rated) < ratedCooldownDays { return false }
 
         // Don't prompt twice in the same day
         guard !wasPromptedToday else { return false }
@@ -158,28 +197,5 @@ class ReviewManager: ObservableObject {
         }
 
         return true
-    }
-
-    // MARK: - Write-review fallback bookkeeping
-
-    private var systemReviewRequestDates: [Date] {
-        get { (defaults.array(forKey: kSystemReviewRequestDates) as? [Date]) ?? [] }
-        set { defaults.set(newValue, forKey: kSystemReviewRequestDates) }
-    }
-
-    /// Returns request dates from the past year, pruning anything older on read.
-    private func recentSystemReviewRequests() -> [Date] {
-        let cutoff = Calendar.current.date(byAdding: .day, value: -365, to: Date()) ?? Date()
-        let all = systemReviewRequestDates
-        let recent = all.filter { $0 >= cutoff }
-        if recent.count != all.count {
-            systemReviewRequestDates = recent
-        }
-        return recent
-    }
-
-    private func openWriteReviewPage() {
-        guard let url = URL(string: "https://apps.apple.com/app/id\(Constants.App.appStoreId)?action=write-review") else { return }
-        UIApplication.shared.open(url)
     }
 }

@@ -9,6 +9,10 @@ struct GameView: View {
 
     @State private var showConfetti = false
     @State private var shouldDismissAfterResult = false
+    /// What the player chose in the rating sheet; nil if it closed some other way.
+    @State private var reviewChoice: ReviewChoice?
+    private enum ReviewChoice { case rate, later }
+    @Environment(\.openURL) private var openURL
     @State private var showResultSheet = false
     @State private var topVisibleRow: Int = 0
     @State private var notepadOffset: CGSize = .zero
@@ -244,26 +248,32 @@ struct GameView: View {
             }
         }
         .sheet(isPresented: $shouldDismissAfterResult, onDismiss: {
-            // A swipe-down never hits either button, which would leave the prompt
-            // armed and re-showing after every following game — count it as a
-            // decline so the cooldowns apply.
-            if reviewManager.showReviewPrompt {
-                reviewManager.userDeclined()
+            // onDismiss is the only point where the sheet is guaranteed gone.
+            switch reviewChoice {
+            case .rate: openURL(ReviewManager.writeReviewURL)
+            case .later: break
+            case nil: reviewManager.userDismissedWithoutChoice()   // swipe / background — counts as Later
             }
+            reviewChoice = nil
             // After the review prompt closes, mark completed and pop together.
             viewModel.markDailyCompletedIfNeeded()
             dismiss()
         }) {
             ReviewPromptView(
                 onAccept: {
+                    reviewChoice = .rate
                     reviewManager.userAccepted()
                     shouldDismissAfterResult = false
                 },
                 onDecline: {
+                    reviewChoice = .later
                     reviewManager.userDeclined()
                     shouldDismissAfterResult = false
                 }
             )
+            // Only the two buttons close this sheet; a swipe used to bypass the
+            // Later bookkeeping and re-prompt at the very next game.
+            .interactiveDismissDisabled()
         }
         .onChange(of: viewModel.showGameCompleteSheet) { newValue in
             guard newValue else { return }
@@ -662,7 +672,7 @@ struct GameView: View {
     }
 
     private func proceedAfterResult() {
-        if reviewManager.showReviewPrompt {
+        if reviewManager.isPromptShowing {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 shouldDismissAfterResult = true
             }

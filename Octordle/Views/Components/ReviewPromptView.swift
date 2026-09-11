@@ -21,7 +21,6 @@ struct ReviewPromptView: View {
             VStack(spacing: 12) {
                 Button {
                     HapticManager.shared.primaryTap()
-                    AnalyticsService.logReviewPromptResponse(accepted: true)
                     onAccept()
                 } label: {
                     Text("OK")
@@ -35,7 +34,6 @@ struct ReviewPromptView: View {
 
                 Button {
                     HapticManager.shared.backTap()
-                    AnalyticsService.logReviewPromptResponse(accepted: false)
                     onDecline()
                 } label: {
                     Text("Later")
@@ -49,9 +47,5 @@ struct ReviewPromptView: View {
         }
         .padding()
         .presentationDetents([.medium])
-        .presentationDragIndicator(.visible)
-        .onAppear {
-            AnalyticsService.logReviewPromptShown()
-        }
     }
 }

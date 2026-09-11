@@ -97,14 +97,9 @@ struct AnalyticsService {
 
     // MARK: - Review Prompt
 
-    static func logReviewPromptShown() {
-        Analytics.logEvent("review_prompt_shown", parameters: nil)
-    }
-
-    static func logReviewPromptResponse(accepted: Bool) {
-        Analytics.logEvent("review_prompt_response", parameters: [
-            "accepted": accepted
-        ])
+    /// review_prompt_shown / review_prompt_accepted / review_prompt_later / review_prompt_dismissed
+    static func logReviewPrompt(_ event: String) {
+        Analytics.logEvent(event, parameters: nil)
     }
 
     // MARK: - Themes
