@@ -4,16 +4,16 @@ import GoogleMobileAds
 // MARK: - Banner Ad View (UIViewRepresentable)
 struct BannerAdView: UIViewRepresentable {
 
-    func makeUIView(context: Context) -> GADBannerView {
-        let bannerView = GADBannerView(adSize: GADAdSizeBanner)
+    func makeUIView(context: Context) -> BannerView {
+        let bannerView = BannerView(adSize: AdSizeBanner)
         bannerView.adUnitID = Constants.AdMob.bannerAdUnitId
         bannerView.rootViewController = getRootViewController()
         bannerView.delegate = context.coordinator
-        bannerView.load(GADRequest())
+        bannerView.load(Request())
         return bannerView
     }
 
-    func updateUIView(_ uiView: GADBannerView, context: Context) {}
+    func updateUIView(_ uiView: BannerView, context: Context) {}
 
     func makeCoordinator() -> Coordinator {
         Coordinator()
@@ -27,23 +27,23 @@ struct BannerAdView: UIViewRepresentable {
         return rootViewController
     }
 
-    class Coordinator: NSObject, GADBannerViewDelegate {
+    class Coordinator: NSObject, BannerViewDelegate {
         private var retryCount = 0
         private let maxRetries = 3
 
-        func bannerViewDidReceiveAd(_ bannerView: GADBannerView) {
+        func bannerViewDidReceiveAd(_ bannerView: BannerView) {
             print("[AdMob] Banner ad loaded successfully")
             retryCount = 0
         }
 
-        func bannerView(_ bannerView: GADBannerView, didFailToReceiveAdWithError error: Error) {
+        func bannerView(_ bannerView: BannerView, didFailToReceiveAdWithError error: Error) {
             print("[AdMob] Banner ad failed to load: \(error.localizedDescription)")
             guard retryCount < maxRetries else { return }
             let delay = pow(2.0, Double(retryCount + 1)) // 2s, 4s, 8s
             retryCount += 1
             print("[AdMob] Retrying banner in \(delay)s (attempt \(retryCount)/\(maxRetries))")
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                bannerView.load(GADRequest())
+                bannerView.load(Request())
             }
         }
     }
@@ -53,17 +53,17 @@ struct BannerAdView: UIViewRepresentable {
 struct AdaptiveBannerAdView: UIViewRepresentable {
     let width: CGFloat
 
-    func makeUIView(context: Context) -> GADBannerView {
-        let bannerView = GADBannerView()
+    func makeUIView(context: Context) -> BannerView {
+        let bannerView = BannerView()
         bannerView.adUnitID = Constants.AdMob.bannerAdUnitId
         bannerView.rootViewController = getRootViewController()
         bannerView.delegate = context.coordinator
-        bannerView.adSize = GADCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(width)
-        bannerView.load(GADRequest())
+        bannerView.adSize = currentOrientationAnchoredAdaptiveBanner(width: width)
+        bannerView.load(Request())
         return bannerView
     }
 
-    func updateUIView(_ uiView: GADBannerView, context: Context) {}
+    func updateUIView(_ uiView: BannerView, context: Context) {}
 
     func makeCoordinator() -> Coordinator {
         Coordinator()
@@ -77,12 +77,12 @@ struct AdaptiveBannerAdView: UIViewRepresentable {
         return rootViewController
     }
 
-    class Coordinator: NSObject, GADBannerViewDelegate {
-        func bannerViewDidReceiveAd(_ bannerView: GADBannerView) {
+    class Coordinator: NSObject, BannerViewDelegate {
+        func bannerViewDidReceiveAd(_ bannerView: BannerView) {
             print("[AdMob] Adaptive banner ad loaded successfully")
         }
 
-        func bannerView(_ bannerView: GADBannerView, didFailToReceiveAdWithError error: Error) {
+        func bannerView(_ bannerView: BannerView, didFailToReceiveAdWithError error: Error) {
             print("[AdMob] Adaptive banner ad failed to load: \(error.localizedDescription)")
         }
     }

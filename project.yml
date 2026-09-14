@@ -19,7 +19,13 @@ settings:
 packages:
   GoogleMobileAds:
     url: https://github.com/googleads/swift-package-manager-google-mobile-ads
-    version: 11.2.0
+    from: 13.4.0
+  UnityAdapter:
+    url: https://github.com/googleads/googleads-mobile-ios-mediation-unity
+    from: 4.20.0
+  LiftoffMonetizeAdapter:
+    url: https://github.com/googleads/googleads-mobile-ios-mediation-liftoffmonetize
+    from: 7.7.700
   firebase-ios-sdk:
     url: https://github.com/firebase/firebase-ios-sdk
     majorVersion: 11.0.0
@@ -28,7 +34,7 @@ packages:
     branch: main
   GoogleUserMessagingPlatform:
     url: https://github.com/googleads/swift-package-manager-google-user-messaging-platform
-    version: 2.7.0
+    from: 3.1.0
 
 targets:
   Octordle:
@@ -54,9 +60,14 @@ targets:
         INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.word-games"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        OTHER_LDFLAGS: "$(inherited) -ObjC"
     dependencies:
       - package: GoogleMobileAds
         product: GoogleMobileAds
+      - package: UnityAdapter
+        product: UnityAdapterTarget
+      - package: LiftoffMonetizeAdapter
+        product: LiftoffMonetizeAdapterTarget
       - package: firebase-ios-sdk
         product: FirebaseAnalytics
       - package: clarity-apps

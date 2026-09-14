@@ -12,7 +12,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         // Configure test devices for development
         #if DEBUG
-        GADMobileAds.sharedInstance().requestConfiguration.testDeviceIdentifiers = [
+        MobileAds.shared.requestConfiguration.testDeviceIdentifiers = [
             "01da80481aa6bbecc0503354423e83c2"  // Your iPhone test device
         ]
         #endif
@@ -104,7 +104,8 @@ struct RootView: View {
     /// True when launched with OCTORDLE_STREAK_TEST (DEBUG only): skips onboarding.
     private var isStreakHarness: Bool {
         #if DEBUG
-        return ProcessInfo.processInfo.environment["OCTORDLE_STREAK_TEST"] != nil
+        let env = ProcessInfo.processInfo.environment
+        return env["OCTORDLE_STREAK_TEST"] != nil || env["OCTORDLE_AD_DIAG"] == "1"
         #else
         return false
         #endif
@@ -123,6 +124,11 @@ struct RootView: View {
                             if let scenario = ProcessInfo.processInfo.environment["OCTORDLE_STREAK_TEST"] {
                                 DailyPuzzleService.shared.debugSeedStreak(scenario)
                                 delegate.initializeTrackingSDKs() // ads without consent/ATT dialogs
+                                return
+                            }
+                            // Mediation diagnostics harness: OCTORDLE_AD_DIAG=1 (+ OCTORDLE_PROD_ADS=1) — straight to SDK start.
+                            if ProcessInfo.processInfo.environment["OCTORDLE_AD_DIAG"] == "1" {
+                                delegate.initializeTrackingSDKs()
                                 return
                             }
                             // Review-prompt harness: OCTORDLE_REVIEW_TEST=reset clears state and asks at

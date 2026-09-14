@@ -171,11 +171,14 @@ class DailyPuzzleService: ObservableObject {
     }
 
     /// Number of consecutive streak days ending on `dayString` (inclusive).
+    /// A rescued day bridges the gap but is not itself a played day, so it keeps the
+    /// run alive without adding to the count (a 12-day streak stays 12 after a rescue;
+    /// today's play makes it 13, matching the "today counts as day N+1" copy).
     private func consecutiveStreakDays(endingOn dayString: String) -> Int {
         var streak = 0
         guard var date = Self.dateFormatter.date(from: dayString) else { return 0 }
         while countsTowardStreak(dateString(for: date)) {
-            streak += 1
+            if streakDates.contains(dateString(for: date)) { streak += 1 }
             guard let previousDay = Calendar.current.date(byAdding: .day, value: -1, to: date) else { break }
             date = previousDay
         }

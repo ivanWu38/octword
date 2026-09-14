@@ -365,7 +365,7 @@ class GameViewModel: ObservableObject {
     // unlock flow (incl. the new Explore-mode badges) can be tested without playing.
     // Triggered 3s after the game screen appears. Remove this method + its caller in
     // GameView.onAppear when done.
-    static var debugAutoWinEnabled = false
+    static var debugAutoWinEnabled: Bool { ProcessInfo.processInfo.environment["OCTORDLE_AUTOWIN"] != nil }
 
     func debugAutoWin() {
         guard Self.debugAutoWinEnabled else { return }

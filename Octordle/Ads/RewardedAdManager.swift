@@ -28,7 +28,7 @@ class RewardedAdManager: NSObject, ObservableObject {
     @Published private(set) var isAdReady = false
 
     private let adUnitId: String
-    private var rewardedAd: GADRewardedAd?
+    private var rewardedAd: RewardedAd?
     private var retryCount = 0
     private let maxRetries = 3
     private var pendingRewardEarned = false
@@ -58,7 +58,7 @@ class RewardedAdManager: NSObject, ObservableObject {
     }
 
     private func loadAdInternal() {
-        GADRewardedAd.load(withAdUnitID: adUnitId, request: GADRequest()) { [weak self] ad, error in
+        RewardedAd.load(with: adUnitId, request: Request()) { [weak self] ad, error in
             Task { @MainActor in
                 guard let self else { return }
                 self.isLoading = false
@@ -131,7 +131,7 @@ class RewardedAdManager: NSObject, ObservableObject {
 
         let earned: Bool = await withCheckedContinuation { continuation in
             self.continuation = continuation
-            rewardedAd.present(fromRootViewController: topVC) { [weak self] in
+            rewardedAd.present(from: topVC) { [weak self] in
                 print("[AdMob] User earned reward")
                 self?.pendingRewardEarned = true
                 AnalyticsService.logRewardedAdEarned(placement: "pack_unlock")
@@ -188,11 +188,11 @@ class RewardedAdManager: NSObject, ObservableObject {
     }
 }
 
-// MARK: - GADFullScreenContentDelegate
+// MARK: - FullScreenContentDelegate
 
-extension RewardedAdManager: GADFullScreenContentDelegate {
+extension RewardedAdManager: FullScreenContentDelegate {
 
-    nonisolated func adDidDismissFullScreenContent(_ ad: GADFullScreenPresentingAd) {
+    nonisolated func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
         Task { @MainActor in
             let earned = pendingRewardEarned
             rewardedAd = nil
@@ -204,7 +204,7 @@ extension RewardedAdManager: GADFullScreenContentDelegate {
         }
     }
 
-    nonisolated func ad(_ ad: GADFullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
+    nonisolated func ad(_ ad: FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
         Task { @MainActor in
             print("[AdMob] Rewarded ad failed to present: \(error.localizedDescription)")
             rewardedAd = nil

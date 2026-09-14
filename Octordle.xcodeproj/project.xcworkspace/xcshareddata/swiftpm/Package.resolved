@@ -1,5 +1,5 @@
 {
-  "originHash" : "087ab43c1fd75a3a018b080faa46681c4be40008705557f89dfba0c2fc4c86ba",
+  "originHash" : "0d0bc870cb04dd33d6aa811a5825df05580f1d8cca4530eef99dd6418c9ae53e",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -44,6 +44,24 @@
       "state" : {
         "revision" : "a2d0f1f1666de591eb1a811f40b1706f5c63a2ed",
         "version" : "2.3.0"
+      }
+    },
+    {
+      "identity" : "googleads-mobile-ios-mediation-liftoffmonetize",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/googleads/googleads-mobile-ios-mediation-liftoffmonetize",
+      "state" : {
+        "revision" : "4cded3a3d6a394e9e753b4353bef9a9ba48e9d23",
+        "version" : "7.7.700"
+      }
+    },
+    {
+      "identity" : "googleads-mobile-ios-mediation-unity",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/googleads/googleads-mobile-ios-mediation-unity",
+      "state" : {
+        "revision" : "14d4abebc29b67ece2d179006a084e4d51ddd761",
+        "version" : "4.20.0"
       }
     },
     {
@@ -132,8 +150,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/googleads/swift-package-manager-google-mobile-ads",
       "state" : {
-        "revision" : "5ff977255c2ba5844e7e9da779f1f2a5a00e0028",
-        "version" : "11.2.0"
+        "revision" : "54efe6d39a7b41b84c1041f21c704a7e6a493d7a",
+        "version" : "13.9.0"
       }
     },
     {
@@ -141,8 +159,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git",
       "state" : {
-        "revision" : "708a282840c2171ee63bd93b87afa49fe507d70e",
-        "version" : "2.7.0"
+        "revision" : "13b248eaa73b7826f0efb1bcf455e251d65ecb1b",
+        "version" : "3.1.0"
       }
     },
     {
@@ -152,6 +170,33 @@
       "state" : {
         "revision" : "c5ab62237f21cad094812719a1bbe29443407c5f",
         "version" : "1.34.1"
+      }
+    },
+    {
+      "identity" : "unity-ad-quality-swift-package",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ironsource-mobile/Unity-Ad-Quality-Swift-Package",
+      "state" : {
+        "revision" : "7b67cefa586b09e95df54413b48e907c6649e4ca",
+        "version" : "9.9.0"
+      }
+    },
+    {
+      "identity" : "unity-ads-swift-package",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Unity-Technologies/Unity-Ads-Swift-Package.git",
+      "state" : {
+        "revision" : "589ebfb7a28cc9171856ced7a9429d9770ec31a5",
+        "version" : "4.20.0"
+      }
+    },
+    {
+      "identity" : "vungleadssdk-swiftpackagemanager",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Vungle/VungleAdsSDK-SwiftPackageManager.git",
+      "state" : {
+        "revision" : "fad76e1308414d59a13015e2c12f551860c4509a",
+        "version" : "7.7.7"
       }
     }
   ],

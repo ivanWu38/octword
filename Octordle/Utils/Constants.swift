@@ -102,18 +102,19 @@ enum Constants {
         static let testBannerAdUnitId = "ca-app-pub-3940256099942544/2934735716"
         static let testRewardedAdUnitId = "ca-app-pub-3940256099942544/1712485313"
 
-        #if DEBUG
-        static let bannerAdUnitId = testBannerAdUnitId
-        static let rewardedAdUnitId = testRewardedAdUnitId
-        static let supportRewardedAdUnitId = testRewardedAdUnitId
-        static let categoryRewardedAdUnitId = testRewardedAdUnitId
-        static let streakRescueRewardedAdUnitId = testRewardedAdUnitId
-        #else
-        static let bannerAdUnitId = prodBannerAdUnitId
-        static let rewardedAdUnitId = prodRewardedAdUnitId
-        static let supportRewardedAdUnitId = prodSupportRewardedAdUnitId
-        static let categoryRewardedAdUnitId = prodCategoryRewardedAdUnitId
-        static let streakRescueRewardedAdUnitId = prodStreakRescueRewardedAdUnitId
-        #endif
+        /// DEBUG uses Google test IDs; launch with OCTORDLE_PROD_ADS=1 to hit the real units (mediation diagnostics).
+        private static var useProdInDebug: Bool {
+            #if DEBUG
+            return ProcessInfo.processInfo.environment["OCTORDLE_PROD_ADS"] == "1"
+            #else
+            return true
+            #endif
+        }
+        static var bannerAdUnitId: String { useProdInDebug ? prodBannerAdUnitId : testBannerAdUnitId }
+        static var rewardedAdUnitId: String { useProdInDebug ? prodRewardedAdUnitId : testRewardedAdUnitId }
+        static var supportRewardedAdUnitId: String { useProdInDebug ? prodSupportRewardedAdUnitId : testRewardedAdUnitId }
+        static var categoryRewardedAdUnitId: String { useProdInDebug ? prodCategoryRewardedAdUnitId : testRewardedAdUnitId }
+        static var streakRescueRewardedAdUnitId: String { useProdInDebug ? prodStreakRescueRewardedAdUnitId : testRewardedAdUnitId }
+
     }
 }
