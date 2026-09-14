@@ -7,12 +7,35 @@ import GameKit
 /// number this board has while the app is young, and quoting it makes a decent rank
 /// read as a small one. The total appears only in the footer, and only once the board
 /// is busy (see `GameCenterService.minPlayersToShowTotal`).
+/// One row of the league table, decoupled from GameKit so the view can also render
+/// seeded rows (DEBUG PreviewSeed) without a Game Center session.
+struct RankEntry: Identifiable {
+    let rank: Int
+    let name: String
+    let score: Int
+    let isLocal: Bool
+    let player: GKPlayer?
+    var id: Int { rank }
+
+    init(_ entry: GKLeaderboard.Entry) {
+        rank = entry.rank
+        name = entry.player.displayName
+        score = entry.score
+        isLocal = entry.player.gamePlayerID == GKLocalPlayer.local.gamePlayerID
+        player = entry.player
+    }
+
+    init(rank: Int, name: String, score: Int, isLocal: Bool) {
+        self.rank = rank; self.name = name; self.score = score; self.isLocal = isLocal; self.player = nil
+    }
+}
+
 struct DailyRankView: View {
     @ObservedObject private var gameCenter = GameCenterService.shared
     @Environment(\.dismiss) private var dismiss
 
-    @State private var localEntry: GKLeaderboard.Entry?
-    @State private var entries: [GKLeaderboard.Entry] = []
+    @State private var localEntry: RankEntry?
+    @State private var entries: [RankEntry] = []
     @State private var totalPlayers = 0
     @State private var isLoading = true
 
@@ -97,8 +120,8 @@ struct DailyRankView: View {
 
                     groupLabel("Leaders")
                     columnHeader
-                    ForEach(Array(entries.enumerated()), id: \.offset) { _, entry in
-                        row(for: entry, highlighted: isLocal(entry))
+                    ForEach(entries) { entry in
+                        row(for: entry, highlighted: entry.isLocal)
                     }
 
                     footer
@@ -147,6 +170,8 @@ struct DailyRankView: View {
             Text("Guess").frame(width: 40, alignment: .trailing)
             Text("Time").frame(width: 46, alignment: .trailing)
         }
+        .lineLimit(1)
+        .minimumScaleFactor(0.7)
         .font(.system(size: 8.5, weight: .semibold))
         .tracking(1.4)
         .textCase(.uppercase)
@@ -224,7 +249,7 @@ struct DailyRankView: View {
 
     // MARK: - Row
 
-    private func row(for entry: GKLeaderboard.Entry, highlighted: Bool) -> some View {
+    private func row(for entry: RankEntry, highlighted: Bool) -> some View {
         let decoded = GameCenterService.decodeScore(entry.score, maxGuesses: maxGuesses)
         return HStack(spacing: 0) {
             Text("\(entry.rank)")
@@ -232,10 +257,10 @@ struct DailyRankView: View {
                 .foregroundColor(rankColor(entry.rank))
                 .frame(width: 34, alignment: .leading)
 
-            PlayerAvatar(player: entry.player)
+            PlayerAvatar(player: entry.player, name: entry.name)
                 .padding(.trailing, 10)
 
-            Text(entry.player.displayName)
+            Text(entry.name)
                 .font(.system(size: 13.5, design: .serif))
                 .foregroundColor(.quordlePrimaryText)
                 .lineLimit(1)
@@ -284,17 +309,22 @@ struct DailyRankView: View {
         return String(format: "%d:%02d", s / 60, s % 60)
     }
 
-    private func isLocal(_ entry: GKLeaderboard.Entry) -> Bool {
-        entry.player.gamePlayerID == GKLocalPlayer.local.gamePlayerID
-    }
-
     // MARK: - Load
 
     private func load() async {
         isLoading = true
+        #if DEBUG
+        if PreviewSeed.isOn {
+            entries = PreviewSeed.rankRows.map { RankEntry(rank: $0.rank, name: $0.name, score: $0.score, isLocal: $0.isLocal) }
+            localEntry = entries.first { $0.isLocal }
+            totalPlayers = entries.count
+            isLoading = false
+            return
+        }
+        #endif
         if let result = await gameCenter.loadDailyEntries(top: 50) {
-            localEntry = result.local
-            entries = result.entries
+            localEntry = result.local.map(RankEntry.init)
+            entries = result.entries.map(RankEntry.init)
             totalPlayers = result.total
         }
         isLoading = false
@@ -303,7 +333,8 @@ struct DailyRankView: View {
 
 /// Async-loading Game Center player avatar with initials fallback.
 private struct PlayerAvatar: View {
-    let player: GKPlayer
+    let player: GKPlayer?
+    let name: String
     @State private var image: UIImage?
 
     var body: some View {
@@ -320,12 +351,13 @@ private struct PlayerAvatar: View {
         .frame(width: 26, height: 26)
         .clipShape(Circle())
         .task {
+            guard let player else { return }
             image = try? await player.loadPhoto(for: .small)
         }
     }
 
     private var initials: String {
-        let parts = player.displayName.split(separator: " ").prefix(2)
+        let parts = name.split(separator: " ").prefix(2)
         let chars = parts.compactMap { $0.first }
         return String(chars).uppercased()
     }

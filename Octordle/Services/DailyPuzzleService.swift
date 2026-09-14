@@ -282,6 +282,15 @@ class DailyPuzzleService: ObservableObject {
     #if DEBUG
     /// TEMPORARY QA: pretend the player completed the `count` days immediately
     /// before today, so finishing today's daily crosses a streak threshold.
+    /// PreviewSeed: clear all daily history (in memory + on disk).
+    func debugResetAll() {
+        completedDates = []; streakDates = []; rescuedDates = []; unlockedArchiveDates = []
+        lastRescueDay = nil; rescueCardDismissedDay = ""
+        streakCache = nil
+        saveCompletedDates(); saveUnlockedDates(); saveStreakState()
+        defaults.set(true, forKey: streakMigratedKey)
+    }
+
     func debugSeedConsecutiveDaysBeforeToday(_ count: Int) {
         for offset in 1...max(1, count) {
             let day = dayString(offset: -offset)

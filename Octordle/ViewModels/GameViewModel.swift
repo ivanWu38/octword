@@ -367,6 +367,16 @@ class GameViewModel: ObservableObject {
     // GameView.onAppear when done.
     static var debugAutoWinEnabled: Bool { ProcessInfo.processInfo.environment["OCTORDLE_AUTOWIN"] != nil }
 
+    /// PreviewSeed (OCTORDLE_SCREEN=game): submit the scripted guesses, no game end.
+    func debugPreviewPlay() {
+        guard PreviewSeed.isOn, gameState.guessCount == 0, !gameState.isGameOver else { return }
+        gameState.accumulatedTime = PreviewSeed.gameElapsed
+        for word in PreviewSeed.gameScript(for: gameState) {
+            gameState.currentGuess = word
+            submitGuess()
+        }
+    }
+
     func debugAutoWin() {
         guard Self.debugAutoWinEnabled else { return }
         guard !gameState.isGameOver else { return }

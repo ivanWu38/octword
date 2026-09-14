@@ -204,6 +204,13 @@ final class ChallengeSession: ObservableObject {
         UserDefaults.standard.set(value, forKey: key(for: presetId))
     }
 
+    #if DEBUG
+    /// PreviewSeed: write a demo best score for a preset.
+    static func debugSeedBest(_ value: Int, for presetId: String) {
+        UserDefaults.standard.set(value, forKey: key(for: presetId))
+    }
+    #endif
+
     // MARK: - Best rounds persistence (longest survival)
 
     private static func roundsKey(for presetId: String) -> String {

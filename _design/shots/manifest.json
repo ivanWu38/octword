@@ -1,0 +1,204 @@
+{
+ "ipad_categories_dark.png": {
+  "device": "ipad",
+  "kind": "full",
+  "udid": "E55DB559-D8BC-4FE7-95A5-B32F738E0CCD"
+ },
+ "ipad_categories_light.png": {
+  "device": "ipad",
+  "kind": "full",
+  "udid": "E55DB559-D8BC-4FE7-95A5-B32F738E0CCD"
+ },
+ "ipad_challenges_dark.png": {
+  "device": "ipad",
+  "kind": "full",
+  "udid": "E55DB559-D8BC-4FE7-95A5-B32F738E0CCD"
+ },
+ "ipad_challenges_light.png": {
+  "device": "ipad",
+  "kind": "full",
+  "udid": "E55DB559-D8BC-4FE7-95A5-B32F738E0CCD"
+ },
+ "ipad_crop_ranksheet.png": {
+  "device": "ipad",
+  "kind": "crop",
+  "rect": [
+   236,
+   518,
+   1168,
+   1280
+  ],
+  "source": "ipad_rank_light.png"
+ },
+ "ipad_crop_reportsheet.png": {
+  "device": "ipad",
+  "kind": "crop",
+  "rect": [
+   236,
+   518,
+   1168,
+   1280
+  ],
+  "source": "ipad_report_light.png"
+ },
+ "ipad_explore_dark.png": {
+  "device": "ipad",
+  "kind": "full",
+  "udid": "E55DB559-D8BC-4FE7-95A5-B32F738E0CCD"
+ },
+ "ipad_explore_light.png": {
+  "device": "ipad",
+  "kind": "full",
+  "udid": "E55DB559-D8BC-4FE7-95A5-B32F738E0CCD"
+ },
+ "ipad_game_dark.png": {
+  "device": "ipad",
+  "kind": "full",
+  "udid": "E55DB559-D8BC-4FE7-95A5-B32F738E0CCD"
+ },
+ "ipad_game_light.png": {
+  "device": "ipad",
+  "kind": "full",
+  "udid": "E55DB559-D8BC-4FE7-95A5-B32F738E0CCD"
+ },
+ "ipad_journey_dark.png": {
+  "device": "ipad",
+  "kind": "full",
+  "udid": "E55DB559-D8BC-4FE7-95A5-B32F738E0CCD"
+ },
+ "ipad_journey_light.png": {
+  "device": "ipad",
+  "kind": "full",
+  "udid": "E55DB559-D8BC-4FE7-95A5-B32F738E0CCD"
+ },
+ "ipad_rank_dark.png": {
+  "device": "ipad",
+  "kind": "full",
+  "udid": "E55DB559-D8BC-4FE7-95A5-B32F738E0CCD"
+ },
+ "ipad_rank_light.png": {
+  "device": "ipad",
+  "kind": "full",
+  "udid": "E55DB559-D8BC-4FE7-95A5-B32F738E0CCD"
+ },
+ "ipad_report_dark.png": {
+  "device": "ipad",
+  "kind": "full",
+  "udid": "E55DB559-D8BC-4FE7-95A5-B32F738E0CCD"
+ },
+ "ipad_report_light.png": {
+  "device": "ipad",
+  "kind": "full",
+  "udid": "E55DB559-D8BC-4FE7-95A5-B32F738E0CCD"
+ },
+ "ipad_today_dark.png": {
+  "device": "ipad",
+  "kind": "full",
+  "udid": "E55DB559-D8BC-4FE7-95A5-B32F738E0CCD"
+ },
+ "ipad_today_light.png": {
+  "device": "ipad",
+  "kind": "full",
+  "udid": "E55DB559-D8BC-4FE7-95A5-B32F738E0CCD"
+ },
+ "ipad_unlimited_dark.png": {
+  "device": "ipad",
+  "kind": "full",
+  "udid": "E55DB559-D8BC-4FE7-95A5-B32F738E0CCD"
+ },
+ "ipad_unlimited_light.png": {
+  "device": "ipad",
+  "kind": "full",
+  "udid": "E55DB559-D8BC-4FE7-95A5-B32F738E0CCD"
+ },
+ "iphone_categories_dark.png": {
+  "device": "iphone",
+  "kind": "full",
+  "udid": "8DBA30E0-4520-400E-97F0-BFCFC2514B6C"
+ },
+ "iphone_categories_light.png": {
+  "device": "iphone",
+  "kind": "full",
+  "udid": "8DBA30E0-4520-400E-97F0-BFCFC2514B6C"
+ },
+ "iphone_challenges_dark.png": {
+  "device": "iphone",
+  "kind": "full",
+  "udid": "8DBA30E0-4520-400E-97F0-BFCFC2514B6C"
+ },
+ "iphone_challenges_light.png": {
+  "device": "iphone",
+  "kind": "full",
+  "udid": "8DBA30E0-4520-400E-97F0-BFCFC2514B6C"
+ },
+ "iphone_explore_dark.png": {
+  "device": "iphone",
+  "kind": "full",
+  "udid": "8DBA30E0-4520-400E-97F0-BFCFC2514B6C"
+ },
+ "iphone_explore_light.png": {
+  "device": "iphone",
+  "kind": "full",
+  "udid": "8DBA30E0-4520-400E-97F0-BFCFC2514B6C"
+ },
+ "iphone_game_dark.png": {
+  "device": "iphone",
+  "kind": "full",
+  "udid": "8DBA30E0-4520-400E-97F0-BFCFC2514B6C"
+ },
+ "iphone_game_light.png": {
+  "device": "iphone",
+  "kind": "full",
+  "udid": "8DBA30E0-4520-400E-97F0-BFCFC2514B6C"
+ },
+ "iphone_journey_dark.png": {
+  "device": "iphone",
+  "kind": "full",
+  "udid": "8DBA30E0-4520-400E-97F0-BFCFC2514B6C"
+ },
+ "iphone_journey_light.png": {
+  "device": "iphone",
+  "kind": "full",
+  "udid": "8DBA30E0-4520-400E-97F0-BFCFC2514B6C"
+ },
+ "iphone_rank_dark.png": {
+  "device": "iphone",
+  "kind": "full",
+  "udid": "8DBA30E0-4520-400E-97F0-BFCFC2514B6C"
+ },
+ "iphone_rank_light.png": {
+  "device": "iphone",
+  "kind": "full",
+  "udid": "8DBA30E0-4520-400E-97F0-BFCFC2514B6C"
+ },
+ "iphone_report_dark.png": {
+  "device": "iphone",
+  "kind": "full",
+  "udid": "8DBA30E0-4520-400E-97F0-BFCFC2514B6C"
+ },
+ "iphone_report_light.png": {
+  "device": "iphone",
+  "kind": "full",
+  "udid": "8DBA30E0-4520-400E-97F0-BFCFC2514B6C"
+ },
+ "iphone_today_dark.png": {
+  "device": "iphone",
+  "kind": "full",
+  "udid": "8DBA30E0-4520-400E-97F0-BFCFC2514B6C"
+ },
+ "iphone_today_light.png": {
+  "device": "iphone",
+  "kind": "full",
+  "udid": "8DBA30E0-4520-400E-97F0-BFCFC2514B6C"
+ },
+ "iphone_unlimited_dark.png": {
+  "device": "iphone",
+  "kind": "full",
+  "udid": "8DBA30E0-4520-400E-97F0-BFCFC2514B6C"
+ },
+ "iphone_unlimited_light.png": {
+  "device": "iphone",
+  "kind": "full",
+  "udid": "8DBA30E0-4520-400E-97F0-BFCFC2514B6C"
+ }
+}

@@ -37,7 +37,7 @@ enum Tab: String, CaseIterable {
 
 /// Main tab navigation view with 3 tabs
 struct MainTabView: View {
-    @State private var selectedTab: Tab = .today
+    @State private var selectedTab: Tab = PreviewSeed.tab ?? .today
     @State private var hideTabBar = false
 
     @EnvironmentObject var themeService: ThemeService

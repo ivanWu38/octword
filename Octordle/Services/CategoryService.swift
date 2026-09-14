@@ -107,6 +107,16 @@ final class CategoryService: ObservableObject {
         return (0..<category.puzzleCount).first { !done.contains($0) } ?? 0
     }
 
+    #if DEBUG
+    /// PreviewSeed: clear pack progress and unlocks (in memory + on disk).
+    func debugResetAll() {
+        completedByCategory = [:]
+        adUnlockedPuzzles = []; enteredPacks = []
+        defaults.removeObject(forKey: kAdUnlocked); defaults.removeObject(forKey: kEnteredPacks)
+        saveProgress()
+    }
+    #endif
+
     func markCompleted(categoryId: String, puzzleIndex: Int) {
         var done = completedByCategory[categoryId] ?? []
         guard !done.contains(puzzleIndex) else { return }

@@ -57,6 +57,15 @@ struct DailyView: View {
                     savedState = state
                 }
                 completedResult = statsService.loadCompletedDailyResult()
+                #if DEBUG
+                // PreviewSeed deep links (app-store-previews skill).
+                switch PreviewSeed.screen {
+                case "game": DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { showGame = true }
+                case "rank": DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { showDailyRank = true }
+                case "report": DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { showSolveReport = true }
+                default: break
+                }
+                #endif
             }
             .navigationDestination(isPresented: $showGame) {
                 if let state = savedState {

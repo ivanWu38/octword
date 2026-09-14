@@ -84,6 +84,7 @@
 		C69E52763452DEB31975BA26 /* SolveReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AC7B2DC9E5608C1F0659BC7 /* SolveReportView.swift */; };
 		C6B91181B8555621DBCCF683 /* DailyRankView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC822DA1342653E1664B6748 /* DailyRankView.swift */; };
 		C6CD8FF1C384136F67B2DFB0 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D0FBAA63E58663BABF08E2 /* Constants.swift */; };
+		B2C3D4E5F60718293A4B5C6D /* PreviewSeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5C /* PreviewSeed.swift */; };
 		D6A36CB71BAF539DCFEA3A2D /* StatsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F54408581B1D6647B968487 /* StatsService.swift */; };
 		DAFC7F14235F8EB3CBCFA449 /* StreakRiskNotice.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00CFAF612F232BFD1DB649A /* StreakRiskNotice.swift */; };
 		DC02685A940104AF800530B2 /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A1EB872191EE691958B55D /* SubscriptionService.swift */; };
@@ -108,6 +109,7 @@
 		1389772DBA2F259294F7545E /* BoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardView.swift; sourceTree = "<group>"; };
 		166AC68246D1FF1940C9358D /* SupportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportService.swift; sourceTree = "<group>"; };
 		17D0FBAA63E58663BABF08E2 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5C /* PreviewSeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewSeed.swift; sourceTree = "<group>"; };
 		206F5E6C5D97CEC3B91FD6FA /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
 		2D398237506DEEC299AAB8A8 /* ReviewPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewPromptView.swift; sourceTree = "<group>"; };
 		2F621B0C6D606968E2D84D93 /* LetterState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterState.swift; sourceTree = "<group>"; };
@@ -429,6 +431,7 @@
 			isa = PBXGroup;
 			children = (
 				17D0FBAA63E58663BABF08E2 /* Constants.swift */,
+				A1B2C3D4E5F60718293A4B5C /* PreviewSeed.swift */,
 				4F3C069A4006688A7AFD7E10 /* Extensions.swift */,
 			);
 			path = Utils;
@@ -604,6 +607,7 @@
 				24EBCBAAF662DAB9E214DB98 /* ConfettiView.swift in Sources */,
 				9D385F6D76920542753D14E6 /* ConsentManager.swift in Sources */,
 				C6CD8FF1C384136F67B2DFB0 /* Constants.swift in Sources */,
+				B2C3D4E5F60718293A4B5C6D /* PreviewSeed.swift in Sources */,
 				7B600A03670D8500CCBFC770 /* DailyPuzzleService.swift in Sources */,
 				C6B91181B8555621DBCCF683 /* DailyRankView.swift in Sources */,
 				4155059632E8F6764DFA6579 /* DailyView.swift in Sources */,
@@ -678,6 +682,7 @@
 					"@executable_path/Frameworks",
 				);
 				OTHER_LDFLAGS = "$(inherited) -ObjC";
+				CODE_SIGN_ENTITLEMENTS = Octordle/Octordle.entitlements;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ikuhei.octordle;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -719,7 +724,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = Q98K2GW9ZQ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -773,6 +778,7 @@
 					"@executable_path/Frameworks",
 				);
 				OTHER_LDFLAGS = "$(inherited) -ObjC";
+				CODE_SIGN_ENTITLEMENTS = Octordle/Octordle.entitlements;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ikuhei.octordle;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -814,7 +820,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = Q98K2GW9ZQ;
 				ENABLE_NS_ASSERTIONS = NO;

@@ -16,3 +16,4 @@ DerivedData/
 .build/
 .swiftpm/
 Packages/
+build_shots/

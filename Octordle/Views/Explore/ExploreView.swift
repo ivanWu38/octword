@@ -9,6 +9,9 @@ struct ExploreView: View {
     @ObservedObject private var supportService = SupportService.shared
     @State private var showSettings = false
     @State private var showSupporter = false
+    /// PreviewSeed deep links (DEBUG only; always false in release).
+    @State private var pushCategories = PreviewSeed.screen == "categories"
+    @State private var pushChallenges = PreviewSeed.screen == "challenges"
 
     var body: some View {
         NavigationStack {
@@ -50,6 +53,8 @@ struct ExploreView: View {
             .sheet(isPresented: $showSupporter) {
                 SupporterView()
             }
+            .navigationDestination(isPresented: $pushCategories) { CategoriesView() }
+            .navigationDestination(isPresented: $pushChallenges) { ChallengesView() }
         }
     }
 

@@ -27,10 +27,18 @@ final class GameCenterService: ObservableObject {
 
     private init() {}
 
+    #if DEBUG
+    /// PreviewSeed: make the Daily Rank surfaces render as signed-in without Game Center.
+    func debugMarkAuthenticated() { isAuthenticated = true }
+    #endif
+
     // MARK: - Authentication
 
     /// Set the authentication handler. Call once, early (e.g. main tab appears).
     func authenticate() {
+        #if DEBUG
+        if PreviewSeed.isOn { return } // seeded rank surfaces; never touch Game Center
+        #endif
         GKLocalPlayer.local.authenticateHandler = { [weak self] viewController, error in
             Task { @MainActor in
                 if let viewController {
@@ -117,6 +125,9 @@ final class GameCenterService: ObservableObject {
 
     /// Lightweight: the local player's current daily rank and the total player count.
     func loadLocalDailyRank() async -> (rank: Int, total: Int)? {
+        #if DEBUG
+        if PreviewSeed.isOn { return (PreviewSeed.localRank, PreviewSeed.rankRows.count) }
+        #endif
         guard GKLocalPlayer.local.isAuthenticated else { return nil }
         do {
             let leaderboards = try await GKLeaderboard.loadLeaderboards(IDs: [Self.dailyLeaderboardID])

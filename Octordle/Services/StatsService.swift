@@ -107,6 +107,18 @@ class StatsService: ObservableObject {
         aggregates.oneStar
     }
 
+    #if DEBUG
+    /// PreviewSeed: drop every recorded result and achievement (in memory + on disk).
+    func debugResetAll() {
+        gameResults = []
+        achievementProgress = AchievementProgress()
+        recomputeAggregates()
+        saveResults()
+        saveAchievements()
+        ThemeService.shared.invalidateResolvedTheme()
+    }
+    #endif
+
     // MARK: - Game Result Management
 
     /// Records a result and returns any achievements unlocked by it

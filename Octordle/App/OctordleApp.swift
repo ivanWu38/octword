@@ -105,7 +105,7 @@ struct RootView: View {
     private var isStreakHarness: Bool {
         #if DEBUG
         let env = ProcessInfo.processInfo.environment
-        return env["OCTORDLE_STREAK_TEST"] != nil || env["OCTORDLE_AD_DIAG"] == "1"
+        return env["OCTORDLE_STREAK_TEST"] != nil || env["OCTORDLE_AD_DIAG"] == "1" || PreviewSeed.isOn
         #else
         return false
         #endif
@@ -120,6 +120,11 @@ struct RootView: View {
                     MainTabView()
                         .task {
                             #if DEBUG
+                            // App Store screenshot seed (app-store-previews skill): demo data, no SDKs.
+                            if PreviewSeed.isOn {
+                                PreviewSeed.applyIfRequested()
+                                return
+                            }
                             // Streak-rescue harness: OCTORDLE_STREAK_TEST=gap1|gap2|short|cooldown|done|nextup|nextupfree
                             if let scenario = ProcessInfo.processInfo.environment["OCTORDLE_STREAK_TEST"] {
                                 DailyPuzzleService.shared.debugSeedStreak(scenario)

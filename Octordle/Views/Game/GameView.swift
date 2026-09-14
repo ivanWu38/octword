@@ -89,7 +89,7 @@ struct GameView: View {
             let contentWidth = min(geometry.size.width, maxContentWidth)
             let keyboardHeight: CGFloat = 180
             let topBarHeight: CGFloat = 50
-            let adHeight: CGFloat = subscriptionService.isPremium ? 0 : 60
+            let adHeight: CGFloat = (subscriptionService.isPremium || PreviewSeed.noAds) ? 0 : 60
             let availableHeight = max(0, geometry.size.height - keyboardHeight - topBarHeight - adHeight - 16)
             let availableWidth = max(0, contentWidth - 16)
 
@@ -118,7 +118,7 @@ struct GameView: View {
                 }
 
                 // Ad banner (non-premium)
-                if !subscriptionService.isPremium {
+                if !subscriptionService.isPremium && !PreviewSeed.noAds {
                     BannerAdView()
                         .frame(height: adHeight)
                 }
@@ -370,6 +370,12 @@ struct GameView: View {
             // cards (incl. Explore-mode badges). Remove this block when done.
             DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                 viewModel.debugAutoWin()
+            }
+            // PreviewSeed hero shot: play the scripted opening so the boards are mid-solve.
+            if PreviewSeed.screen == "game" {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                    viewModel.debugPreviewPlay()
+                }
             }
             #endif
         }
