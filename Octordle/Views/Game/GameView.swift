@@ -24,6 +24,10 @@ struct GameView: View {
     @State private var showStreakOverlay = false
     @State private var streakSnapPrev: Int = 0
     @State private var streakSnapNew: Int = 0
+    /// Streak rescue: offered before the flame animation when yesterday was missed.
+    @State private var showRescueOverlay = false
+    @State private var rescueStreak: Int = 0
+    @State private var streakSubtitle: String?
     /// True while the player is studying the board after finishing (they tapped
     /// "View Board"). Keeps the game on screen and shows the re-open Results button.
     @State private var reviewingBoard = false
@@ -207,10 +211,36 @@ struct GameView: View {
             }
         }
         .overlay {
+            if showRescueOverlay {
+                StreakRescueOverlay(
+                    brokenStreak: rescueStreak,
+                    isPremium: subscriptionService.isPremium,
+                    onRestore: {
+                        if subscriptionService.isPremium { return .earned }
+                        return await RewardedAdManager.streakRescue.present()
+                    },
+                    onRestored: {
+                        // Yesterday is rescued now, so the live streak already reads N;
+                        // today (marked when the result sheet closes) makes it N+1.
+                        streakSnapPrev = DailyPuzzleService.shared.currentStreak
+                        streakSnapNew = streakSnapPrev + 1
+                        streakSubtitle = "Streak restored ✓"
+                        showRescueOverlay = false
+                        showStreakOverlay = true
+                    },
+                    onStartFresh: {
+                        showRescueOverlay = false
+                        showStreakOverlay = true
+                    }
+                )
+            }
+        }
+        .overlay {
             if showStreakOverlay {
                 StreakAnimationOverlay(
                     previousStreak: streakSnapPrev,
                     newStreak: streakSnapNew,
+                    subtitle: streakSubtitle,
                     onDismiss: {
                         showStreakOverlay = false
                         // Brief beat before the result sheet slides up
@@ -286,21 +316,30 @@ struct GameView: View {
             if shouldShowStreak {
                 streakSnapPrev = DailyPuzzleService.shared.currentStreak
                 streakSnapNew = streakSnapPrev + 1
+                if let broken = DailyPuzzleService.shared.rescuableStreak,
+                   !DailyPuzzleService.shared.isRescueOnCooldown {
+                    rescueStreak = broken
+                }
             }
+            let offerRescue = shouldShowStreak && rescueStreak > 0
 
             if viewModel.gameState.isWon {
-                // Won: play confetti first, then streak overlay (or skip to result)
+                // Won: play confetti first, then rescue / streak overlay (or skip to result)
                 showConfetti = true
                 DispatchQueue.main.asyncAfter(deadline: .now() + Constants.Animation.confettiDuration) {
-                    if shouldShowStreak {
+                    if offerRescue {
+                        showRescueOverlay = true
+                    } else if shouldShowStreak {
                         showStreakOverlay = true
                     } else {
                         showResultSheet = true
                     }
                 }
             } else {
-                // Lost: skip confetti, go straight to streak overlay (or result)
-                if shouldShowStreak {
+                // Lost: skip confetti, go straight to rescue / streak overlay (or result)
+                if offerRescue {
+                    showRescueOverlay = true
+                } else if shouldShowStreak {
                     showStreakOverlay = true
                 } else {
                     showResultSheet = true
@@ -309,6 +348,14 @@ struct GameView: View {
         }
         .onAppear {
             NotificationCenter.default.post(name: .hideTabBar, object: nil)
+
+            // Warm the streak-rescue ad if today's finish may offer a rescue.
+            if viewModel.gameState.mode == .daily,
+               !subscriptionService.isPremium,
+               !DailyPuzzleService.shared.isTodayCompleted,
+               DailyPuzzleService.shared.canRescueStreak {
+                RewardedAdManager.streakRescue.preloadIfNeeded()
+            }
 
             // Show notepad intro once
             if !UserDefaults.standard.bool(forKey: Constants.UserDefaultsKeys.hasSeenNotepadIntro) {

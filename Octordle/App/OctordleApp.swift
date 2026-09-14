@@ -101,15 +101,30 @@ struct RootView: View {
     @AppStorage("octordle_hasShownATTPrePrompt") private var hasShownATTPrePrompt = false
     @State private var showATTPrePrompt = false
 
+    /// True when launched with OCTORDLE_STREAK_TEST (DEBUG only): skips onboarding.
+    private var isStreakHarness: Bool {
+        #if DEBUG
+        return ProcessInfo.processInfo.environment["OCTORDLE_STREAK_TEST"] != nil
+        #else
+        return false
+        #endif
+    }
+
     var body: some View {
         Group {
-            if !hasSeenOnboarding {
+            if !hasSeenOnboarding && !isStreakHarness {
                 OnboardingView(hasSeenOnboarding: $hasSeenOnboarding)
             } else {
                 ZStack {
                     MainTabView()
                         .task {
                             #if DEBUG
+                            // Streak-rescue harness: OCTORDLE_STREAK_TEST=gap1|gap2|short|cooldown|done|nextup|nextupfree
+                            if let scenario = ProcessInfo.processInfo.environment["OCTORDLE_STREAK_TEST"] {
+                                DailyPuzzleService.shared.debugSeedStreak(scenario)
+                                delegate.initializeTrackingSDKs() // ads without consent/ATT dialogs
+                                return
+                            }
                             // Review-prompt harness: OCTORDLE_REVIEW_TEST=reset clears state and asks at
                             // launch; OCTORDLE_REVIEW_TEST=ask just re-asks (to verify cooldowns).
                             if let mode = ProcessInfo.processInfo.environment["OCTORDLE_REVIEW_TEST"] {

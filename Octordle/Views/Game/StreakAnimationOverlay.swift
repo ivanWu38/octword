@@ -7,6 +7,8 @@ import SwiftUI
 struct StreakAnimationOverlay: View {
     let previousStreak: Int
     let newStreak: Int
+    /// Optional line under "DAY STREAK" (e.g. "Streak restored ✓" after a rescue).
+    let subtitle: String?
     let onDismiss: () -> Void
 
     @State private var displayedStreak: Int
@@ -32,9 +34,10 @@ struct StreakAnimationOverlay: View {
     // Configurable timings
     private let autoDismissAfter: TimeInterval = 2.3
 
-    init(previousStreak: Int, newStreak: Int, onDismiss: @escaping () -> Void) {
+    init(previousStreak: Int, newStreak: Int, subtitle: String? = nil, onDismiss: @escaping () -> Void) {
         self.previousStreak = previousStreak
         self.newStreak = newStreak
+        self.subtitle = subtitle
         self.onDismiss = onDismiss
         self._displayedStreak = State(initialValue: previousStreak)
     }
@@ -105,6 +108,13 @@ struct StreakAnimationOverlay: View {
                     .font(.system(size: 16, weight: .bold, design: .rounded))
                     .tracking(3)
                     .foregroundColor(.white.opacity(0.85))
+
+                if let subtitle {
+                    Text(subtitle)
+                        .font(.system(size: 14, weight: .semibold, design: .serif))
+                        .foregroundColor(.white.opacity(0.75))
+                        .padding(.top, -12)
+                }
             }
             .scaleEffect(contentScale)
             .opacity(contentOpacity)

@@ -20,6 +20,7 @@ struct ArchiveCalendarView: View {
     @State private var showGame = false
     @State private var showSubscription = false
     @State private var isUnlocking = false
+    @State private var toastText: String?
 
     private var calendar: Calendar {
         var cal = Calendar.current
@@ -56,6 +57,7 @@ struct ArchiveCalendarView: View {
         .background(LinearGradient.quordleBackground.ignoresSafeArea())
         .navigationTitle("Archive")
         .navigationBarTitleDisplayMode(.inline)
+        .toast($toastText)
         .onAppear {
             RewardedAdManager.shared.preloadIfNeeded()
             // Open on the month of the newest unplayed puzzle so its highlight is visible.
@@ -274,11 +276,20 @@ struct ArchiveCalendarView: View {
     private func watchAdToUnlock(_ date: Date) {
         isUnlocking = true
         Task {
-            let earned = await RewardedAdManager.shared.showAd()
+            let outcome = await RewardedAdManager.shared.present()
             isUnlocking = false
-            guard earned else { return }
-            dailyPuzzleService.unlockArchiveDate(date)
-            startGame(on: date)
+            switch outcome {
+            case .earned:
+                dailyPuzzleService.unlockArchiveDate(date)
+                startGame(on: date)
+            case .dismissed:
+                selectedDay = nil
+                toastText = "Watch the whole ad to unlock this edition"
+            case .unavailable:
+                AnalyticsService.logArchiveAdUnavailable(source: "calendar")
+                selectedDay = nil
+                toastText = AdCopy.notReady
+            }
         }
     }
 

@@ -66,6 +66,21 @@ enum Constants {
         static let completedDailyDates = "octordle_completedDailyDates"
         static let hasSeenNotepadIntro = "octordle_hasSeenNotepadIntro"
         static let archiveUnlockedDates = "octordle_archiveUnlockedDates"
+        /// Days whose daily puzzle was completed ON that day (the only days that count toward streak).
+        static let streakDates = "octordle_streakDates"
+        /// Days restored via the streak-rescue rewarded ad.
+        static let rescuedStreakDates = "octordle_rescuedStreakDates"
+        static let lastStreakRescueDay = "octordle_lastStreakRescueDay"
+        static let streakRescueCardDismissedDay = "octordle_streakRescueCardDismissedDay"
+        static let streakDatesMigrated = "octordle_streakDatesMigrated"
+    }
+
+    /// Streak rescue (rewarded ad restores a streak that broke by exactly one missed day)
+    enum StreakRescue {
+        /// Only offer when the broken streak was at least this long.
+        static let minStreak = 3
+        /// One rescue per rolling window of this many days.
+        static let cooldownDays = 7
     }
 
     /// AdMob IDs
@@ -80,6 +95,8 @@ enum Constants {
         static let prodSupportRewardedAdUnitId = "ca-app-pub-5654617376526903/5535012213"
         /// Separate rewarded unit for unlocking themed-category levels.
         static let prodCategoryRewardedAdUnitId = "ca-app-pub-5654617376526903/3122234771"
+        /// Separate rewarded unit for restoring a broken daily streak.
+        static let prodStreakRescueRewardedAdUnitId = "ca-app-pub-5654617376526903/7542800241"
 
         // Google's official test Ad Unit IDs (always return test ads)
         static let testBannerAdUnitId = "ca-app-pub-3940256099942544/2934735716"
@@ -90,11 +107,13 @@ enum Constants {
         static let rewardedAdUnitId = testRewardedAdUnitId
         static let supportRewardedAdUnitId = testRewardedAdUnitId
         static let categoryRewardedAdUnitId = testRewardedAdUnitId
+        static let streakRescueRewardedAdUnitId = testRewardedAdUnitId
         #else
         static let bannerAdUnitId = prodBannerAdUnitId
         static let rewardedAdUnitId = prodRewardedAdUnitId
         static let supportRewardedAdUnitId = prodSupportRewardedAdUnitId
         static let categoryRewardedAdUnitId = prodCategoryRewardedAdUnitId
+        static let streakRescueRewardedAdUnitId = prodStreakRescueRewardedAdUnitId
         #endif
     }
 }

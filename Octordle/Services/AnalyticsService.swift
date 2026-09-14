@@ -102,6 +102,22 @@ struct AnalyticsService {
         Analytics.logEvent(event, parameters: nil)
     }
 
+    // MARK: - Streak rescue / Next edition
+
+    /// streak_rescue_offered / _accepted / _declined / _ad_unavailable / _completed
+    /// - surface: "overlay" (post-game) or "card" (Today tab)
+    static func logStreakRescue(_ event: String, surface: String, streak: Int) {
+        Analytics.logEvent("streak_rescue_\(event)", parameters: ["surface": surface, "streak": streak])
+    }
+
+    static func logNextUp(_ event: String, locked: Bool) {
+        Analytics.logEvent("next_up_\(event)", parameters: ["locked": locked ? 1 : 0])
+    }
+
+    static func logArchiveAdUnavailable(source: String) {
+        Analytics.logEvent("archive_unlock_ad_unavailable", parameters: ["source": source])
+    }
+
     // MARK: - Themes
 
     static func logThemeSelected(themeId: String) {

@@ -10,6 +10,20 @@ class RewardedAdManager: NSObject, ObservableObject {
     static let support = RewardedAdManager(adUnitId: Constants.AdMob.supportRewardedAdUnitId)
     /// Dedicated instance for unlocking themed-category levels (separate ad unit).
     static let category = RewardedAdManager(adUnitId: Constants.AdMob.categoryRewardedAdUnitId)
+    /// Dedicated instance for restoring a broken daily streak (separate ad unit so
+    /// its reporting stays independent from the other rewarded units).
+    static let streakRescue = RewardedAdManager(adUnitId: Constants.AdMob.streakRescueRewardedAdUnitId)
+
+    /// Outcome of a rewarded-ad presentation.
+    enum Outcome {
+        /// The user watched enough to earn the reward.
+        case earned
+        /// An ad was shown but the user closed it before earning the reward.
+        case dismissed
+        /// No ad could be loaded in time (no fill / offline). Callers should tell the
+        /// user instead of failing silently.
+        case unavailable
+    }
 
     @Published private(set) var isAdReady = false
 
@@ -74,6 +88,20 @@ class RewardedAdManager: NSObject, ObservableObject {
     /// Show the ad, waiting briefly for it to load if needed.
     /// Returns `true` if the user earned the reward.
     func showAd() async -> Bool {
+        await present() == .earned
+    }
+
+    /// Show the ad and report *why* no reward was earned, so the UI can distinguish
+    /// "closed early" from "no ad available".
+    func present() async -> Outcome {
+        #if DEBUG
+        // Harness: OCTORDLE_AD_FAIL=1 simulates "no fill" to test the unavailable path.
+        if ProcessInfo.processInfo.environment["OCTORDLE_AD_FAIL"] != nil {
+            try? await Task.sleep(nanoseconds: 600_000_000)
+            return .unavailable
+        }
+        #endif
+
         // If the ad isn't ready, wait up to 8 seconds for it to load (a cold load on
         // first open can take a few seconds, so give it room before giving up).
         if !isAdReady {
@@ -86,7 +114,7 @@ class RewardedAdManager: NSObject, ObservableObject {
 
         guard let rewardedAd else {
             print("[AdMob] No rewarded ad available after waiting (\(adUnitId))")
-            return false
+            return .unavailable
         }
 
         pendingRewardEarned = false
@@ -98,10 +126,10 @@ class RewardedAdManager: NSObject, ObservableObject {
         // dismissed before presenting.
         guard let topVC = await stablePresenter() else {
             print("[AdMob] No stable presenter found — skipping ad (\(adUnitId))")
-            return false
+            return .unavailable
         }
 
-        return await withCheckedContinuation { continuation in
+        let earned: Bool = await withCheckedContinuation { continuation in
             self.continuation = continuation
             rewardedAd.present(fromRootViewController: topVC) { [weak self] in
                 print("[AdMob] User earned reward")
@@ -109,6 +137,7 @@ class RewardedAdManager: NSObject, ObservableObject {
                 AnalyticsService.logRewardedAdEarned(placement: "pack_unlock")
             }
         }
+        return earned ? .earned : .dismissed
     }
 
     /// Resolve the top-most view controller that is actually on-screen and not in

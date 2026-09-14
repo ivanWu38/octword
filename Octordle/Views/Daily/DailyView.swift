@@ -25,6 +25,16 @@ struct DailyView: View {
     @State private var showSupporter = false
     @State private var isBuyingCoffee = false
     @State private var showCoffeeThanks = false
+    /// Streak rescue from the Today notice
+    @State private var isRescuing = false
+    @State private var showRescueFlame = false
+    @State private var rescuePrev = 0
+    @State private var rescueNew = 0
+    /// Next-edition (archive) launch from the completed page
+    @State private var nextUpDate: Date?
+    @State private var showNextUpGame = false
+    @State private var isUnlockingNextUp = false
+    @State private var toastText: String?
 
     var body: some View {
         NavigationStack {
@@ -60,6 +70,11 @@ struct DailyView: View {
                     .environmentObject(themeService)
                     .environmentObject(statsService)
                     .environmentObject(subscriptionService)
+            }
+            .navigationDestination(isPresented: $showNextUpGame) {
+                if let date = nextUpDate {
+                    GameView(archiveDate: date)
+                }
             }
             .onChange(of: showGame) { newValue in
                 if !newValue {
@@ -105,6 +120,125 @@ struct DailyView: View {
                         showCoffeeThanks = false
                     }
                 }
+            }
+            .overlay {
+                if showRescueFlame {
+                    StreakAnimationOverlay(
+                        previousStreak: rescuePrev,
+                        newStreak: rescueNew,
+                        subtitle: "Streak restored ✓",
+                        onDismiss: { showRescueFlame = false }
+                    )
+                }
+            }
+            .toast($toastText)
+            .onAppear {
+                if dailyPuzzleService.shouldShowRescueCard && !subscriptionService.isPremium {
+                    RewardedAdManager.streakRescue.preloadIfNeeded()
+                }
+                if dailyPuzzleService.isTodayCompleted {
+                    RewardedAdManager.shared.preloadIfNeeded()
+                }
+            }
+        }
+    }
+
+    // MARK: - Streak rescue (Today notice)
+
+    @ViewBuilder
+    private var streakRiskNoticeIfNeeded: some View {
+        if dailyPuzzleService.shouldShowRescueCard, let broken = dailyPuzzleService.rescuableStreak {
+            StreakRiskNotice(
+                brokenStreak: broken,
+                isPremium: subscriptionService.isPremium,
+                isWorking: isRescuing,
+                onRestore: { runStreakRescue(broken: broken) },
+                onDismiss: {
+                    HapticManager.shared.buttonTap()
+                    AnalyticsService.logStreakRescue("declined", surface: "card", streak: broken)
+                    withAnimation { dailyPuzzleService.dismissRescueCardForToday() }
+                }
+            )
+            .onAppear { AnalyticsService.logStreakRescue("offered", surface: "card", streak: broken) }
+            .padding(.horizontal, 28)
+            .padding(.top, 18)
+            .transition(.opacity)
+        }
+    }
+
+    private func runStreakRescue(broken: Int) {
+        HapticManager.shared.buttonTap()
+        AnalyticsService.logStreakRescue("accepted", surface: "card", streak: broken)
+        isRescuing = true
+        Task { @MainActor in
+            let outcome: RewardedAdManager.Outcome = subscriptionService.isPremium
+                ? .earned
+                : await RewardedAdManager.streakRescue.present()
+            isRescuing = false
+            switch outcome {
+            case .earned:
+                rescuePrev = dailyPuzzleService.currentStreak
+                rescueNew = dailyPuzzleService.rescueStreak()
+                AnalyticsService.logStreakRescue("completed", surface: "card", streak: broken)
+                HapticManager.shared.streakMilestone()
+                withAnimation { showRescueFlame = true }
+            case .dismissed:
+                toastText = "Watch the whole ad to restore your streak"
+            case .unavailable:
+                AnalyticsService.logStreakRescue("ad_unavailable", surface: "card", streak: broken)
+                toastText = AdCopy.notReady
+            }
+        }
+    }
+
+    // MARK: - Next edition (completed page)
+
+    @ViewBuilder
+    private var nextEditionCardIfNeeded: some View {
+        if let date = dailyPuzzleService.nextUnfinishedPastDate() {
+            let locked = dailyPuzzleService.isLocked(date, isPremium: subscriptionService.isPremium)
+            NextEditionCard(
+                date: date,
+                editionNumber: dailyPuzzleService.puzzleNumber(for: date),
+                isLocked: locked,
+                isWorking: isUnlockingNextUp,
+                onPlay: { playNextUp(date, locked: locked) },
+                onAllEditions: {
+                    HapticManager.shared.buttonTap()
+                    showArchive = true
+                }
+            )
+            .onAppear { AnalyticsService.logNextUp("shown", locked: locked) }
+            .padding(.horizontal, 28)
+            .padding(.bottom, 18)
+        }
+    }
+
+    private func playNextUp(_ date: Date, locked: Bool) {
+        HapticManager.shared.buttonTap()
+        guard locked else {
+            AnalyticsService.logNextUp("play", locked: false)
+            HapticManager.shared.gameStart()
+            nextUpDate = date
+            showNextUpGame = true
+            return
+        }
+        AnalyticsService.logNextUp("ad_tap", locked: true)
+        isUnlockingNextUp = true
+        Task { @MainActor in
+            let outcome = await RewardedAdManager.shared.present()
+            isUnlockingNextUp = false
+            switch outcome {
+            case .earned:
+                dailyPuzzleService.unlockArchiveDate(date)
+                HapticManager.shared.gameStart()
+                nextUpDate = date
+                showNextUpGame = true
+            case .dismissed:
+                toastText = "Watch the whole ad to unlock this edition"
+            case .unavailable:
+                AnalyticsService.logArchiveAdUnavailable(source: "next_up")
+                toastText = AdCopy.notReady
             }
         }
     }
@@ -216,6 +350,9 @@ struct DailyView: View {
         // No leading rule here — the Daily Rank row directly above already closes
         // with one, and two hairlines a few points apart read as a mistake.
         VStack(spacing: 14) {
+            // On the completed page the Next-edition card carries the archive entry;
+            // keep this button for the front page and for when nothing is left to catch up.
+            if !dailyPuzzleService.isTodayCompleted || dailyPuzzleService.nextUnfinishedPastDate() == nil {
             Button {
                 HapticManager.shared.buttonTap()
                 showArchive = true
@@ -238,6 +375,7 @@ struct DailyView: View {
                 )
             }
             .buttonStyle(ScaleButtonStyle())
+            }
 
             VStack(spacing: 4) {
                 Text("Next Edition In")
@@ -273,6 +411,7 @@ struct DailyView: View {
         page {
         VStack(spacing: 0) {
             masthead
+            streakRiskNoticeIfNeeded
             Spacer()
             VStack(spacing: 22) {
                 Text("Today's Edition")
@@ -333,6 +472,7 @@ struct DailyView: View {
         return page {
         VStack(spacing: 0) {
             masthead
+            streakRiskNoticeIfNeeded
             Spacer()
             VStack(spacing: 18) {
                 Text("SOLVED")
@@ -412,6 +552,7 @@ struct DailyView: View {
                 )
                 .padding(.bottom, 18)
             }
+            nextEditionCardIfNeeded
             countdownFooter
         }
         .padding(.bottom, 100)
