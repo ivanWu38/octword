@@ -1,4 +1,5 @@
 import SwiftUI
+import CrossPromoKit
 
 /// Settings — editorial "Daily Edition" styling.
 struct SettingsView: View {
@@ -86,6 +87,10 @@ struct SettingsView: View {
                         rowBody(symbol: "doc.plaintext", title: "Terms of Use", trailingSymbol: "arrow.up.right")
                     }
                     .simultaneousGesture(TapGesture().onEnded { HapticManager.shared.buttonTap() })
+
+                    groupLabel("More Games")
+                    CrossPromoList(placement: "settings", title: nil, style: CrossPromoStyle(accent: .quordlePrimary, cardBackground: .quordleCardBackground, rowBackground: .quordleBackgroundSecondary,
+                                              primaryText: .quordlePrimaryText, secondaryText: .quordleSecondaryText, cornerRadius: 20))
 
                     Spacer().frame(height: 90)
                 }

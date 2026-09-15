@@ -1,4 +1,5 @@
 import SwiftUI
+import CrossPromoKit
 
 /// Game result view shown after game ends
 struct GameResultView: View {
@@ -49,6 +50,8 @@ struct GameResultView: View {
 
                 // Action buttons pinned to bottom
                 actionButtons
+                CrossPromoList(placement: "result", style: CrossPromoStyle(accent: .quordlePrimary, cardBackground: .quordleCardBackground, rowBackground: .quordleBackgroundSecondary,
+                                              primaryText: .quordlePrimaryText, secondaryText: .quordleSecondaryText, cornerRadius: 20))
                     .padding(.horizontal)
                     .padding(.bottom, 8)
                     .padding(.top, 12)

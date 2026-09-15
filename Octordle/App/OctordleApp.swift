@@ -4,6 +4,7 @@ import Clarity
 import FirebaseCore
 import FirebaseAnalytics
 import AppTrackingTransparency
+import CrossPromoKit
 
 class AppDelegate: NSObject, UIApplicationDelegate {
     private var hasInitializedTrackingSDKs = false
@@ -20,6 +21,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         // Initialize Firebase but DISABLE analytics collection until ATT completes
         FirebaseApp.configure()
         Analytics.setAnalyticsCollectionEnabled(false)
+        // Cross-promo: remote catalog decides which sibling apps to recommend.
+        CrossPromoService.shared.configure(currentAppID: "octordle") { Analytics.logEvent($0, parameters: $1) }
 
         // Do NOT initialize AdMob or Clarity here
         // They will be initialized after UMP consent + ATT flow completes

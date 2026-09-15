@@ -17,6 +17,8 @@ settings:
     INFOPLIST_FILE: Octordle/Info.plist
 
 packages:
+  CrossPromoKit:
+    path: ../CrossPromoKit
   GoogleMobileAds:
     url: https://github.com/googleads/swift-package-manager-google-mobile-ads
     from: 13.4.0
@@ -63,6 +65,7 @@ targets:
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         OTHER_LDFLAGS: "$(inherited) -ObjC"
     dependencies:
+      - package: CrossPromoKit
       - package: GoogleMobileAds
         product: GoogleMobileAds
       - package: UnityAdapter
