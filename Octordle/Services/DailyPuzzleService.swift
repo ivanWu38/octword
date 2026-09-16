@@ -13,6 +13,8 @@ class DailyPuzzleService: ObservableObject {
     private let lastRescueDayKey = Constants.UserDefaultsKeys.lastStreakRescueDay
     private let rescueCardDismissedDayKey = Constants.UserDefaultsKeys.streakRescueCardDismissedDay
     private let streakMigratedKey = Constants.UserDefaultsKeys.streakDatesMigrated
+    private let liveSolvedDatesKey = Constants.UserDefaultsKeys.liveSolvedDates
+    private let streakRepairedKey = Constants.UserDefaultsKeys.streakDatesRepaired
 
     /// Every day whose puzzle has been finished (today or via the archive). Drives the
     /// calendar's "done" state and the Next-edition card; NOT the streak.
@@ -22,6 +24,10 @@ class DailyPuzzleService: ObservableObject {
     @Published private(set) var streakDates: Set<String> = []
     /// Days restored by the streak-rescue rewarded ad (or Premium).
     @Published private(set) var rescuedDates: Set<String> = []
+    /// Days solved as today's puzzle, recorded the moment the game ends (see `recordLiveSolve`).
+    /// Not part of the streak itself: it only proves that `markCompleted` for that day
+    /// should count, and lets launch reconcile a solve whose result sheet was never closed.
+    private(set) var liveSolvedDates: Set<String> = []
     /// Day string of the most recent rescue, for the cooldown.
     @Published private(set) var lastRescueDay: String?
     /// Day the player dismissed the "streak at risk" notice ("yyyy-MM-dd").
@@ -41,6 +47,8 @@ class DailyPuzzleService: ObservableObject {
         loadUnlockedDates()
         loadStreakState()
         migrateStreakDatesIfNeeded()
+        repairStreakDatesIfNeeded()
+        reconcileLiveSolves()
     }
 
     /// Check if today's puzzle is completed
@@ -144,17 +152,39 @@ class DailyPuzzleService: ObservableObject {
     }
 
     /// Mark an arbitrary day's puzzle as completed (used by archive).
-    /// Only a same-day completion counts toward the streak.
+    /// Only a same-day completion counts toward the streak — "same-day" meaning the game
+    /// was solved as today's puzzle (`recordLiveSolve`), regardless of when this is called.
     func markCompleted(_ dayString: String) {
         completedDates.insert(dayString)
         saveCompletedDates()
-        if dayString == todayString {
+        if dayString == todayString || liveSolvedDates.contains(dayString) {
             streakDates.insert(dayString)
             saveStreakState()
             streakCache = nil
             // The streak just moved, which can unlock a theme.
             ThemeService.shared.invalidateResolvedTheme()
         }
+    }
+
+    /// Call the moment today's puzzle ends. Persists immediately so the day still counts
+    /// toward the streak if the result sheet is closed after midnight, or never closed
+    /// because the app was killed on it (reconciled on next launch).
+    func recordLiveSolve(_ dayString: String) {
+        guard !liveSolvedDates.contains(dayString) else { return }
+        liveSolvedDates.insert(dayString)
+        saveLiveSolvedDates()
+    }
+
+    /// Launch safety net: a live solve whose sheet was never dismissed (app killed) has a
+    /// saved result but was never marked completed. Mark it now so the day isn't lost.
+    func reconcileLiveSolves() {
+        let missing = liveSolvedDates.filter { !completedDates.contains($0) || !streakDates.contains($0) }
+        guard !missing.isEmpty else { return }
+        completedDates.formUnion(missing)
+        streakDates.formUnion(missing)
+        saveCompletedDates()
+        saveStreakState()
+        streakCache = nil
     }
 
     // MARK: - Streak
@@ -309,9 +339,14 @@ class DailyPuzzleService: ObservableObject {
     /// - cooldown: gap1 plus a rescue used 2 days ago
     /// - done: gap1 and today already completed
     /// - nextup / nextupfree: today done, first unfinished archive day locked (-4) / free (-2)
+    /// - latedismiss: yesterday solved live, sheet closed today → 13, no rescue
+    /// - killed: app died on the sheet (never marked) → launch reconcile → 13
+    /// - repair: 1.12 (2) damage, saved result ended yesterday → one-time repair → 13
+    /// - repairarchive: negative control, saved result ended today → stays 12, rescuable
     func debugSeedStreak(_ scenario: String) {
-        completedDates = []; streakDates = []; rescuedDates = []; unlockedArchiveDates = []
+        completedDates = []; streakDates = []; rescuedDates = []; unlockedArchiveDates = []; liveSolvedDates = []
         lastRescueDay = nil; rescueCardDismissedDay = ""
+        defaults.removeObject(forKey: Constants.UserDefaultsKeys.dailyResultPrefix + dayString(offset: -1))
         var runStart = -2, runLength = 12
         switch scenario {
         case "gap2": runStart = -3
@@ -329,9 +364,29 @@ class DailyPuzzleService: ObservableObject {
             let doneOffsets = scenario == "nextup" ? [0, -1, -2, -3] : [0, -1]
             for o in doneOffsets { let d = dayString(offset: o); completedDates.insert(d); streakDates.insert(d) }
         }
+        let yesterday = dayString(offset: -1)
+        switch scenario {
+        case "latedismiss":
+            liveSolvedDates.insert(yesterday); saveLiveSolvedDates()
+            markCompleted(yesterday)                      // the sheet closes today
+        case "killed":
+            liveSolvedDates.insert(yesterday); saveLiveSolvedDates()
+            reconcileLiveSolves()                         // what init does on next launch
+        case "repair", "repairarchive":
+            completedDates.insert(yesterday)              // 1.12 (2) left it out of streakDates
+            let yDate = Calendar.current.date(byAdding: .day, value: -1, to: todayStart)!
+            var result = GameState(mode: .daily, difficulty: .classic, words: Array(repeating: "APPLE", count: 8), date: yDate)
+            result.isGameOver = true; result.isWon = true
+            result.endTime = scenario == "repair" ? yDate.addingTimeInterval(20 * 3600) : Date()
+            defaults.set(try! JSONEncoder().encode(result), forKey: Constants.UserDefaultsKeys.dailyResultPrefix + yesterday)
+            defaults.set(false, forKey: streakRepairedKey)
+            repairStreakDatesIfNeeded()
+        default: break
+        }
         streakCache = nil
         saveCompletedDates(); saveUnlockedDates(); saveStreakState()
         defaults.set(true, forKey: streakMigratedKey)
+        print("[StreakTest] completed(-1)=\(completedDates.contains(yesterday)) streakDates(-1)=\(streakDates.contains(yesterday)) live(-1)=\(liveSolvedDates.contains(yesterday))")
         print("[StreakTest] seeded \(scenario): streak=\(currentStreak) rescuable=\(String(describing: rescuableStreak)) cooldown=\(isRescueOnCooldown) canRescue=\(canRescueStreak) nextUp=\(String(describing: nextUnfinishedPastDate()))")
     }
     #endif
@@ -360,11 +415,16 @@ class DailyPuzzleService: ObservableObject {
     }
 
     private func loadStreakState() {
+        liveSolvedDates = Set(defaults.stringArray(forKey: liveSolvedDatesKey) ?? [])
         streakDates = Set(defaults.stringArray(forKey: streakDatesKey) ?? [])
         rescuedDates = Set(defaults.stringArray(forKey: rescuedDatesKey) ?? [])
         lastRescueDay = defaults.string(forKey: lastRescueDayKey)
         rescueCardDismissedDay = defaults.string(forKey: rescueCardDismissedDayKey) ?? ""
         streakCache = nil
+    }
+
+    private func saveLiveSolvedDates() {
+        defaults.set(Array(liveSolvedDates), forKey: liveSolvedDatesKey)
     }
 
     private func saveStreakState() {
@@ -381,6 +441,29 @@ class DailyPuzzleService: ObservableObject {
         streakDates.formUnion(completedDates)
         saveStreakState()
         defaults.set(true, forKey: streakMigratedKey)
+        streakCache = nil
+    }
+
+    /// One-time repair for 1.12 (2): `markCompleted` ran when the result sheet closed, and
+    /// only counted the day toward the streak if the sheet closed on the same calendar day.
+    /// A player who solved the puzzle and closed the sheet the next morning has the day in
+    /// `completedDates` but not `streakDates`. The saved result's `endTime` tells the two
+    /// cases apart (an archive replay of that day would have ended on a later day).
+    func repairStreakDatesIfNeeded() {
+        guard !defaults.bool(forKey: streakRepairedKey) else { return }
+        defaults.set(true, forKey: streakRepairedKey)
+        let candidates = completedDates.subtracting(streakDates).subtracting(rescuedDates)
+        var repaired: Set<String> = []
+        for day in candidates {
+            guard let data = defaults.data(forKey: Constants.UserDefaultsKeys.dailyResultPrefix + day),
+                  let state = try? JSONDecoder().decode(GameState.self, from: data),
+                  let endTime = state.endTime,
+                  dateString(for: endTime) == day else { continue }
+            repaired.insert(day)
+        }
+        guard !repaired.isEmpty else { return }
+        streakDates.formUnion(repaired)
+        saveStreakState()
         streakCache = nil
     }
 }

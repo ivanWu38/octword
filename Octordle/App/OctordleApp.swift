@@ -128,7 +128,7 @@ struct RootView: View {
                                 PreviewSeed.applyIfRequested()
                                 return
                             }
-                            // Streak-rescue harness: OCTORDLE_STREAK_TEST=gap1|gap2|short|cooldown|done|nextup|nextupfree
+                            // Streak-rescue harness: OCTORDLE_STREAK_TEST=gap1|gap2|short|cooldown|done|nextup|nextupfree|latedismiss|killed|repair|repairarchive
                             if let scenario = ProcessInfo.processInfo.environment["OCTORDLE_STREAK_TEST"] {
                                 DailyPuzzleService.shared.debugSeedStreak(scenario)
                                 delegate.initializeTrackingSDKs() // ads without consent/ATT dialogs

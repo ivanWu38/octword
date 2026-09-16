@@ -548,6 +548,12 @@ class GameViewModel: ObservableObject {
                     }
                 }
             }
+            // Streak eligibility is decided NOW, not when the result sheet closes: the
+            // player may background the app on the sheet and close it tomorrow, or finish
+            // a game started before midnight. Both used to drop the day from the streak.
+            if let day = playedDay, gameState.startedAsToday || day == GameState.todayString() {
+                dailyPuzzleService.recordLiveSolve(day)
+            }
             if let day = playedDay {
                 statsService.clearDailyState(for: day)
             }

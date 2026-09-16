@@ -73,6 +73,15 @@ enum Constants {
         static let lastStreakRescueDay = "octordle_lastStreakRescueDay"
         static let streakRescueCardDismissedDay = "octordle_streakRescueCardDismissedDay"
         static let streakDatesMigrated = "octordle_streakDatesMigrated"
+        /// Days whose puzzle was solved as *today's* puzzle, written the moment the game ends
+        /// (before the result sheet closes). Streak eligibility no longer depends on when
+        /// the player dismisses the sheet.
+        static let liveSolvedDates = "octordle_liveSolvedDates"
+        /// One-time repair for 1.12 (2) users whose same-day solve was dropped from the streak
+        /// because the result sheet was closed after midnight.
+        static let streakDatesRepaired = "octordle_streakDatesRepaired"
+        /// Prefix of StatsService's per-date completed result snapshot (append "yyyy-MM-dd").
+        static let dailyResultPrefix = "octordle_completedDailyResult_"
     }
 
     /// Streak rescue (rewarded ad restores a streak that broke by exactly one missed day)

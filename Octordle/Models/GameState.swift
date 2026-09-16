@@ -24,6 +24,9 @@ struct GameState: Codable, Equatable {
     var endTime: Date?
     var dailyDate: String? // Format: "yyyy-MM-dd"
     var accumulatedTime: TimeInterval = 0 // Total seconds from previous sessions
+    /// True when this daily game was created as *today's* puzzle (not an archive replay).
+    /// Decides streak eligibility even if it is finished or closed after midnight.
+    var startedAsToday: Bool = false
 
     /// Guesses allowed this game — the override if present, else the difficulty's.
     var maxGuesses: Int { maxGuessesOverride ?? difficulty.maxGuesses }
@@ -47,18 +50,21 @@ struct GameState: Codable, Equatable {
         self.endTime = nil
         self.dailyDate = mode == .daily ? Self.todayString() : nil
         self.accumulatedTime = 0
+        self.startedAsToday = mode == .daily
     }
 
     /// Create a daily/archive game state tied to a specific date.
     init(mode: GameMode, difficulty: Difficulty, words: [String], date: Date) {
         self.init(mode: mode, difficulty: difficulty, words: words)
         self.dailyDate = Self.dateString(for: date)
+        self.startedAsToday = mode == .daily && Calendar.current.isDateInToday(date)
     }
 
     // Custom Codable to handle backward compatibility (old saves without accumulatedTime)
     enum CodingKeys: String, CodingKey {
         case mode, difficulty, maxGuessesOverride, boards, currentGuess, guessCount
         case isGameOver, isWon, startTime, endTime, dailyDate, accumulatedTime
+        case startedAsToday
     }
 
     init(from decoder: Decoder) throws {
@@ -66,6 +72,10 @@ struct GameState: Codable, Equatable {
         mode = try container.decode(GameMode.self, forKey: .mode)
         difficulty = try container.decode(Difficulty.self, forKey: .difficulty)
         maxGuessesOverride = try container.decodeIfPresent(Int.self, forKey: .maxGuessesOverride)
+        // Saves from before this flag existed: an in-progress daily save is only ever
+        // resumed for today, so "dailyDate is today" is the right fallback.
+        startedAsToday = try container.decodeIfPresent(Bool.self, forKey: .startedAsToday)
+            ?? (mode == .daily && dailyDate == Self.todayString())
         boards = try container.decode([BoardData].self, forKey: .boards)
         currentGuess = try container.decode(String.self, forKey: .currentGuess)
         guessCount = try container.decode(Int.self, forKey: .guessCount)
