@@ -22,6 +22,7 @@
 ## 下一步
 - 使用者實測 How to Play 卡（進 theme 關卡或 challenge 遊戲點左上 `?`）。
 - **待辦（使用者說「等一下再做」）**：為 special/Explore 模式新增 achievements / badges（例：連續 N 盤全破、單場破 X 字、完成 Front Page…）。可參考 `puzzle-game-kit` skill。
+- **待辦（低優先，2026-10-08 使用者決定先記著）**：Daily 答案字庫清理。起因：玩家來信 No.140（2026-10-06）答案 KETCH 太冷僻（同天還有 ESTER、EXTOL），玩家猜 FETCH/VETCH 用完 13 次以為是 bug。`words.json` 的 `solutions`（1864 字）沒篩過，混有非日常字。做法：solutions 對 Wordle 官方答案表交集，冷僻字留在 validGuesses（可猜不當答案）；Unlimited Hard 可保留冷僻字。注意：改 solutions 會改變 `getDailyWords` 過去每天的 shuffle 結果，必須加「從某日起用新表」的切換，不能直接換檔。
 - 可考慮：Run 的成績目前記「破字數」，但使用者敘述偏「撐幾盤」，未來或可調整成績指標／成就。
 
 ## 重要脈絡 / 決定
